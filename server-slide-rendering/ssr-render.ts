@@ -5,6 +5,13 @@ import NativeModule from 'module';
 import { of } from 'rxjs';
 import { Request, Response } from 'express';
 
+const vmModules: { [key: string]: any } = {
+  querystring: require('querystring'),
+  stream: require('stream'),
+  buffer: require('buffer'),
+  events: require('events'),
+  util: require('util')
+};
 export class SsrRender {
   private code!: string;
   private _compiledWrapp!: any;
@@ -13,21 +20,12 @@ export class SsrRender {
   private isDevelopment: boolean = process.env.NODE_ENV === 'development';
   private staticDir = this.isDevelopment ? '../src/app/assets' : './client';
   private _location: any = { pathname: '/', search: '?' };
-  private vmModules: { [key: string]: any } = {
-    querystring: require('querystring'),
-    stream: require('stream'),
-    buffer: require('buffer'),
-    events: require('events'),
-    util: require('util')
-  };
 
-  constructor(private serverDir: string, private path: string) { }
+  constructor(private serverDir: string, private entryPath: string) { }
 
   private get global() {
     return {
       location: this._location,
-      readHtmlTemplate: this.readHtmlTemplate.bind(this),
-      getServerFetchData: this.getServerFetchData.bind(this),
       readFileStatic: this.readFileStatic.bind(this)
     }
   }
@@ -59,7 +57,7 @@ export class SsrRender {
 
   private factoryVmScript() {
     try {
-      this.code = fs.readFileSync(this.path, 'utf-8');
+      this.code = fs.readFileSync(this.entryPath, 'utf-8');
       const wrapper = NativeModule.wrap(this.code);
       const script = new vm.Script(wrapper, { filename: 'server-entry.js', displayErrors: true });
       const context = vm.createContext({ Buffer, process, console, setTimeout, setInterval });
@@ -69,18 +67,47 @@ export class SsrRender {
     }
   }
 
-  public async render(request: Request, response: Response) {
-    this._location = { pathname: request.path, search: '?' };
-    let html = '';
+  private readAssets() {
+    const assetsResult = fs.readFileSync(path.join(this.serverDir, 'static/assets.json'), 'utf-8');
+    const { entrypoints = {} } = JSON.parse(assetsResult);
+    const staticAssets: any = { js: [], css: [] };
+    Object.keys(entrypoints).forEach((key: string) => {
+      const { js = [], css = [] } = entrypoints[key].assets as { js: string[], css: string[] };
+      staticAssets.js.push(...js);
+      staticAssets.css.push(...css);
+    });
+    return staticAssets;
+  }
+
+  private async _render(request: Request) {
     try {
-      const m: any = { exports: {}, require: (path: string) => this.vmModules[path] };
+      const m: any = { exports: {}, require: (path: string) => vmModules[path] };
       (this.isDevelopment || !this._compiledWrapp) && this.factoryVmScript();
       this.currentPageSource = {};
       this._compiledWrapp(m.exports, m.require, m);
-      html = await m.exports.render(this.global);
+      return await m.exports.render(this.global);
     } catch (e) {
       console.log(e);
     }
-    response.send(html);
+    return { html: ``, styles: `` };
+  }
+
+  public async renderMicro(request: Request, response: Response) {
+    this._location = { pathname: '/', search: '?' };
+    const { js, css } = this.readAssets();
+    const { html, styles } = await this._render(request);
+    response.json({ html, styles, js, css });
+  }
+
+  public async render(request: Request, response: Response) {
+    this._location = { pathname: request.path, search: '?' };
+    const { styles, html } = await this._render(request);
+    const fetchData = this.getServerFetchData();
+    const _html = this.readHtmlTemplate()
+      .replace('<span id="inner-html"></span>', html)
+      .replace('<meta name="inner-style">', styles)
+      .replace('<script id="fetch-static"></script>', `<script id="fetch-static">var serverFetchData = ${fetchData}</script>`);
+
+    response.send(_html);
   }
 }
