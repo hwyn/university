@@ -11,7 +11,7 @@ export class JsonConfigService implements JsonConfigImplements {
 
   constructor(private http: HttpClient) {
     const fetchElement = document.querySelector('#fetch-static');
-    fetchElement && document.body.removeChild(fetchElement);
+    fetchElement && document.head.removeChild(fetchElement);
   }
 
   private get fetchStatic() {
@@ -20,7 +20,7 @@ export class JsonConfigService implements JsonConfigImplements {
 
   private getServerFetchData(url: string): Observable<object> {
     const fetchData = this.fetchStatic[url];
-    return fetchData && fetchData.type === 'fileStatic' ? of(fetchData.source) : this.http.get<object>(url);
+    return fetchData && fetchData.type === 'file-static' ? of(fetchData.source) : this.http.get<object>(url);
   }
 
   getJsonConfig(url: string): Observable<object> {

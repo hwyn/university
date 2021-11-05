@@ -31,14 +31,18 @@ export class SsrRender {
   }
 
   private getServerFetchData() {
-    return JSON.stringify(this.currentPageSource);
+    return (
+      `<script id="fetch-static">
+        var serverFetchData = ${JSON.stringify(this.currentPageSource)}
+      </script>`
+    );
   }
 
   private readHtmlTemplate() {
     let template = fs.readFileSync(path.join(this.serverDir, `${this.staticDir}/index.html`), 'utf-8');
     if (this.isDevelopment) {
       const hotResource = `<script defer src="/javascript/main.js"></script>`;
-      const rex = `<meta name="inner-style">`;
+      const rex = `<!-- inner-style -->`;
       template = template.replace(rex, `${hotResource}${rex}`);
     }
     return template;
@@ -48,7 +52,7 @@ export class SsrRender {
     let fileCache = this.serverSources[url];
     if (!fileCache) {
       const source = fs.readFileSync(path.join(this.serverDir, `${this.staticDir}/${url}`), 'utf-8');
-      fileCache = { type: 'fileStatic', source: JSON.parse(source) };
+      fileCache = { type: 'file-static', source: JSON.parse(source) };
       this.serverSources[url] = fileCache;
     }
     this.currentPageSource[url] = fileCache;
@@ -68,7 +72,7 @@ export class SsrRender {
   }
 
   private readAssets() {
-    const assetsResult = fs.readFileSync(path.join(this.serverDir, 'static/assets.json'), 'utf-8');
+    const assetsResult = fs.readFileSync(path.join(this.serverDir, '/client/static/assets.json'), 'utf-8');
     const { entrypoints = {} } = JSON.parse(assetsResult);
     const staticAssets: any = { js: [], css: [] };
     Object.keys(entrypoints).forEach((key: string) => {
@@ -104,10 +108,8 @@ export class SsrRender {
     const { styles, html } = await this._render(request);
     const fetchData = this.getServerFetchData();
     const _html = this.readHtmlTemplate()
-      .replace('<span id="inner-html"></span>', html)
-      .replace('<meta name="inner-style">', styles)
-      .replace('<script id="fetch-static"></script>', `<script id="fetch-static">var serverFetchData = ${fetchData}</script>`);
-
+      .replace('<!-- inner-html -->', html)
+      .replace('<!-- inner-style -->', `${styles}${fetchData}`);
     response.send(_html);
   }
 }

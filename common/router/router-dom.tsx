@@ -20,12 +20,13 @@ const useRouter = (): [UseRouter] => {
 export const RouterDom = (): ReactElement<any, any> => {
   const [route] = useRouter();
   const { list = [], props = {} } = route;
-  if (!isEmpty(list)) {
-    const [[Component, firstProps = {}]] = list as any;
-    list[1] = list[1] || [EmptyComponent];
-    return list.slice(1).reduce((children, [Parent, propsParent]: any) => (
-      <Parent {...propsParent}>{children}</Parent>
-    ), <Component {...firstProps} {...props} />);
+  if (isEmpty(list)) {
+    return <></>;
   }
-  return <></>;
+
+  const [[Component, firstProps = {}]] = list as any;
+  list[1] = list[1] || [EmptyComponent];
+  return list.slice(1).reduce((children, [Parent, propsParent]: any) => (
+    <Parent {...propsParent}>{children}</Parent>
+  ), <Component {...firstProps} {...props} />);
 };
