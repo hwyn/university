@@ -15,4 +15,15 @@ export class HttpClient {
       .finally(() => subject.complete());
     return subject;
   }
+
+  getText(req: RequestInfo, params?: RequestInit): Observable<string>;
+  getText(url: string, params?: RequestInit): Observable<string> {
+    const subject = new Subject<string>();
+    fetch(url, params)
+      .then(res => res.text())
+      .then(data => subject.next(data))
+      .catch((error) => subject.error(error))
+      .finally(() => subject.complete());
+    return subject;
+  }
 }

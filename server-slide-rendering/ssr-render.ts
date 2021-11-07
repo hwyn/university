@@ -32,9 +32,7 @@ export class SsrRender {
 
   private getServerFetchData() {
     return (
-      `<script id="fetch-static">
-        var serverFetchData = ${JSON.stringify(this.currentPageSource)}
-      </script>`
+      `<script id="fetch-static">var serverFetchData = ${JSON.stringify(this.currentPageSource)}</script>`
     );
   }
 
