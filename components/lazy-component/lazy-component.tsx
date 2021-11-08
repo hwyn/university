@@ -1,4 +1,4 @@
-import MatSkeleton from '@mui/material/Skeleton'
+import MatSkeleton from '@mui/material/Skeleton';
 import React, { useEffect, useState } from 'react';
 
 export const LazyComponent = (lazy: () => Promise<object>, Component: any) => (props: any) => {
@@ -8,5 +8,5 @@ export const LazyComponent = (lazy: () => Promise<object>, Component: any) => (p
     lazy().then((module) => setModel(module as any));
   }, []);
 
-  return !loadModule ? <MatSkeleton variant="rectangular" height={height} /> : <Component module={loadModule} {...props} />;
+  return !loadModule ? <MatSkeleton variant='rectangular' height={height} /> : <Component module={loadModule} {...props} />;
 };

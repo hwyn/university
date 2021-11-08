@@ -1,5 +1,5 @@
-import MatIconButton, { IconButtonProps as MatIconButtonProps } from '@mui/material/IconButton';
 import Icon from '@mui/material/Icon';
+import MatIconButton, { IconButtonProps as MatIconButtonProps } from '@mui/material/IconButton';
 import React from 'react';
 import { ElementProps, useInvokeAction } from '../../builder-element';
 

@@ -1,5 +1,5 @@
-import MatSelect, { SelectProps as MatSelectProps } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import MatSelect, { SelectProps as MatSelectProps } from '@mui/material/Select';
 import React from 'react';
 import { ElementProps } from '../../builder-element';
 import { BootstrapInput } from './mat-scss';

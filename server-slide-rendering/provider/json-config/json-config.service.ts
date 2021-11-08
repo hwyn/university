@@ -1,8 +1,8 @@
-import { READ_FILE_STATIC } from '../../token/token';
 import { Inject, Injectable, JsonConfigImplements } from '@di';
 import { cloneDeep } from 'lodash';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
+import { READ_FILE_STATIC } from '../../token/token';
 
 type readFileType = (url: string) => Observable<object>;
 

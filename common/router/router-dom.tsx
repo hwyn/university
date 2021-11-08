@@ -1,4 +1,4 @@
-import { getProvider, LocatorStorageImplements, LOCAL_STORAGE } from '@di';
+import { getProvider, LOCAL_STORAGE, LocatorStorageImplements } from '@di';
 import { isEmpty } from 'lodash';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { CustomRouter } from './router';

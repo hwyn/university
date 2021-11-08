@@ -1,4 +1,5 @@
-import { BuilderModel, BuilderProps, Type } from 'dynamic-builder';
+import { Type } from '@di';
+import { BuilderModel, BuilderProps} from 'dynamic-builder';
 import React from 'react';
 import { Builder } from '../builder/builder';
 

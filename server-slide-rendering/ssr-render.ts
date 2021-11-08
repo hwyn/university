@@ -1,9 +1,9 @@
-import fs from 'fs';
-import vm from 'vm';
-import path from 'path';
-import NativeModule from 'module';
-import { of } from 'rxjs';
 import { Request, Response } from 'express';
+import fs from 'fs';
+import NativeModule from 'module';
+import path from 'path';
+import { of } from 'rxjs';
+import vm from 'vm';
 
 const vmModules: { [key: string]: any } = {
   querystring: require('querystring'),
@@ -27,7 +27,7 @@ export class SsrRender {
     return {
       location: this._location,
       readFileStatic: this.readFileStatic.bind(this)
-    }
+    };
   }
 
   private getServerFetchData() {
@@ -83,8 +83,10 @@ export class SsrRender {
 
   private async _render(request: Request) {
     try {
-      const m: any = { exports: {}, require: (path: string) => vmModules[path] };
-      (this.isDevelopment || !this._compiledWrapp) && this.factoryVmScript();
+      const m: any = { exports: {}, require: (modelName: string) => vmModules[modelName] };
+      if (this.isDevelopment || !this._compiledWrapp) {
+        this.factoryVmScript();
+      }
       this.currentPageSource = {};
       this._compiledWrapp(m.exports, m.require, m);
       return await m.exports.render(this.global);

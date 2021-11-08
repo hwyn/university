@@ -1,6 +1,6 @@
 import MatBadge, { BadgeProps as MatBadgeProps } from '@mui/material/Badge';
-import MatIconButton from '@mui/material/IconButton';
 import Icon from '@mui/material/Icon';
+import MatIconButton from '@mui/material/IconButton';
 import React from 'react';
 import { ElementProps } from '../../builder-element';
 

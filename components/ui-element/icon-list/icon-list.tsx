@@ -1,8 +1,8 @@
+import Icon from '@mui/material/Icon';
 import MatList from '@mui/material/List';
 import MatListItem from '@mui/material/ListItem';
 import MatListItemIcon from '@mui/material/ListItemIcon';
 import MatListItemText from '@mui/material/ListItemText';
-import Icon from '@mui/material/Icon';
 import React from 'react';
 import { ElementProps } from '../../builder-element';
 

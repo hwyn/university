@@ -11,7 +11,9 @@ export class JsonConfigService implements JsonConfigImplements {
 
   constructor(private http: HttpClient) {
     const fetchElement = document.querySelector('#fetch-static');
-    fetchElement && document.head.removeChild(fetchElement);
+    if (fetchElement) {
+      document.head.removeChild(fetchElement);
+    }
   }
 
   protected get fetchStatic() {
