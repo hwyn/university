@@ -1,4 +1,4 @@
-import { InjectorToken } from 'dynamic-builder';
+import { InjectorToken } from '@di';
 
 export const ROUTER_CONFIG = InjectorToken.get('ROUTER_CONFIG');
 export const ROUTER_INTERCEPT = InjectorToken.get('ROUTER_INTERCEPT');

@@ -1,4 +1,4 @@
-import { Injectable, Injector, LocatorStorageImplements, Type } from 'dynamic-builder';
+import { Injectable, Injector, LocatorStorageImplements, Type } from '@di';
 
 @Injectable()
 export class LocatorStorage implements LocatorStorageImplements {

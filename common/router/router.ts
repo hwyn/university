@@ -1,4 +1,4 @@
-import { Inject, Injectable, LOCAL_STORAGE, LocatorStorageImplements } from 'dynamic-builder';
+import { Inject, Injectable, LOCAL_STORAGE, LocatorStorageImplements } from '@di';
 import { BrowserHistory } from 'history';
 import { cloneDeep } from 'lodash';
 import { parse } from 'querystring';

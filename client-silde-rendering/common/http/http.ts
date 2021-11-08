@@ -1,4 +1,4 @@
-import { Injectable } from 'dynamic-builder';
+import { Injectable } from '@di';
 import { Observable, Subject } from 'rxjs';
 
 @Injectable()

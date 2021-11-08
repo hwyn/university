@@ -1,4 +1,4 @@
-import { registryProvider } from 'dynamic-builder';
+import { registryProvider } from '@di';
 import { builderExtensions } from './extension';
 
 registryProvider(builderExtensions);
