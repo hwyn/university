@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
 import NativeModule from 'module';
+import fetch from 'node-fetch';
 import path from 'path';
 import { of } from 'rxjs';
 import vm from 'vm';
@@ -12,6 +13,7 @@ const vmModules: { [key: string]: any } = {
   events: require('events'),
   util: require('util')
 };
+
 export class SsrRender {
   private code!: string;
   private _compiledWrapp!: any;
@@ -25,6 +27,7 @@ export class SsrRender {
 
   private get global() {
     return {
+      fetch,
       location: this._location,
       readFileStatic: this.readFileStatic.bind(this)
     };
@@ -83,7 +86,7 @@ export class SsrRender {
 
   private async _render(request: Request) {
     try {
-      const m: any = { exports: {}, require: (modelName: string) => vmModules[modelName] };
+      const m: any = { exports: {}, require: (modelName: string) => vmModules[modelName]};
       if (this.isDevelopment || !this._compiledWrapp) {
         this.factoryVmScript();
       }

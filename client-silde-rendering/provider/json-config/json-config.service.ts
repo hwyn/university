@@ -1,8 +1,8 @@
 import { Injectable, JsonConfigImplements } from '@di';
+import { HttpClient } from '@university/common';
 import { cloneDeep } from 'lodash';
 import { Observable, of } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
-import { HttpClient } from '../../common/http';
 
 declare const serverFetchData: any;
 @Injectable()

@@ -3,9 +3,9 @@ declare module '*.scss' {
   export default content;
 }
 
-declare module '@environments' {
+declare module '@environment' {
   const module: any;
-  export const environments: any;
+  export const environment: any;
   export default module;
 }
 

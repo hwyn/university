@@ -6,7 +6,7 @@ export const useInvokeAction = <T = any>(actionName: string = ``, props: Element
   const { ls, builder, id } = props;
   const actionIntercept: ActionIntercept = ls.getProvider(ACTION_INTERCEPT);
   const action = actionName ? actionIntercept.invoke(serializeAction(actionName), { builder, id }) : null;
-  let value: any = undefined;
+  let value: any = void(0);
   if (action) {
     action.subscribe((result) => value = result);
   }
