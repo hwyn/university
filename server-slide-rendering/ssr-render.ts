@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
 import NativeModule from 'module';
-import fetch from 'node-fetch';
+import fetch, { RequestInit } from 'node-fetch';
 import path from 'path';
-import { of } from 'rxjs';
 import vm from 'vm';
 
 const vmModules: { [key: string]: any } = {
@@ -17,47 +16,37 @@ const vmModules: { [key: string]: any } = {
 export class SsrRender {
   private code!: string;
   private _compiledWrapp!: any;
-  private serverSources: { [key: string]: any } = {};
-  private currentPageSource: { [key: string]: any } = {};
   private isDevelopment: boolean = process.env.NODE_ENV === 'development';
   private staticDir = this.isDevelopment ? '../src/app/assets' : './client';
-  private _location: any = { pathname: '/', search: '?' };
 
-  constructor(private serverDir: string, private entryPath: string) { }
+  constructor(private port: number, private serverDir: string, private entryPath: string) { }
 
   private get global() {
     return {
-      fetch,
-      location: this._location,
-      readFileStatic: this.readFileStatic.bind(this)
+      fetch: this.proxyFetch.bind(this),
+      readStaticFile: this.readStaticFile.bind(this),
+      readAssets: this.readAssets.bind(this)
     };
   }
 
-  private getServerFetchData() {
-    return (
-      `<script id="fetch-static">var serverFetchData = ${JSON.stringify(this.currentPageSource)}</script>`
-    );
+  private proxyFetch(url: string, init?: RequestInit) {
+    const _url = `http://127.0.0.1:${this.port}/${url.replace(/^[\/]+/, '')}`;
+    return fetch(_url, init);
   }
 
   private readHtmlTemplate() {
     let template = fs.readFileSync(path.join(this.serverDir, `${this.staticDir}/index.html`), 'utf-8');
     if (this.isDevelopment) {
-      const hotResource = `<script defer src="/javascript/main.js"></script>`;
+      const { js } = this.readAssets();
+      const hotResource = js.map((src: string) => `<script defer src="${src}"></script>`).join('');
       const rex = `<!-- inner-style -->`;
       template = template.replace(rex, `${hotResource}${rex}`);
     }
     return template;
   }
 
-  private readFileStatic(url: string) {
-    let fileCache = this.serverSources[url];
-    if (!fileCache) {
-      const source = fs.readFileSync(path.join(this.serverDir, `${this.staticDir}/${url}`), 'utf-8');
-      fileCache = { type: 'file-static', source: JSON.parse(source) };
-      this.serverSources[url] = fileCache;
-    }
-    this.currentPageSource[url] = fileCache;
-    return of(fileCache.source);
+  private readStaticFile(url: string) {
+    return fs.readFileSync(path.join(this.serverDir, `${this.staticDir}/${url}`), 'utf-8');
   }
 
   private factoryVmScript() {
@@ -84,35 +73,34 @@ export class SsrRender {
     return staticAssets;
   }
 
-  private async _render(request: Request) {
+  private async _render(request: Request, isMicro?: boolean) {
     try {
-      const m: any = { exports: {}, require: (modelName: string) => vmModules[modelName]};
+      const m: any = { exports: {}, require: (modelName: string) => vmModules[modelName] };
       if (this.isDevelopment || !this._compiledWrapp) {
         this.factoryVmScript();
       }
-      this.currentPageSource = {};
       this._compiledWrapp(m.exports, m.require, m);
-      return await m.exports.render(this.global);
+      return await m.exports.render({ ...this.global, request }, isMicro);
     } catch (e) {
       console.log(e);
     }
-    return { html: ``, styles: `` };
+    return { html: '', styles: '' };
   }
 
   public async renderMicro(request: Request, response: Response) {
-    this._location = { pathname: '/', search: '?' };
-    const { js, css } = this.readAssets();
-    const { html, styles } = await this._render(request);
-    response.json({ html, styles, js, css });
+    const { html, styles, css, js, fetchData, microFetchData } = await this._render(request, true);
+    microFetchData.push({ microName: 'micro', source: fetchData });
+    response.json({ html, styles, css, js, microFetchData });
   }
 
   public async render(request: Request, response: Response) {
-    this._location = { pathname: request.path, search: '?' };
-    const { styles, html } = await this._render(request);
-    const fetchData = this.getServerFetchData();
+    const { html, styles, css = [], fetchData, microFetchData = [] } = await this._render(request);
+    const _fetchData = `<script id="fetch-static">var serverFetchData = ${fetchData}</script>`;
+    const microData = `<script id="micro-fetch-static">var microFetchData = ${JSON.stringify(microFetchData)}</script>`;
+    const microCss = css.map((href: string) => `<link href="${href}" rel="styleSheet" type="text/css">`).join('');
     const _html = this.readHtmlTemplate()
       .replace('<!-- inner-html -->', html)
-      .replace('<!-- inner-style -->', `${styles}${fetchData}`);
+      .replace('<!-- inner-style -->', `${styles}${microCss}${_fetchData}${microData}`);
     response.send(_html);
   }
 }

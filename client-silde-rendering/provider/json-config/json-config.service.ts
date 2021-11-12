@@ -4,12 +4,13 @@ import { cloneDeep } from 'lodash';
 import { Observable, of } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 
+declare const common: any;
 declare const serverFetchData: any;
 @Injectable()
 export class JsonConfigService implements JsonConfigImplements {
   protected cacheConfig: Map<string, Observable<object>> = new Map();
 
-  constructor(private http: HttpClient) {
+  constructor(protected http: HttpClient) {
     const fetchElement = document.querySelector('#fetch-static');
     if (fetchElement) {
       document.head.removeChild(fetchElement);
@@ -17,6 +18,9 @@ export class JsonConfigService implements JsonConfigImplements {
   }
 
   protected get fetchStatic() {
+    if (typeof common !== 'undefined') {
+      return common.serverFetchData || {};
+    }
     return typeof serverFetchData !== 'undefined' ? serverFetchData : {};
   }
 

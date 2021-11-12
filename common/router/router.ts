@@ -36,6 +36,7 @@ export class CustomRouter {
     const [pathname, query] = this.parse();
     const [{list = [], ...route} = {}] = this.routerList.filter(({ path }: any) => path === pathname);
     const interceptData = this.intercept ? await this.intercept.resolve({ route, pathname, query }) : {};
+    // tslint:disable-next-line:no-object-literal-type-assertion
     this._routeInfo = { list, ...route, path: pathname, props: { pathname, query, ...interceptData }} as RouteInfo;
     this.activeRoute.next(cloneDeep(this._routeInfo));
   }

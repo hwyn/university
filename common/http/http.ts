@@ -11,6 +11,12 @@ export class HttpClient {
   get<T = any>(url: string, params?: RequestInit): Observable<T> {
     const subject = new Subject<T>();
     this.fetch(url, params)
+      .then((res) => {
+        if (res.status !== 200) {
+          throw new Error(`${res.status.toString()}: ${res.statusText}`);
+        }
+        return res;
+      })
       .then(res => res.json())
       .then(data => subject.next(data))
       .catch((error) => subject.error(error))
