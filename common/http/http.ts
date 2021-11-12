@@ -1,4 +1,4 @@
-import { getProvider, Inject, Injectable } from '@di';
+import { getProvider, Injectable } from '@di';
 import { Observable, Subject } from 'rxjs';
 import { FETCH_TOKEN } from '../token';
 

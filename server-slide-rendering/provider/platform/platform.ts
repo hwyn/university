@@ -39,7 +39,6 @@ export class Platform {
       ]);
       this.microMiddlewareList = [];
       this.staticFileSourceList = {};
-
       this.ls.getProvider(HISTORY_TOKEN).location = this.getLocation(request, isMicro);
       const { html, styles } = await render({ request, ...__global });
       const { js = [], css = [] } = readAssets();
@@ -66,18 +65,14 @@ export class Platform {
   }
 
   private mergeMicroToSSR(middleware: MicroMiddleware) {
-    return (options: any) => {
-      const { html = ``, styles = ``, js = [], css = [], microFetchData = [] } = options;
-      return middleware().pipe(
-        map(({ microName, microResult }) => ({
-          html: html.replace(`<!-- ${microName} -->`, microResult.html),
-          styles: styles + microResult.styles,
-          css: css.concat(...microResult.css || []),
-          js: js.concat(...microResult.js || []),
-          microFetchData: microFetchData.concat(...microResult.microFetchData || [])
-        }))
-      );
-    };
+    return ({ html = ``, styles = ``, js = [], css = [], microFetchData = [] }: any) =>
+      middleware().pipe(map(({ microName, microResult }) => ({
+        html: html.replace(`<!-- ${microName} -->`, microResult.html),
+        styles: styles + microResult.styles,
+        css: css.concat(...microResult.css || []),
+        js: js.concat(...microResult.js || []),
+        microFetchData: microFetchData.concat(...microResult.microFetchData || [])
+      })));
   }
 
   private excelMicroMiddleware(options: any): Promise<any> {
