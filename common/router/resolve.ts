@@ -19,12 +19,7 @@ export const serializeRouter = (router: any, parentRouter?: any): RouteInfo[] =>
   if (!isEmpty(children)) {
     return children.reduce((list: any[], r: any) => [
       ...list,
-      ...serializeRouter(r, {
-        ...router,
-        path: routePath,
-        component: Children,
-        list: [...ComponentList]
-      })
+      ...serializeRouter(r, { path: routePath, list: [...ComponentList] })
     ], []);
   }
 

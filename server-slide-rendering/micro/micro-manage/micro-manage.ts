@@ -3,7 +3,7 @@ import { HttpClient } from '@university/common';
 import { MicroManageInterface, MicroStoreInterface } from '@university/font-end-micro/types';
 import { LocatorStorage } from '@university/provider/services';
 import { Observable, of } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
+import { catchError, map, shareReplay } from 'rxjs/operators';
 import { REGISTRY_MICRO_MIDDER, REQUEST_TOKEN } from '../../token/token';
 
 @Injectable()
@@ -17,6 +17,7 @@ export class MicroManage implements MicroManageInterface {
   bootstrapMicro(microName: string): Observable<MicroStoreInterface> {
     const request = this.ls.getProvider<any>(REQUEST_TOKEN);
     const subject = this.http.get(`/${microName}/get-micro${request.path}`).pipe(
+      catchError((error) => of({ html: `${microName}<br/>${error.message}`, styles: '' })),
       map((microResult) => ({ microResult, microName })),
       shareReplay(1)
     );

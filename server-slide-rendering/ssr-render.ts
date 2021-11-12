@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import e, { Request, Response } from 'express';
 import fs from 'fs';
 import NativeModule from 'module';
 import fetch, { RequestInit } from 'node-fetch';
@@ -7,10 +7,7 @@ import vm from 'vm';
 
 const vmModules: { [key: string]: any } = {
   querystring: require('querystring'),
-  stream: require('stream'),
-  buffer: require('buffer'),
-  events: require('events'),
-  util: require('util')
+  stream: require('stream')
 };
 
 export class SsrRender {
@@ -30,8 +27,13 @@ export class SsrRender {
   }
 
   private proxyFetch(url: string, init?: RequestInit) {
-    const _url = `http://127.0.0.1:${this.port}/${url.replace(/^[\/]+/, '')}`;
-    return fetch(_url, init);
+    return fetch(`http://127.0.0.1:${this.port}/${url.replace(/^[\/]+/, '')}`, init).then((res) => {
+      const { status, statusText } = res;
+      if (![404, 504].includes(status)) {
+        return res;
+      }
+      throw new Error(`${status}: ${statusText}`);
+    });
   }
 
   private readHtmlTemplate() {
@@ -81,10 +83,10 @@ export class SsrRender {
       }
       this._compiledWrapp(m.exports, m.require, m);
       return await m.exports.render({ ...this.global, request }, isMicro);
-    } catch (e) {
+    } catch (e: any) {
       console.log(e);
+      return { html: e.message, styles: '' };
     }
-    return { html: '', styles: '' };
   }
 
   public async renderMicro(request: Request, response: Response) {

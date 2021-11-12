@@ -1,7 +1,7 @@
 import { Injectable } from '@di';
 import { MicroManageInterface } from '@university/font-end-micro/types';
 import { Observable } from 'rxjs';
-import { shareReplay, switchMap, tap } from 'rxjs/operators';
+import { shareReplay, switchMap } from 'rxjs/operators';
 import { LoadAssets, StaticAssets } from '../load-assets/load-assets';
 import { MicroStore } from '../micro-store/micro-store';
 

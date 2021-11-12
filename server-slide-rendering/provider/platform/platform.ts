@@ -72,9 +72,9 @@ export class Platform {
         map(({ microName, microResult }) => ({
           html: html.replace(`<!-- ${microName} -->`, microResult.html),
           styles: styles + microResult.styles,
-          css: css.concat(...microResult.css),
-          js: js.concat(...microResult.js),
-          microFetchData: microFetchData.concat(...microResult.microFetchData)
+          css: css.concat(...microResult.css || []),
+          js: js.concat(...microResult.js || []),
+          microFetchData: microFetchData.concat(...microResult.microFetchData || [])
         }))
       );
     };
