@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@di';
-import { HttpClient } from '@university/common';
+import { HISTORY_TOKEN, HttpClient } from '@university/common';
 import { MicroManageInterface, MicroStoreInterface } from '@university/font-end-micro/types';
 import { LocatorStorage } from '@university/provider/services';
 import { Observable, of } from 'rxjs';
 import { catchError, map, shareReplay } from 'rxjs/operators';
-import { REGISTRY_MICRO_MIDDER, REQUEST_TOKEN } from '../../token/token';
+import { PROXY_MICRO_URL, REGISTRY_MICRO_MIDDER } from '../../token';
 
 @Injectable()
 export class MicroManage implements MicroManageInterface {
@@ -15,8 +15,9 @@ export class MicroManage implements MicroManageInterface {
   ) { }
 
   bootstrapMicro(microName: string): Observable<MicroStoreInterface> {
-    const request = this.ls.getProvider<any>(REQUEST_TOKEN);
-    const subject = this.http.get(`/${microName}/get-micro${request.path}`).pipe(
+    const proxyMicroUrl = this.ls.getProvider<any>(PROXY_MICRO_URL);
+    const { location } = this.ls.getProvider(HISTORY_TOKEN);
+    const subject = this.http.get(proxyMicroUrl(microName, location.pathname)).pipe(
       catchError((error) => of({ html: `${microName}<br/>${error.message}`, styles: '' })),
       map((microResult) => ({ microResult, microName })),
       shareReplay(1)

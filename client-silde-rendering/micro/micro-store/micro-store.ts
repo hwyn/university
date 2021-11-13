@@ -13,6 +13,7 @@ export class MicroStore implements MicroStoreInterface {
   private mountedList: any[] = [];
   private documentToLinks: Map<Document, { links: HTMLLinkElement[], quote: number }> = new Map();
   private _renderMicro!: (...args: any[]) => any;
+  public isFirstMounted = true;
 
   constructor(private microName: string, private staticAssets: StaticAssets) { }
 
@@ -54,6 +55,19 @@ export class MicroStore implements MicroStoreInterface {
     }
   }
 
+  private removeSameStyle(ownerDocument: Document) {
+    const styleSheets = Array.prototype.slice.call(ownerDocument.querySelectorAll('style'));
+    const cacheInnerHTML: string[] = [];
+    styleSheets.reverse().forEach((style: HTMLScriptElement) => {
+      const outerHTML = style.outerHTML;
+      if (cacheInnerHTML.find((html) => html === outerHTML)) {
+        (style.parentNode as HTMLElement).removeChild(style);
+      } else {
+        cacheInnerHTML.push(outerHTML);
+      }
+    });
+  }
+
   public exceJavascript(): Observable<MicroStore> {
     const { javascript } = this.staticAssets;
     return forkJoin(javascript.map((src: string) => this.http.getText(src))).pipe(
@@ -78,6 +92,7 @@ export class MicroStore implements MicroStoreInterface {
     cacheLinks.quote += 1;
     const unRender = await this._renderMicro(continer, _options);
     this.mountedList.push({ unRender, continer, document: ownerDocument });
+    this.isFirstMounted = false;
     return unRender;
   }
 
@@ -86,9 +101,10 @@ export class MicroStore implements MicroStoreInterface {
     if (!exMicroInfo) {
       return;
     }
-    const { unRender } = exMicroInfo;
+    const { unRender, document: ownerDocument } = exMicroInfo;
     this.mountedList.splice(this.mountedList.indexOf(exMicroInfo), 1);
-    this.removeLinks(continer.ownerDocument);
     await unRender();
+    this.removeLinks(ownerDocument);
+    this.removeSameStyle(ownerDocument);
   }
 }

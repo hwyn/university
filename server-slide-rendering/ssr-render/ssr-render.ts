@@ -1,25 +1,27 @@
-import e, { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import fs from 'fs';
 import NativeModule from 'module';
 import fetch, { RequestInit } from 'node-fetch';
 import path from 'path';
 import vm from 'vm';
+import { ProxyMicroUrl } from './type-api';
+import { vmModules } from './vm-modules';
 
-const vmModules: { [key: string]: any } = {
-  querystring: require('querystring'),
-  stream: require('stream')
-};
-
-export class SsrRender {
+export class SSRRender {
+  private microName: string;
+  private proxyMicroUrl?: ProxyMicroUrl;
   private code!: string;
   private _compiledWrapp!: any;
   private isDevelopment: boolean = process.env.NODE_ENV === 'development';
-  private staticDir = this.isDevelopment ? '../src/app/assets' : './client';
 
-  constructor(private port: number, private serverDir: string, private entryPath: string) { }
+  constructor(private port: number, private entryFile: string, private assetFile: string, private staticDir: string, options?: any) {
+    this.microName = options && options.microName;
+    this.proxyMicroUrl = options.proxyMicroUrl;
+  }
 
   private get global() {
     return {
+      proxyMicroUrl: this.proxyMicroUrl,
       fetch: this.proxyFetch.bind(this),
       readStaticFile: this.readStaticFile.bind(this),
       readAssets: this.readAssets.bind(this)
@@ -27,7 +29,8 @@ export class SsrRender {
   }
 
   private proxyFetch(url: string, init?: RequestInit) {
-    return fetch(`http://127.0.0.1:${this.port}/${url.replace(/^[\/]+/, '')}`, init).then((res) => {
+    const _url = /http|https/.test(url) ? url : `http://127.0.0.1:${this.port}/${url.replace(/^[\/]+/, '')}`;
+    return fetch(_url, init).then((res) => {
       const { status, statusText } = res;
       if (![404, 504].includes(status)) {
         return res;
@@ -37,7 +40,7 @@ export class SsrRender {
   }
 
   private readHtmlTemplate() {
-    let template = fs.readFileSync(path.join(this.serverDir, `${this.staticDir}/index.html`), 'utf-8');
+    let template = fs.readFileSync(path.join(this.staticDir, 'index.html'), 'utf-8');
     if (this.isDevelopment) {
       const { js } = this.readAssets();
       const hotResource = js.map((src: string) => `<script defer src="${src}"></script>`).join('');
@@ -48,12 +51,12 @@ export class SsrRender {
   }
 
   private readStaticFile(url: string) {
-    return fs.readFileSync(path.join(this.serverDir, `${this.staticDir}/${url}`), 'utf-8');
+    return fs.readFileSync(path.join(this.staticDir, url), 'utf-8');
   }
 
   private factoryVmScript() {
     try {
-      this.code = fs.readFileSync(this.entryPath, 'utf-8');
+      this.code = fs.readFileSync(this.entryFile, 'utf-8');
       const wrapper = NativeModule.wrap(this.code);
       const script = new vm.Script(wrapper, { filename: 'server-entry.js', displayErrors: true });
       const context = vm.createContext({ Buffer, process, console, setTimeout, setInterval });
@@ -64,7 +67,7 @@ export class SsrRender {
   }
 
   private readAssets() {
-    const assetsResult = fs.readFileSync(path.join(this.serverDir, '/client/static/assets.json'), 'utf-8');
+    const assetsResult = fs.readFileSync(this.assetFile, 'utf-8');
     const { entrypoints = {} } = JSON.parse(assetsResult);
     const staticAssets: any = { js: [], css: [] };
     Object.keys(entrypoints).forEach((key: string) => {
@@ -91,7 +94,7 @@ export class SsrRender {
 
   public async renderMicro(request: Request, response: Response) {
     const { html, styles, css, js, fetchData, microFetchData } = await this._render(request, true);
-    microFetchData.push({ microName: 'micro', source: fetchData });
+    microFetchData.push({ microName: this.microName, source: fetchData });
     response.json({ html, styles, css, js, microFetchData });
   }
 

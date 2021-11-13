@@ -1,11 +1,16 @@
 import { getProvider } from '@di';
+import { ElementProps } from '@university/components/builder-element/builder/type-api';
 import { isEmpty } from 'lodash';
 import { useEffect, useRef, useState } from 'react';
 import { filter } from 'rxjs/operators';
 import { MICRO_MANAGER } from './token';
 import { MicroManageInterface, MicroStoreInterface } from './types';
 
-export const forwardMicro = (microName: string) => () => {
+interface MicroProps extends ElementProps {
+  [key: string]: any;
+}
+
+export const forwardMicro = (microName: string) => ({ instance, ...props }: MicroProps) => {
   const ref = useRef<any>();
   const manageMicro = getProvider<MicroManageInterface>(MICRO_MANAGER);
   const ele = typeof document !== 'undefined' && document.querySelector(`[data-micro="${microName}"]`);
@@ -19,11 +24,19 @@ export const forwardMicro = (microName: string) => () => {
 
   useEffect(() => {
     if (application && ref.current) {
-      application.onMounted(ref.current);
-      return () => { application.unMounted(ref.current); };
+      const continer = ref.current;
+      if (instance) {
+        instance.current = application;
+      }
+      application.onMounted(ref.current, props);
+      return () => { application.unMounted(continer); };
     }
   }, [ref.current, application]);
   return (
-    <div data-micro={microName} dangerouslySetInnerHTML={{ __html: ele ? ele.innerHTML : `<!-- ${microName} -->` }} ref={ref} />
+    <div
+      ref={ref}
+      data-micro={microName}
+      dangerouslySetInnerHTML={{ __html: (!application || application.isFirstMounted) && ele ? ele.innerHTML : `<!-- ${microName} -->` }}
+    />
   );
 };

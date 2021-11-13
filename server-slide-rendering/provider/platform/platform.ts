@@ -1,11 +1,11 @@
 import { getProvider, Injectable, JSON_CONFIG, LOCAL_STORAGE, LocatorStorageImplements, registryProvider } from '@di';
 import { FETCH_TOKEN, HISTORY_TOKEN } from '@university/common/token';
-import { MICRO_MANAGER } from '@university/font-end-micro/token';
+import { IS_MICRO, MICRO_MANAGER } from '@university/font-end-micro/token';
 import { LocatorStorage } from '@university/provider/services';
 import { Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-import { MicroManage } from '../../micro/micro-manage/micro-manage';
-import { READ_FILE_STATIC, REGISTRY_MICRO_MIDDER, REQUEST_TOKEN } from '../../token/token';
+import { MicroManage } from '../../micro';
+import { PROXY_MICRO_URL, READ_FILE_STATIC, REGISTRY_MICRO_MIDDER, REQUEST_TOKEN } from '../../token';
 import { JsonConfigService } from '../json-config/json-config.service';
 
 type Render = (...args: any[]) => Promise<{ html: string, styles: string }>;
@@ -29,11 +29,13 @@ export class Platform {
   }
 
   bootstrapRender(render: Render) {
-    return async (_global: any, isMicro?: boolean) => {
-      const { fetch, request, location, readAssets, readStaticFile, ...__global } = _global;
+    return async (_global: any, isMicro: boolean = false) => {
+      const { fetch, request, location, readAssets, readStaticFile, proxyMicroUrl, ...__global } = _global;
       registryProvider([
+        { provide: IS_MICRO, useValue: isMicro },
         { provide: FETCH_TOKEN, useValue: fetch },
         { provide: REQUEST_TOKEN, useValue: request },
+        { provide: PROXY_MICRO_URL, useValue: proxyMicroUrl },
         { provide: READ_FILE_STATIC, useValue: this.proxyReadStaticFile(readStaticFile) },
         { provide: REGISTRY_MICRO_MIDDER, useValue: this.registryMicroMiddleware.bind(this) }
       ]);
@@ -87,6 +89,6 @@ export class Platform {
 
   private getLocation(request: any, isMicro?: boolean) {
     const { pathname = '/' } = request.params;
-    return { pathname: isMicro ? pathname : request.path, search: '?' };
+    return { pathname: isMicro ? `/${pathname}` : request.path, search: '?' };
   }
 }
