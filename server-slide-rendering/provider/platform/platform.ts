@@ -40,7 +40,7 @@ export class Platform {
         { provide: REGISTRY_MICRO_MIDDER, useValue: this.registryMicroMiddleware.bind(this) }
       ]);
       this.microMiddlewareList = [];
-      this.staticFileSourceList = {};
+      this.currentPageFileSourceList = {};
       this.ls.getProvider(HISTORY_TOKEN).location = this.getLocation(request, isMicro);
       const { html, styles } = await render({ request, ...__global });
       const { js = [], css = [] } = readAssets();
@@ -57,8 +57,7 @@ export class Platform {
     return (url: string) => {
       let fileCache = this.staticFileSourceList[url];
       if (!fileCache) {
-        const source = readStaticFile(url);
-        fileCache = { type: 'file-static', source: JSON.parse(source) };
+        fileCache = { type: 'file-static', source: JSON.parse(readStaticFile(url)) };
         this.staticFileSourceList[url] = fileCache;
       }
       this.currentPageFileSourceList[url] = fileCache;

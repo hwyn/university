@@ -21,7 +21,7 @@ export class LoadAssets {
   }
 
   public readMicroStatic(microName: string): Observable<any> {
-    return this.http.get(`/${microName}/static/assets.json`).pipe(
+    return this.http.get(`/v1/${microName}/static/assets.json`).pipe(
       map((result: any) => this.parseStatic(result.entrypoints))
     );
   }

@@ -2,10 +2,12 @@ import { getProvider, Injectable, LOCAL_STORAGE, LocatorStorageImplements, regis
 import { FETCH_TOKEN, RENDER_SSR } from '@university/common/token';
 import { IS_MICRO, MICRO_MANAGER } from '@university/font-end-micro/token';
 import { LocatorStorage } from '@university/provider/services';
+import { RESOURCE_TOKEN } from '../../token';
 
 type Render = (...args: any[]) => Promise<(continer: HTMLElement) => void>;
 
 declare const common: any;
+declare const serverFetchData: any;
 
 @Injectable()
 export class Platform {
@@ -14,9 +16,11 @@ export class Platform {
     registryProvider([
       { provide: LOCAL_STORAGE, useClass: LocatorStorage },
       { provide: FETCH_TOKEN, useValue: fetch.bind(window) },
+      { provide: RESOURCE_TOKEN, useValue: this.resource },
       { provide: IS_MICRO, useValue: this.isMicro }
     ]);
     this.ls = getProvider<LocatorStorageImplements>(LOCAL_STORAGE);
+    this.resourceExtraction();
   }
 
   bootstrapRender(render: Render) {
@@ -32,7 +36,21 @@ export class Platform {
     return render(continer, _options);
   }
 
+  private resourceExtraction() {
+    const fetchElement = document.querySelector('#fetch-static');
+    if (fetchElement) {
+      document.head.removeChild(fetchElement);
+    }
+  }
+
   private get isMicro() {
     return typeof common !== 'undefined';
+  }
+
+  private get resource() {
+    if (this.isMicro) {
+      return common.serverFetchData || {};
+    }
+    return typeof serverFetchData !== 'undefined' ? serverFetchData : {};
   }
 }
