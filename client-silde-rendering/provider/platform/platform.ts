@@ -14,10 +14,10 @@ export class Platform {
   private ls!: LocatorStorageImplements;
   constructor() {
     registryProvider([
+      { provide: IS_MICRO, useValue: this.isMicro },
       { provide: LOCAL_STORAGE, useClass: LocatorStorage },
       { provide: FETCH_TOKEN, useValue: fetch.bind(window) },
-      { provide: RESOURCE_TOKEN, useValue: this.resource },
-      { provide: IS_MICRO, useValue: this.isMicro }
+      { provide: RESOURCE_TOKEN, useValue: this.resource }
     ]);
     this.ls = getProvider<LocatorStorageImplements>(LOCAL_STORAGE);
     this.resourceExtraction();

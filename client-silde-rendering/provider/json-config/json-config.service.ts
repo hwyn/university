@@ -9,11 +9,7 @@ import { RESOURCE_TOKEN } from '../../token';
 export class JsonConfigService implements JsonConfigImplements {
   protected cacheConfig: Map<string, Observable<object>> = new Map();
 
-  constructor(@Inject(RESOURCE_TOKEN) private fetchStatic: any, protected http: HttpClient) {
-    const fetchElement = document.querySelector('#fetch-static');
-    if (fetchElement) {
-      document.head.removeChild(fetchElement);
-    }
+  constructor(@Inject(RESOURCE_TOKEN) protected fetchStatic: any, protected http: HttpClient) {
   }
 
   protected getServerFetchData(url: string): Observable<object> {
