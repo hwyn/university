@@ -2,7 +2,7 @@ import { getProvider, Injectable, LOCAL_STORAGE, LocatorStorageImplements, regis
 import { FETCH_TOKEN, RENDER_SSR } from '@university/common/token';
 import { IS_MICRO, MICRO_MANAGER } from '@university/font-end-micro/token';
 import { LocatorStorage } from '@university/provider/services';
-import { RESOURCE_TOKEN } from '../../token';
+import { INSERT_STYLE_CONTAINER, RESOURCE_TOKEN } from '../../token';
 
 type Render = (...args: any[]) => Promise<(continer: HTMLElement) => void>;
 
@@ -17,7 +17,8 @@ export class Platform {
       { provide: IS_MICRO, useValue: this.isMicro },
       { provide: LOCAL_STORAGE, useClass: LocatorStorage },
       { provide: FETCH_TOKEN, useValue: fetch.bind(window) },
-      { provide: RESOURCE_TOKEN, useValue: this.resource }
+      { provide: RESOURCE_TOKEN, useValue: this.resource },
+      { provide: INSERT_STYLE_CONTAINER, useValue: document.head }
     ]);
     this.ls = getProvider<LocatorStorageImplements>(LOCAL_STORAGE);
     this.resourceExtraction();
@@ -29,11 +30,13 @@ export class Platform {
 
   private async proxyRender(render: Render, continer: HTMLElement, options: any) {
     const { microManage, ..._options } = options;
+    const head = continer.shadowRoot?.querySelector('[data-app="head"]');
     registryProvider([
       { provide: RENDER_SSR, useValue: true },
-      { provide: MICRO_MANAGER, useValue: microManage }
+      { provide: MICRO_MANAGER, useValue: microManage },
+      { provide: INSERT_STYLE_CONTAINER, useValue: head || document.head }
     ]);
-    return render(continer, _options);
+    return render(continer.shadowRoot?.querySelector('[data-app="body"]'), _options);
   }
 
   private resourceExtraction() {

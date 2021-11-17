@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { createElement, useEffect, useRef } from 'react';
 import { useMicro } from './hooks/use-micro';
 
 interface MicroProps { [key: string]: any; }
@@ -19,5 +19,5 @@ export const forwardMicro = (microName: string) => ({ instance, ...props }: Micr
     return () => { application.unMounted(continer); };
   }, [ref.current, application]);
 
-  return <div ref={ref} data-micro={microName} dangerouslySetInnerHTML={{ __html: `<!-- ${microName} -->` }} />;
+  return createElement(`${microName}-tag`, { ref });
 };

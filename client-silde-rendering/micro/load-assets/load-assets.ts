@@ -1,6 +1,6 @@
 import { Injectable } from '@di';
 import { HttpClient } from '@university/common';
-import { Observable } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 export interface StaticAssets { javascript: string[]; links: string[]; }
@@ -24,5 +24,9 @@ export class LoadAssets {
     return this.http.get(`/source/${microName}/static/assets.json`).pipe(
       map((result: any) => this.parseStatic(result.entrypoints))
     );
+  }
+
+  public reeadLinkToStyles(links: string[]) {
+    return forkJoin(links.map((href) => this.http.getText(href)));
   }
 }

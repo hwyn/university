@@ -1,0 +1,47 @@
+export const createMicroElementTemplate = (microName: string, options: any) => {
+  const { initHtml = '', initStyle = '', linkToStyles = [] } = options;
+  const classTemplate = `
+    (function() {
+      let initStyle = '${initStyle.replace(/\"/g, '\"').replace(/\n/g, '')}';
+      let initHtml = '${initHtml.replace(/\"/g, '\"').replace(/\n/g, '')}';
+      class Micro${microName}Element extends HTMLElement {
+        constructor() {
+          super();
+          const shadow = this.attachShadow({ mode: 'open' });
+          const head = this.createHead();
+          shadow.appendChild(head);
+          shadow.appendChild(this.createBody());
+          this.appendStyleNode(head);
+        }
+
+        createHead() {
+          const head = document.createElement('div');
+          head.setAttribute('data-app', 'head')
+          head.innerHTML = initStyle;
+          initStyle = '';
+          return head;
+        }
+
+        createBody() {
+          const body = document.createElement('div');
+          body.setAttribute('data-app', 'body')
+          body.innerHTML = initHtml;
+          initHtml = '';
+          return body;
+        }
+
+        appendStyleNode(container) {
+          const beforeNode = container.firstChild;
+          ${JSON.stringify(linkToStyles)}.forEach(function(styleText) {
+            const style = document.createElement('style');
+            style.appendChild(document.createTextNode(styleText));
+            container.insertBefore(style, beforeNode);
+          });
+        }
+      }
+      customElements.define('${microName}-tag', Micro${microName}Element);
+    })();
+  `;
+
+  return classTemplate;
+};

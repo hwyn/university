@@ -69,11 +69,11 @@ export class SSRRender {
   private readAssets() {
     const assetsResult = fs.readFileSync(this.assetFile, 'utf-8');
     const { entrypoints = {} } = JSON.parse(assetsResult);
-    const staticAssets: any = { js: [], css: [] };
+    const staticAssets: any = { js: [], links: [], linksToStyle: [] };
     Object.keys(entrypoints).forEach((key: string) => {
       const { js = [], css = [] } = entrypoints[key].assets as { js: string[], css: string[] };
       staticAssets.js.push(...js);
-      staticAssets.css.push(...css);
+      staticAssets.links.push(...css);
     });
     return staticAssets;
   }
@@ -93,19 +93,19 @@ export class SSRRender {
   }
 
   public async renderMicro(request: Request, response: Response) {
-    const { html, styles, css, js, fetchData, microFetchData } = await this._render(request, true);
+    const { html, styles, links, js, fetchData, microTags, microFetchData = [] } = await this._render(request, true);
     microFetchData.push({ microName: this.microName, source: fetchData });
-    response.json({ html, styles, css, js, microFetchData });
+    response.json({ html, styles, links, js, microTags, microFetchData });
   }
 
   public async render(request: Request, response: Response) {
-    const { html, styles, css = [], fetchData, microFetchData = [] } = await this._render(request);
+    const { html, styles, links = [], fetchData, microTags = [], microFetchData = [] } = await this._render(request);
     const _fetchData = `<script id="fetch-static">var serverFetchData = ${fetchData}</script>`;
     const microData = `<script id="micro-fetch-static">var microFetchData = ${JSON.stringify(microFetchData)}</script>`;
-    const microCss = css.map((href: string) => `<link href="${href}" rel="styleSheet" type="text/css">`).join('');
+    const microCss = links.map((href: string) => `<link href="${href}" rel="styleSheet" type="text/css">`).join('');
     const _html = this.readHtmlTemplate()
       .replace('<!-- inner-html -->', html)
-      .replace('<!-- inner-style -->', `${styles}${microCss}${_fetchData}${microData}`);
+      .replace('<!-- inner-style -->', `${styles}${microCss}${microTags.join('')}${_fetchData}${microData}`);
     response.send(_html);
   }
 }
