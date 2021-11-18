@@ -11,12 +11,12 @@ export const forwardMicro = (microName: string) => ({ instance, ...props }: Micr
     if (!application || !ref.current) {
       return;
     }
-    const continer = ref.current;
+    const container = ref.current;
     if (instance) {
       instance.current = application;
     }
     application.onMounted(ref.current, props);
-    return () => { application.unMounted(continer); };
+    return () => { application.unMounted(container); };
   }, [ref.current, application]);
 
   return createElement(`${microName}-tag`, { ref });

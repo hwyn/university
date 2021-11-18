@@ -2,8 +2,8 @@ import { Observable } from 'rxjs';
 
 export interface MicroStoreInterface {
   isFirstMounted?: boolean;
-  onMounted(continer: HTMLElement, options?: any): Promise<any>;
-  unMounted(continer: HTMLElement): Promise<any>;
+  onMounted(container: HTMLElement, options?: any): Promise<any>;
+  unMounted(container: HTMLElement): Promise<any>;
 }
 
 export interface MicroManageInterface {

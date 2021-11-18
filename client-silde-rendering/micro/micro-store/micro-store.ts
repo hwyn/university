@@ -40,17 +40,17 @@ export class MicroStore implements MicroStoreInterface {
     );
   }
 
-  public async onMounted(continer: HTMLElement, options?: any): Promise<any> {
-    const ownerDocument = continer.ownerDocument;
+  public async onMounted(container: HTMLElement, options?: any): Promise<any> {
+    const ownerDocument = container.ownerDocument;
     const _options = { ...options, microManage: getProvider(MICRO_MANAGER) };
-    const unRender = await this._renderMicro(continer, _options);
-    this.mountedList.push({ unRender, continer, document: ownerDocument });
+    const unRender = await this._renderMicro(container, _options);
+    this.mountedList.push({ unRender, container, document: ownerDocument });
     this.isFirstMounted = false;
     return unRender;
   }
 
-  public async unMounted(continer: HTMLElement) {
-    const [exMicroInfo] = this.mountedList.filter((c) => continer === c.continer);
+  public async unMounted(container: HTMLElement) {
+    const [exMicroInfo] = this.mountedList.filter((c) => container === c.container);
     if (!exMicroInfo) {
       return;
     }

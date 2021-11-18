@@ -4,6 +4,7 @@ export const createMicroElementTemplate = (microName: string, options: any) => {
     (function() {
       let initStyle = '${initStyle.replace(/\"/g, '\"').replace(/\n/g, '')}';
       let initHtml = '${initHtml.replace(/\"/g, '\"').replace(/\n/g, '')}';
+      let styleLoadPushStyle = [];
       class Micro${microName}Element extends HTMLElement {
         constructor() {
           super();
@@ -16,8 +17,15 @@ export const createMicroElementTemplate = (microName: string, options: any) => {
 
         createHead() {
           const head = document.createElement('div');
-          head.setAttribute('data-app', 'head')
+          const _appendChild = head.appendChild.bind(head);
+          head.setAttribute('data-app', 'head');
           head.innerHTML = initStyle;
+          head.appendChild = function(style) {
+            if (style.getAttribute('data-micro') === '${microName}') {
+              styleLoadPushStyle.push(style);
+            }
+            return _appendChild(style);
+          }
           initStyle = '';
           return head;
         }
@@ -32,6 +40,9 @@ export const createMicroElementTemplate = (microName: string, options: any) => {
 
         appendStyleNode(container) {
           const beforeNode = container.firstChild;
+          styleLoadPushStyle.forEach(function(style) {
+            container.insertBefore(style, beforeNode);
+          });
           ${JSON.stringify(linkToStyles)}.forEach(function(styleText) {
             const style = document.createElement('style');
             style.appendChild(document.createTextNode(styleText));

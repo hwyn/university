@@ -4,7 +4,7 @@ import { IS_MICRO, MICRO_MANAGER } from '@university/font-end-micro/token';
 import { LocatorStorage } from '@university/provider/services';
 import { INSERT_STYLE_CONTAINER, RESOURCE_TOKEN } from '../../token';
 
-type Render = (...args: any[]) => Promise<(continer: HTMLElement) => void>;
+type Render = (...args: any[]) => Promise<(container: HTMLElement) => void>;
 
 declare const common: any;
 declare const serverFetchData: any;
@@ -28,15 +28,15 @@ export class Platform {
     this.isMicro ? common.render = this.proxyRender.bind(this, render) : render();
   }
 
-  private async proxyRender(render: Render, continer: HTMLElement, options: any) {
+  private async proxyRender(render: Render, container: HTMLElement, options: any) {
     const { microManage, ..._options } = options;
-    const head = continer.shadowRoot?.querySelector('[data-app="head"]');
+    const head = container.shadowRoot?.querySelector('[data-app="head"]');
     registryProvider([
       { provide: RENDER_SSR, useValue: true },
       { provide: MICRO_MANAGER, useValue: microManage },
       { provide: INSERT_STYLE_CONTAINER, useValue: head || document.head }
     ]);
-    return render(continer.shadowRoot?.querySelector('[data-app="body"]'), _options);
+    return render(container.shadowRoot?.querySelector('[data-app="body"]'), _options);
   }
 
   private resourceExtraction() {
