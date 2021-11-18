@@ -102,10 +102,9 @@ export class SSRRender {
     const { html, styles, links = [], fetchData, microTags = [], microFetchData = [] } = await this._render(request);
     const _fetchData = `<script id="fetch-static">var serverFetchData = ${fetchData}</script>`;
     const microData = `<script id="micro-fetch-static">var microFetchData = ${JSON.stringify(microFetchData)}</script>`;
-    const microCss = links.map((href: string) => `<link href="${href}" rel="styleSheet" type="text/css">`).join('');
     const _html = this.readHtmlTemplate()
       .replace('<!-- inner-html -->', html)
-      .replace('<!-- inner-style -->', `${styles}${microCss}${microTags.join('')}${_fetchData}${microData}`);
+      .replace('<!-- inner-style -->', `${styles}${microTags.join('')}${_fetchData}${microData}`);
     response.send(_html);
   }
 }
