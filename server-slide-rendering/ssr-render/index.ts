@@ -1,17 +1,14 @@
+import { Router } from 'express';
 import { SSRRender } from './ssr-render';
 import { SSROptions } from './type-api';
 
-function factorySSR({ port, assetFile, staticDir, entryFile, ...other }: SSROptions) {
-  return new SSRRender(port, entryFile, assetFile, staticDir, other);
-}
-
-export default factorySSR;
-export const render = (options: SSROptions) => {
-  const ssr = factorySSR(options);
-  return ssr.render.bind(ssr);
+const ssrMiiddleware = (entryFile: string, options: SSROptions): Router => {
+  const router = Router();
+  const ssr = new SSRRender(entryFile, options);
+  router.get('/micro-ssr/:pathname', ssr.renderMicro.bind(ssr));
+  router.get('/micro-ssr/*', ssr.renderMicro.bind(ssr));
+  router.get('*', ssr.render.bind(ssr));
+  return router;
 };
 
-export const renderMicro = (options: SSROptions) => {
-  const ssr = factorySSR(options);
-  return ssr.renderMicro.bind(ssr);
-};
+export default ssrMiiddleware;

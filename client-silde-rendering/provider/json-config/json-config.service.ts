@@ -1,31 +1,19 @@
-import { Inject, Injectable, JsonConfigImplements } from '@di';
+import { Inject, Injectable, LOCAL_STORAGE, LocatorStorageImplements } from '@di';
 import { HttpClient } from '@university/common';
-import { cloneDeep } from 'lodash';
+import { AbstractJsonConfigService } from '@university/provider/services';
 import { Observable, of } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
 import { RESOURCE_TOKEN } from '../../token';
 
 @Injectable()
-export class JsonConfigService implements JsonConfigImplements {
+export class JsonConfigService extends AbstractJsonConfigService {
   protected cacheConfig: Map<string, Observable<object>> = new Map();
+  protected http: HttpClient = this.ls.getProvider(HttpClient);
 
-  constructor(@Inject(RESOURCE_TOKEN) protected fetchStatic: any, protected http: HttpClient) {
+  constructor(@Inject(LOCAL_STORAGE) protected ls: LocatorStorageImplements) {
+    super(ls);
   }
 
   protected getServerFetchData(url: string): Observable<object> {
-    const fetchData = this.fetchStatic[url];
-    return fetchData && fetchData.type === 'file-static' ? of(fetchData.source) : this.http.get<object>(url);
-  }
-
-  public getJsonConfig(url: string): Observable<object> {
-    let subject = this.cacheConfig.get(url);
-    if (!subject) {
-      subject = this.getServerFetchData(url).pipe(
-        shareReplay(1),
-        map((json) => cloneDeep(json))
-      );
-      this.cacheConfig.set(url, subject);
-    }
-    return subject;
+    return this.http.get<object>(url);
   }
 }

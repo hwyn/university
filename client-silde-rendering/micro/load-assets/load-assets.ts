@@ -1,17 +1,30 @@
 import { Injectable } from '@di';
+import { createMicroElementTemplate } from '@font-end-micro/utils';
 import { HttpClient } from '@university/common';
+import { isEmpty } from 'lodash';
 import { forkJoin, Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, switchMap, tap } from 'rxjs/operators';
 
-export interface StaticAssets { javascript: string[]; links: string[]; }
+export interface StaticAssets { javascript: string[]; links: string[]; fetchCacheData: { [url: string]: any }; }
+
+declare const microFetchData: any[];
 
 @Injectable()
 export class LoadAssets {
-  constructor(private http: HttpClient) { }
+  private cacheServerData: [{ microName: string, source: string }];
+  constructor(private http: HttpClient) {
+    this.cacheServerData = this.initialCacheServerData();
+  }
 
-  private parseStatic(entryPoints: { [key: string]: any }): StaticAssets {
+  private initialCacheServerData(): any {
+    return typeof microFetchData !== 'undefined' ? microFetchData : [];
+  }
+
+  private parseStatic(microName: string, entryPoints: { [key: string]: any }): StaticAssets {
     const entryKeys = Object.keys(entryPoints);
-    const staticAssets: StaticAssets = { javascript: [], links: [] };
+    const microData = this.cacheServerData.find(({ microName: _microName }) => microName === _microName);
+    const fetchCacheData = microData ? JSON.parse(microData.source) : {};
+    const staticAssets: StaticAssets = { javascript: [], links: [], fetchCacheData };
     entryKeys.forEach((staticKey: string) => {
       const { js: staticJs = [], css: staticLinks = [] } = entryPoints[staticKey].assets;
       staticAssets.javascript.push(...staticJs);
@@ -20,13 +33,29 @@ export class LoadAssets {
     return staticAssets;
   }
 
+  private createMicroTag(microName: string, staticAssets: StaticAssets) {
+    const tag = document.createElement(`${microName}-tag`);
+    if (tag && tag.shadowRoot) {
+      return of(staticAssets);
+    }
+
+    return this.reeadLinkToStyles(staticAssets.links).pipe(
+      tap((linkToStyles: string[]) => {
+        // tslint:disable-next-line:function-constructor
+        new Function(createMicroElementTemplate(microName, { linkToStyles }))();
+      }),
+      map(() => staticAssets)
+    );
+  }
+
   public readMicroStatic(microName: string): Observable<any> {
-    return this.http.get(`/source/${microName}/static/assets.json`).pipe(
-      map((result: any) => this.parseStatic(result.entrypoints))
+    return this.http.get(`/static/${microName}/static/assets.json`).pipe(
+      map((result: any) => this.parseStatic(microName, result.entrypoints)),
+      switchMap((result: StaticAssets) => this.createMicroTag(microName, result))
     );
   }
 
   public reeadLinkToStyles(links: string[]) {
-    return forkJoin(links.map((href) => this.http.getText(href)));
+    return isEmpty(links) ? of(links) : forkJoin(links.map((href) => this.http.getText(href)));
   }
 }

@@ -5,7 +5,7 @@ import { LocatorStorage } from '@university/provider/services';
 import { Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { MicroManage } from '../../micro';
-import { PROXY_MICRO_URL, READ_FILE_STATIC, REGISTRY_MICRO_MIDDER, REQUEST_TOKEN } from '../../token';
+import { PROXY_HOST, READ_FILE_STATIC, REGISTRY_MICRO_MIDDER, REQUEST_TOKEN, SSR_MICRO_PATH } from '../../token';
 import { JsonConfigService } from '../json-config/json-config.service';
 
 type Render = (...args: any[]) => Promise<{ html: string, styles: string }>;
@@ -29,28 +29,33 @@ export class Platform {
   }
 
   bootstrapRender(render: Render) {
-    return async (_global: any, isMicro: boolean = false) => {
-      const { fetch, request, location, readAssets, readStaticFile, proxyMicroUrl, ...__global } = _global;
+    return async (global: any, isMicro: boolean = false) => {
+      const { fetch, request, location, readAssets, readStaticFile, proxyHost, ssrMicroPath, ..._global } = global;
       registryProvider([
         { provide: IS_MICRO, useValue: isMicro },
-        { provide: FETCH_TOKEN, useValue: fetch },
+        { provide: PROXY_HOST, useValue: proxyHost },
         { provide: REQUEST_TOKEN, useValue: request },
-        { provide: PROXY_MICRO_URL, useValue: proxyMicroUrl },
+        { provide: SSR_MICRO_PATH, useValue: ssrMicroPath },
+        { provide: FETCH_TOKEN, useValue: this.proxyFetch(fetch) },
         { provide: READ_FILE_STATIC, useValue: this.proxyReadStaticFile(readStaticFile) },
         { provide: REGISTRY_MICRO_MIDDER, useValue: this.registryMicroMiddleware.bind(this) }
       ]);
       this.microMiddlewareList = [];
       this.currentPageFileSourceList = {};
       this.ls.getProvider(HISTORY_TOKEN).location = this.getLocation(request, isMicro);
-      const { html, styles } = await render({ request, ...__global });
-      const { js = [], links = [], linksToStyle = [] } = readAssets();
+      const { js = [], links = [] } = readAssets();
+      const { html, styles } = await render({ request, ..._global });
       const excelResult = await this.excelMicroMiddleware({ html, styles, js, links, microTags: [], microFetchData: [] });
-      return { ...excelResult, linksToStyle, fetchData: this.getStaticFileData() };
+      return { ...excelResult, fetchData: this.getStaticFileData() };
     };
   }
 
   private getStaticFileData() {
     return JSON.stringify(this.currentPageFileSourceList);
+  }
+
+  private proxyFetch(fetch: any) {
+    return (...args: any[]) => fetch(...args);
   }
 
   private proxyReadStaticFile(readStaticFile: (url: string) => string) {
@@ -70,8 +75,8 @@ export class Platform {
       middleware().pipe(map(({ microName, microResult }) => ({
         html: html.replace(`<!-- ${microName} -->`, microResult.html),
         styles: styles + microResult.styles,
-        links: links.concat(...microResult.links || []),
         js: js.concat(...microResult.js || []),
+        links: links.concat(...microResult.links || []),
         microTags: microTags.concat(...microResult.microTags || []),
         microFetchData: microFetchData.concat(...microResult.microFetchData || [])
       })));

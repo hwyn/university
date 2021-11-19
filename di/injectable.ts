@@ -1,9 +1,9 @@
-import { toArray } from 'lodash';
 import { StaticInjector, __PROVIDER_TYPE__, __USECLASS__ } from './injector';
 import { InjectorToken } from './injector-token';
 import { Provider, Type } from './type-api';
 
 const injector = new StaticInjector();
+const toArray = (obj: any) => Array.isArray(obj) ? obj : [obj];
 
 const InjectableFactory = (defaultToken?: InjectorToken, defaultOptions?: object) =>
   (token?: InjectorToken, options?: object) => <T>(target: Type<T>): Type<T> => {
