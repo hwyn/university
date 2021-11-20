@@ -1,5 +1,5 @@
+import { APPLICATION_CONTAINER } from '@client-silde-rendering/token';
 import MatPopover, { PopoverProps as MatPopoverProps } from '@mui/material/Popover';
-import { APPLICATION_CONTAINER } from '@university/client-silde-rendering/token';
 import React from 'react';
 import { Builder, ElementProps } from '../../builder-element';
 

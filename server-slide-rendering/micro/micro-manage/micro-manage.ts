@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@di';
 import { MicroManageInterface, MicroStoreInterface } from '@font-end-micro/types';
-import { createMicroElementTemplate } from '@font-end-micro/utils';
+import { createMicroElementTemplate, templateZip } from '@font-end-micro/utils';
 import { HISTORY_TOKEN, HttpClient } from '@university/common';
 import { LocatorStorage } from '@university/provider/services';
 import { isEmpty } from 'lodash';
@@ -10,6 +10,8 @@ import { PROXY_HOST, REGISTRY_MICRO_MIDDER, SSR_MICRO_PATH } from '../../token';
 
 @Injectable()
 export class MicroManage implements MicroManageInterface {
+  private microCache: Map<string, Observable<any>> = new Map();
+
   constructor(
     private http: HttpClient,
     private ls: LocatorStorage,
@@ -17,17 +19,22 @@ export class MicroManage implements MicroManageInterface {
   ) { }
 
   bootstrapMicro(microName: string): Observable<MicroStoreInterface> {
-    const proxyMicroUrl = this.ls.getProvider<any>(SSR_MICRO_PATH);
-    const { location: { pathname } } = this.ls.getProvider(HISTORY_TOKEN);
-    const microPath = `/micro-ssr/${pathname}`.replace(/[\/]+/, '/');
-    const subject = this.http.get(proxyMicroUrl(microName, microPath)).pipe(
-      catchError((error) => of({ html: `${microName}<br/>${error.message}`, styles: '' })),
-      switchMap((microResult) => this.reeadLinkToStyles(microName, microResult)),
-      map((microResult) => ({ microResult: this.createMicroTag(microName, microResult), microName })),
-      shareReplay(1)
-    );
-    subject.subscribe(() => { }, () => { });
-    this.registryParseHtmlMidde(() => subject);
+    let subject = this.microCache.get(microName);
+    if (!subject) {
+      const proxyMicroUrl = this.ls.getProvider<any>(SSR_MICRO_PATH);
+      const { location: { pathname } } = this.ls.getProvider(HISTORY_TOKEN);
+      const microPath = `/micro-ssr/${pathname}`.replace(/[\/]+/, '/');
+      subject = this.http.get(proxyMicroUrl(microName, microPath)).pipe(
+        catchError((error) => of({ html: `${microName}<br/>${error.message}`, styles: '' })),
+        switchMap((microResult) => this.reeadLinkToStyles(microName, microResult)),
+        map((microResult) => ({ microResult: this.createMicroTag(microName, microResult), microName })),
+        shareReplay(1)
+      );
+      subject.subscribe(() => { }, () => { });
+      this.registryParseHtmlMidde(() => subject);
+      this.microCache.set(microName, subject);
+    }
+
     return of(null as any);
   }
 
@@ -42,13 +49,13 @@ export class MicroManage implements MicroManageInterface {
   private createMicroTag(microName: string, microResult: any) {
     const { html, styles, linkToStyles, microTags = [] } = microResult;
     const template = createMicroElementTemplate(microName, { initHtml: html, initStyle: styles, linkToStyles });
-    microTags.push(`<script id="create-${microName}-tag">${template}
+    microTags.push(templateZip(`<script id="create-${microName}-tag">{template}
         (function() {
           const script = document.getElementById('create-${microName}-tag');
           script.parentNode.removeChild(script)
         })();
       </script>
-    `);
+    `, { template }));
     return { ...microResult, html: '', links: [], styles: '', microTags };
   }
 }

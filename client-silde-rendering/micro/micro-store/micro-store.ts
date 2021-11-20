@@ -1,17 +1,17 @@
+import { MICRO_MANAGER } from '@font-end-micro/token';
+import { MicroStoreInterface } from '@font-end-micro/types';
 import { HttpClient } from '@university/common';
 import { getProvider } from '@university/di';
-import { MICRO_MANAGER } from '@university/font-end-micro/token';
-import { MicroStoreInterface } from '@university/font-end-micro/types';
-import { forkJoin, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { StaticAssets } from '../load-assets/load-assets';
 
 export class MicroStore implements MicroStoreInterface {
   private http = getProvider(HttpClient);
   private mountedList: any[] = [];
-  private _renderMicro!: (...args: any[]) => any;
+  private _renderMicro!: (...args: any[]) => Promise<any>;
 
-  constructor(private microName: string, private staticAssets: StaticAssets) { }
+  constructor(private microName: string, private staticAssets: StaticAssets) {
+    this._renderMicro = this.exceJavascript();
+  }
 
   public async onMounted(container: HTMLElement, options?: any): Promise<any> {
     const ownerDocument = container.ownerDocument;
@@ -31,18 +31,13 @@ export class MicroStore implements MicroStoreInterface {
     await unRender();
   }
 
-  public exceJavascript(): Observable<MicroStore> {
+  public exceJavascript(): (...args: any[]) => Promise<any> {
     const { javascript, fetchCacheData } = this.staticAssets;
-    return forkJoin(javascript.map((src: string) => this.http.getText(src))).pipe(
-      map((sources: string[]) => {
-        const microStore: any = { render: () => void (0) };
-        sources.forEach((source: string) => {
-          // tslint:disable-next-line:function-constructor
-          new Function('microStore', 'fetchCacheData', source)(microStore, fetchCacheData);
-        });
-        this._renderMicro = microStore.render;
-        return this;
-      })
-    );
+    const microStore: any = { render: () => void (0) };
+    javascript.forEach((source: string) => {
+      // tslint:disable-next-line:function-constructor
+      new Function('microStore', 'fetchCacheData', source)(microStore, fetchCacheData);
+    });
+    return microStore.render;
   }
 }

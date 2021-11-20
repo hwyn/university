@@ -1,6 +1,6 @@
+import { APPLICATION_CONTAINER } from '@client-silde-rendering/token';
 import MenuItem from '@mui/material/MenuItem';
 import MatSelect, { SelectProps as MatSelectProps } from '@mui/material/Select';
-import { APPLICATION_CONTAINER } from '@university/client-silde-rendering/token';
 import React from 'react';
 import { ElementProps } from '../../builder-element';
 import { BootstrapInput } from './mat-scss';

@@ -18,11 +18,12 @@ export class SSRRender {
   private isDevelopment: boolean = process.env.NODE_ENV === 'development';
 
   constructor(private entryFile: string, options: SSROptions) {
-    this.assetFile = options.assetFile;
-    this.staticDir = options.staticDir;
-    this.microName = options && options.microName || '';
-    this.host = options?.proxyTarget || 'http://127.0.0.1:3000';
-    this.ssrMicroPath = options.ssrMicroPath;
+    const { assetFile, staticDir, microName, proxyTarget = 'http://127.0.0.1:3000', ssrMicroPath } = options;
+    this.assetFile = assetFile;
+    this.staticDir = staticDir;
+    this.microName = microName || '';
+    this.host = proxyTarget;
+    this.ssrMicroPath = ssrMicroPath;
   }
 
   private get global() {

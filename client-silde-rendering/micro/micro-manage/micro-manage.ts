@@ -1,7 +1,7 @@
 import { Injectable } from '@di';
-import { MicroManageInterface } from '@university/font-end-micro/types';
+import { MicroManageInterface } from '@font-end-micro/types';
 import { Observable } from 'rxjs';
-import { shareReplay, switchMap, tap } from 'rxjs/operators';
+import { map, shareReplay } from 'rxjs/operators';
 import { LoadAssets, StaticAssets } from '../load-assets/load-assets';
 import { MicroStore } from '../micro-store/micro-store';
 
@@ -17,7 +17,7 @@ export class MicroManage implements MicroManageInterface {
     let storeSubject = this.microCache.get(microName);
     if (!storeSubject) {
       storeSubject = this.la.readMicroStatic(microName).pipe(
-        switchMap((result: StaticAssets) => new MicroStore(microName, result).exceJavascript()),
+        map((result: StaticAssets) => new MicroStore(microName, result)),
         shareReplay(1)
       );
       this.microCache.set(microName, storeSubject);
@@ -29,10 +29,9 @@ export class MicroManage implements MicroManageInterface {
   private queryShadowSelector(selectors: string) {
     const shadowList = selectors.split('::shadow').filter((item) => !!item);
     const end = shadowList.pop();
-    const ele = shadowList.reduce((dom: any, sel) => dom ? dom.querySelector(sel).shadowRoot : null, document);
+    const ele = shadowList.reduce((dom: any, sel) => dom ? dom.querySelector(sel)?.shadowRoot : null, document);
     return ele && ele.querySelector(end);
   }
-
 
   private querySelector(selectors: string) {
     const _querySelector = selectors.indexOf('::shadow') !== -1 ? this.queryShadowSelector : this._querySelector;

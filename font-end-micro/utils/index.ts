@@ -1,9 +1,15 @@
+export const templateZip = (template: string, mapping: any = {}) => {
+  const keys = Object.keys(mapping);
+  const formatTemplate = template.replace(/\n*/g, '').replace(/[ ]+/g, ' ');
+  return keys.reduce((t: string, key: string) => t.replace(`{${key}}`, mapping[key]), formatTemplate);
+};
+
 export const createMicroElementTemplate = (microName: string, options: any) => {
   const { initHtml = '', initStyle = '', linkToStyles = [] } = options;
-  const classTemplate = `
+  return templateZip(`
     (function() {
-      let initStyle = '${initStyle.replace(/\"/g, '\"').replace(/\n/g, '')}';
-      let initHtml = '${initHtml.replace(/\"/g, '\"').replace(/\n/g, '')}';
+      let initStyle = '{initStyle}';
+      let initHtml = '{initHtml}';
       let styleLoadPushStyle = [];
       class Micro${microName}Element extends HTMLElement {
         constructor() {
@@ -25,14 +31,14 @@ export const createMicroElementTemplate = (microName: string, options: any) => {
               styleLoadPushStyle.push(style);
             }
             return _appendChild(style);
-          }
+          };
           initStyle = '';
           return head;
         }
 
         createBody() {
           const body = document.createElement('div');
-          body.setAttribute('data-app', 'body')
+          body.setAttribute('data-app', 'body');
           body.innerHTML = initHtml;
           initHtml = '';
           return body;
@@ -41,9 +47,9 @@ export const createMicroElementTemplate = (microName: string, options: any) => {
         appendStyleNode(container) {
           const beforeNode = container.firstChild;
           styleLoadPushStyle.forEach(function(style) {
-            container.insertBefore(style, beforeNode);
+            container.insertBefore(style.cloneNode(true), beforeNode);
           });
-          ${JSON.stringify(linkToStyles)}.forEach(function(styleText) {
+          {linkToStyles}.forEach(function(styleText) {
             const style = document.createElement('style');
             style.appendChild(document.createTextNode(styleText));
             container.insertBefore(style, beforeNode);
@@ -52,7 +58,9 @@ export const createMicroElementTemplate = (microName: string, options: any) => {
       }
       customElements.define('${microName}-tag', Micro${microName}Element);
     })();
-  `;
-
-  return classTemplate;
+  `, {
+    initStyle: initStyle.replace(/\'/g, '\'').replace(/\n/g, ''),
+    initHtml: initHtml.replace(/\'/g, '\'').replace(/\n/g, ''),
+    linkToStyles: JSON.stringify(linkToStyles)
+  });
 };

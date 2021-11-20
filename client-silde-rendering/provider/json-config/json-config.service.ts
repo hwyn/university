@@ -2,7 +2,6 @@ import { Inject, Injectable, LOCAL_STORAGE, LocatorStorageImplements } from '@di
 import { HttpClient } from '@university/common';
 import { AbstractJsonConfigService } from '@university/provider/services';
 import { Observable, of } from 'rxjs';
-import { RESOURCE_TOKEN } from '../../token';
 
 @Injectable()
 export class JsonConfigService extends AbstractJsonConfigService {
