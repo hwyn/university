@@ -45,8 +45,8 @@ export class Platform {
       this.ls.getProvider(HISTORY_TOKEN).location = this.getLocation(request, isMicro);
       const { js = [], links = [] } = readAssets();
       const { html, styles } = await render({ request, ..._global });
-      const excelResult = await this.excelMicroMiddleware({ html, styles, js, links, microTags: [], microFetchData: [] });
-      return { ...excelResult, fetchData: this.getStaticFileData() };
+      const execlResult = await this.execlMicroMiddleware({ html, styles, js, links, microTags: [], microFetchData: [] });
+      return { ...execlResult, fetchData: this.getStaticFileData() };
     };
   }
 
@@ -82,7 +82,7 @@ export class Platform {
       })));
   }
 
-  private excelMicroMiddleware(options: any): Promise<any> {
+  private execlMicroMiddleware(options: any): Promise<any> {
     return this.microMiddlewareList.reduce((input, middleware) => {
       return input.pipe(switchMap(this.mergeMicroToSSR(middleware)));
     }, of(options)).toPromise();

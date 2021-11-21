@@ -1,24 +1,26 @@
 import { MICRO_MANAGER } from '@font-end-micro/token';
 import { MicroStoreInterface } from '@font-end-micro/types';
-import { HttpClient } from '@university/common';
 import { getProvider } from '@university/di';
 import { StaticAssets } from '../load-assets/load-assets';
 
 export class MicroStore implements MicroStoreInterface {
-  private http = getProvider(HttpClient);
   private mountedList: any[] = [];
   private _renderMicro!: (...args: any[]) => Promise<any>;
+  private execMountedList: [HTMLElement, any][] = [];
+  private execFunctions: any[];
 
   constructor(private microName: string, private staticAssets: StaticAssets) {
-    this._renderMicro = this.exceJavascript();
+    const { script } = staticAssets;
+    // tslint:disable-next-line:function-constructor
+    this.execFunctions = script.map((source: string) => new Function('microStore', 'fetchCacheData', source));
+    this._renderMicro = this.execJavascript();
   }
 
   public async onMounted(container: HTMLElement, options?: any): Promise<any> {
-    const ownerDocument = container.ownerDocument;
-    const _options = { ...options, microManage: getProvider(MICRO_MANAGER) };
-    const unRender = await this._renderMicro(container, _options);
-    this.mountedList.push({ unRender, container, document: ownerDocument });
-    return unRender;
+    this.execMountedList.push([container, options]);
+    if (this.execMountedList.length === 1) {
+      await this.execMounted();
+    }
   }
 
   public async unMounted(container: HTMLElement) {
@@ -31,13 +33,22 @@ export class MicroStore implements MicroStoreInterface {
     await unRender();
   }
 
-  public exceJavascript(): (...args: any[]) => Promise<any> {
-    const { javascript, fetchCacheData } = this.staticAssets;
+  private async execMounted() {
+    const [[container, options]] = this.execMountedList;
+    const ownerDocument = container.ownerDocument;
+    const _options = { ...options, microManage: getProvider(MICRO_MANAGER) };
+    const unRender = await this._renderMicro(container, _options);
+    this.mountedList.push({ unRender, container, document: ownerDocument });
+    this.execMountedList.shift();
+    if (this.execMountedList.length !== 0) {
+      await this.execMounted();
+    }
+  }
+
+  private execJavascript(): (...args: any[]) => Promise<any> {
+    const { fetchCacheData } = this.staticAssets;
     const microStore: any = { render: () => void (0) };
-    javascript.forEach((source: string) => {
-      // tslint:disable-next-line:function-constructor
-      new Function('microStore', 'fetchCacheData', source)(microStore, fetchCacheData);
-    });
+    this.execFunctions.forEach((fun: any) => fun(microStore, fetchCacheData));
     return microStore.render;
   }
 }

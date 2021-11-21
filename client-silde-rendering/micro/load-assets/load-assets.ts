@@ -5,7 +5,7 @@ import { isEmpty } from 'lodash';
 import { forkJoin, Observable, of } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 
-export interface StaticAssets { javascript: string[]; links: string[]; fetchCacheData: { [url: string]: any }; }
+export interface StaticAssets { script: string[]; javascript: string[]; links: string[]; fetchCacheData: { [url: string]: any }; }
 
 declare const microFetchData: any[];
 
@@ -24,7 +24,7 @@ export class LoadAssets {
     const entryKeys = Object.keys(entryPoints);
     const microData = this.cacheServerData.find(({ microName: _microName }) => microName === _microName);
     const fetchCacheData = microData ? JSON.parse(microData.source) : {};
-    const staticAssets: StaticAssets = { javascript: [], links: [], fetchCacheData };
+    const staticAssets: StaticAssets = { javascript: [], script: [], links: [], fetchCacheData };
     entryKeys.forEach((staticKey: string) => {
       const { js: staticJs = [], css: staticLinks = [] } = entryPoints[staticKey].assets;
       staticAssets.javascript.push(...staticJs);
@@ -38,9 +38,9 @@ export class LoadAssets {
   }
 
   private readJavascript(staticAssets: StaticAssets) {
-    const { javascript, ...other } = staticAssets;
+    const { javascript, script, ...other } = staticAssets;
     return forkJoin(javascript.map((src: string) => this.http.getText(src))).pipe(
-      map((js: string[]) => ({ javascript: js, ...other }))
+      map((js: string[]) => ({ script: js, javascript, ...other }))
     );
   }
 
