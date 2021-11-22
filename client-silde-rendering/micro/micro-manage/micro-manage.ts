@@ -17,7 +17,7 @@ export class MicroManage implements MicroManageInterface {
     let storeSubject = this.microCache.get(microName);
     if (!storeSubject) {
       storeSubject = this.la.readMicroStatic(microName).pipe(
-        map((result: StaticAssets) => new MicroStore(microName, result)),
+        map((result: StaticAssets) => new MicroStore(microName, result, this)),
         shareReplay(1)
       );
       this.microCache.set(microName, storeSubject);

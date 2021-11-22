@@ -1,6 +1,4 @@
-import { MICRO_MANAGER } from '@font-end-micro/token';
-import { MicroStoreInterface } from '@font-end-micro/types';
-import { getProvider } from '@university/di';
+import { MicroManageInterface, MicroStoreInterface } from '@font-end-micro/types';
 import { StaticAssets } from '../load-assets/load-assets';
 
 export class MicroStore implements MicroStoreInterface {
@@ -9,7 +7,7 @@ export class MicroStore implements MicroStoreInterface {
   private execMountedList: [HTMLElement, any][] = [];
   private execFunctions: any[];
 
-  constructor(private microName: string, private staticAssets: StaticAssets) {
+  constructor(private microName: string, private staticAssets: StaticAssets, private microManage: MicroManageInterface) {
     const { script } = staticAssets;
     // tslint:disable-next-line:function-constructor
     this.execFunctions = script.map((source: string) => new Function('microStore', 'fetchCacheData', source));
@@ -36,7 +34,7 @@ export class MicroStore implements MicroStoreInterface {
   private async execMounted() {
     const [[container, options]] = this.execMountedList;
     const ownerDocument = container.ownerDocument;
-    const _options = { ...options, microManage: getProvider(MICRO_MANAGER) };
+    const _options = { ...options, microManage: this.microManage };
     const unRender = await this._renderMicro(container, _options);
     this.mountedList.push({ unRender, container, document: ownerDocument });
     this.execMountedList.shift();

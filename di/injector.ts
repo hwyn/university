@@ -20,8 +20,12 @@ export const Inject = (token: any) => (target: any, name: string, index: number)
 
 export class StaticInjector implements Injector {
   private _recors: Map<any, Record> = new Map<any, Record>();
-  constructor() {
+  constructor(private parentInjector?: Injector) {
     this._recors.set(Injector, { token: Injector, fn: () => this });
+  }
+
+  clear(): void {
+    this._recors.clear();
   }
 
   get<T>(token: any): T {

@@ -10,5 +10,6 @@ export interface ElementProps {
   instance: InstanceExtensions;
   builder: BuilderModelExtensions;
   ls: LocatorStorageImplements;
+  container?: HTMLElement;
   events?: { [key: string]: (params?: any) => Observable<any> };
 }
