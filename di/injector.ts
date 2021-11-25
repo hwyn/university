@@ -79,10 +79,10 @@ function resolveClassProvider({ useNew = false, useClass }: ClassProvider) {
   };
 }
 
-function resolveMulitProvider({ useValue, multi }: ValueProvider, { token, fn = () => [] }: Record) {
-  return function (this: StaticInjector) {
-    const parentValue = this.parentInjector?.get(token) || [];
-    return multi ? [...parentValue, ...fn.call(this), useValue] : useValue;
+function resolveMulitProvider(this: StaticInjector, { useValue, multi }: ValueProvider, { token, fn = () => [] }: Record) {
+  const preValue = fn.call(this);
+  return function (this: StaticInjector, isSelfCall?: boolean) {
+    return multi ? [...preValue, useValue] : useValue;
   };
 }
 

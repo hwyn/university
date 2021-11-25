@@ -1,14 +1,14 @@
-import { getProvider, LOCAL_STORAGE, LocatorStorageImplements } from '@di';
+import { dynamicContext } from '@university/components';
 import { isEmpty } from 'lodash';
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useContext, useEffect, useState } from 'react';
 import { CustomRouter } from './router';
 import { RouteInfo, UseRouter } from './type-api';
 
 const EmptyComponent = ({ children }: any) => children;
 
 const useRouter = (): [UseRouter] => {
-  const ls = getProvider<LocatorStorageImplements>(LOCAL_STORAGE);
-  const router = ls.getService(CustomRouter);
+  const injector = useContext(dynamicContext);
+  const router = injector.get<CustomRouter>(CustomRouter);
   const [routeInfo, listenerRoute] = useState<RouteInfo>(router.currentRouteInfo);
   useEffect(() => {
     const ar = router.activeRoute.subscribe((route) => listenerRoute(route));

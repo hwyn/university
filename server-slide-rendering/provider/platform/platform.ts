@@ -1,4 +1,4 @@
-import { getProvider, Injectable, JSON_CONFIG, LOCAL_STORAGE, LocatorStorageImplements, registryProvider } from '@di';
+import { getProvider, Injector, JSON_CONFIG, LOCAL_STORAGE, Provider } from '@di';
 import { FETCH_TOKEN, HISTORY_TOKEN } from '@university/common/token';
 import { IS_MICRO, MICRO_MANAGER } from '@university/font-end-micro/token';
 import { LocatorStorage } from '@university/provider/services';
@@ -11,27 +11,17 @@ import { JsonConfigService } from '../json-config/json-config.service';
 type Render = (...args: any[]) => Promise<{ html: string, styles: string }>;
 type MicroMiddleware = () => Observable<any>;
 
-@Injectable()
 export class Platform {
-  private ls!: LocatorStorageImplements;
   private microMiddlewareList: MicroMiddleware[] = [];
   private staticFileSourceList: { [key: string]: any } = {};
   private currentPageFileSourceList: { [key: string]: any } = {};
 
-  constructor() {
-    registryProvider([
-      { provide: MICRO_MANAGER, useClass: MicroManage },
-      { provide: LOCAL_STORAGE, useClass: LocatorStorage },
-      { provide: JSON_CONFIG, useClass: JsonConfigService },
-      { provide: HISTORY_TOKEN, useValue: { location: {}, listen: () => () => void (0) } },
-    ]);
-    this.ls = getProvider<LocatorStorageImplements>(LOCAL_STORAGE);
-  }
+  constructor(private providers: Provider[] = []) { }
 
   bootstrapRender(render: Render) {
     return async (global: any, isMicro: boolean = false) => {
       const { fetch, request, location, readAssets, readStaticFile, proxyHost, ssrMicroPath, ..._global } = global;
-      registryProvider([
+      const providers = [
         { provide: IS_MICRO, useValue: isMicro },
         { provide: PROXY_HOST, useValue: proxyHost },
         { provide: REQUEST_TOKEN, useValue: request },
@@ -39,15 +29,31 @@ export class Platform {
         { provide: FETCH_TOKEN, useValue: this.proxyFetch(fetch) },
         { provide: READ_FILE_STATIC, useValue: this.proxyReadStaticFile(readStaticFile) },
         { provide: REGISTRY_MICRO_MIDDER, useValue: this.registryMicroMiddleware.bind(this) }
-      ]);
+      ];
+      const injector = this.beforeBootstrapRender(providers);
+
       this.microMiddlewareList = [];
       this.currentPageFileSourceList = {};
-      this.ls.getProvider(HISTORY_TOKEN).location = this.getLocation(request, isMicro);
+      injector.get(HISTORY_TOKEN).location = this.getLocation(request, isMicro);
       const { js = [], links = [] } = readAssets();
-      const { html, styles } = await render({ request, ..._global });
+      const { html, styles } = await render(injector, { request, ..._global });
       const execlResult = await this.execlMicroMiddleware({ html, styles, js, links, microTags: [], microFetchData: [] });
       return { ...execlResult, fetchData: this.getStaticFileData() };
     };
+  }
+
+  private beforeBootstrapRender(providers: Provider[] = []): Injector {
+    const injector = getProvider(Injector as any);
+    const _providers: Provider[] = [
+      ...this.providers,
+      { provide: MICRO_MANAGER, useClass: MicroManage },
+      { provide: LOCAL_STORAGE, useClass: LocatorStorage },
+      { provide: JSON_CONFIG, useClass: JsonConfigService },
+      { provide: HISTORY_TOKEN, useValue: { location: {}, listen: () => () => void (0) } },
+      ...providers
+    ];
+    _providers.forEach((provider) => injector.set(provider.provide, provider));
+    return injector;
   }
 
   private getStaticFileData() {
