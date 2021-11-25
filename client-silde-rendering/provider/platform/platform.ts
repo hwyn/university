@@ -1,18 +1,17 @@
-import { getProvider, Injectable, LOCAL_STORAGE, LocatorStorageImplements, registryProvider } from '@di';
+import { Injectable, Injector, LOCAL_STORAGE, registryProvider } from '@di';
 import { IS_MICRO, MICRO_MANAGER } from '@font-end-micro/token';
 import { FETCH_TOKEN, RENDER_SSR } from '@university/common/token';
 import { LocatorStorage } from '@university/provider/services';
 import { APPLICATION_CONTAINER, INSERT_STYLE_CONTAINER, RESOURCE_TOKEN } from '../../token';
 
-type Render = (...args: any[]) => Promise<(container: HTMLElement) => void>;
+export type Render = (...args: any[]) => Promise<(container: HTMLElement) => void>;
 
 declare const microStore: any;
 declare const fetchCacheData: any;
 
 @Injectable()
 export class Platform {
-  private ls!: LocatorStorageImplements;
-  constructor() {
+  constructor(private injector: Injector) {
     registryProvider([
       { provide: RENDER_SSR, useValue: true },
       { provide: IS_MICRO, useValue: this.isMicro },
@@ -21,27 +20,22 @@ export class Platform {
       { provide: RESOURCE_TOKEN, useValue: this.resource },
       { provide: INSERT_STYLE_CONTAINER, useValue: document.head }
     ]);
-    this.ls = getProvider<LocatorStorageImplements>(LOCAL_STORAGE);
   }
 
-  bootstrapRender(container: HTMLElement, render: Render) {
-    if (!this.isMicro) {
-      registryProvider([{ provide: APPLICATION_CONTAINER, useValue: container }]);
-      render();
-    } else {
-      microStore.render = this.proxyRender.bind(this, render);
-    }
+  bootstrapRender(render: Render) {
+    !this.isMicro ? render() : microStore.render = this.proxyRender.bind(this, render);
   }
 
   private async proxyRender(render: Render, container: HTMLElement, options: any) {
     const { microManage, ..._options } = options;
     const head = container.shadowRoot?.querySelector('[data-app="head"]') || document.head;
+    const shadowContainer = container.shadowRoot?.querySelector('[data-app="body"]');
+    this.injector.set(APPLICATION_CONTAINER, { provide: APPLICATION_CONTAINER, useValue: shadowContainer });
     registryProvider([
       { provide: MICRO_MANAGER, useValue: microManage },
-      { provide: INSERT_STYLE_CONTAINER, useValue: head },
-      { provide: APPLICATION_CONTAINER, useValue: container.shadowRoot?.querySelector('[data-app="body"]') }
+      { provide: INSERT_STYLE_CONTAINER, useValue: head }
     ]);
-    return render(_options);
+    return render(this.injector, _options);
   }
 
   private proxyFetch() {

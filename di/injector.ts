@@ -1,7 +1,7 @@
 import { isUndefined } from 'lodash';
 import 'reflect-metadata';
 import { Injector } from './abstract-injector';
-import { ClassProvider, FactoryProvider, Provider, ValueProvider } from './type-api';
+import { ClassProvider, FactoryProvider, Provider, Type, ValueProvider } from './type-api';
 
 interface Record { token: any; fn: () => any; }
 
@@ -19,17 +19,17 @@ export const Inject = (token: any) => (target: any, name: string, index: number)
 };
 
 export class StaticInjector implements Injector {
+  protected isSelfContext = false;
   private _recors: Map<any, Record> = new Map<any, Record>();
-  constructor(private parentInjector?: Injector) {
-    this._recors.set(Injector, { token: Injector, fn: () => this });
-  }
+  protected _instanceRecors: Map<any, Type> = new Map<any, Type>();
 
-  clear(): void {
-    this._recors.clear();
+  constructor(protected parentInjector?: Injector, options?: { [key: string]: any }) {
+    this._recors.set(Injector, { token: Injector, fn: () => this });
+    this.isSelfContext = options ? options.isScope === 'self' : false;
   }
 
   get<T>(token: any): T {
-    const record = this._recors.get(token);
+    const record = this._recors.get(token) || (this.parentInjector as this)?._recors.get(token);
     return record ? record.fn.call(this) : null;
   }
 
@@ -49,6 +49,10 @@ export class StaticInjector implements Injector {
     }
     this._recors.set(record.token, record);
   }
+
+  clear(): void {
+    this._recors.clear();
+  }
 }
 
 function serializeDeps(this: StaticInjector, dep: any) {
@@ -58,27 +62,32 @@ function serializeDeps(this: StaticInjector, dep: any) {
   this.set(dep.provide, dep);
 }
 
-function resolveClassProvider(this: StaticInjector, { useNew = false, useClass }: ClassProvider) {
+function resolveClassProvider({ useNew = false, useClass }: ClassProvider) {
   let instance: any;
-  return () => {
-    if (useNew || !instance) {
+  return function (this: StaticInjector) {
+    const isSelfContext = this.isSelfContext;
+    let newInstance = isSelfContext ? this._instanceRecors.get(useClass) : instance;
+    if (useNew || !newInstance) {
       const deps = Reflect.getMetadata(designParamtypes, useClass) || [];
       const injectTypes = (useClass as any)[__provide__inject__] || [];
       const arvgs = deps.map((token: any) => this.get(token));
       injectTypes.forEach(({ token, index }: any) => arvgs[index] = this.get(token));
-      instance = new useClass(...arvgs);
+      newInstance = new useClass(...arvgs);
+      isSelfContext ? this._instanceRecors.set(useClass, newInstance) : instance = newInstance;
     }
-    return instance;
+    return newInstance;
   };
 }
 
-function resolveMulitProvider(this: StaticInjector, { useValue, multi }: ValueProvider, { fn = () => [] }: Record) {
-  return () => multi ? [...fn(), useValue] : useValue;
+function resolveMulitProvider({ useValue, multi }: ValueProvider, { token, fn = () => [] }: Record) {
+  return function (this: StaticInjector) {
+    const parentValue = this.parentInjector?.get(token) || [];
+    return multi ? [...parentValue, ...fn.call(this), useValue] : useValue;
+  };
 }
 
-function resolveFactoryProvider(this: StaticInjector, { useFactory, deps = [] }: FactoryProvider) {
-  return () => {
-    const arvgs: any = deps.map((token: any) => this.get(token));
-    return useFactory.apply(undefined, arvgs);
+function resolveFactoryProvider({ useFactory, deps = [] }: FactoryProvider) {
+  return function (this: StaticInjector) {
+    return useFactory.apply(undefined, deps.map((token: any) => this.get(token)));
   };
 }

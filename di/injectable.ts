@@ -6,10 +6,15 @@ const injector = new StaticInjector();
 const toArray = (obj: any) => Array.isArray(obj) ? obj : [obj];
 
 const InjectableFactory = (defaultToken?: InjectorToken, defaultOptions?: object) =>
-  (token?: InjectorToken, options?: object) => <T>(target: Type<T>): Type<T> => {
+  (token?: InjectorToken, options?: { [key: string]: any }) => <T>(target: Type<T>): Type<T> => {
+    if (!(token instanceof InjectorToken)) {
+      token = void (0);
+      options = token;
+    }
+    const { injector: _injector = injector, ..._options } = options || {};
     const provides = [token, defaultToken, target].filter((item) => !!item);
     (target as any)[__PROVIDER_TYPE__] = __USECLASS__;
-    provides.forEach((provide) => injector.set(provide, { ...defaultOptions, ...options, provide, useClass: target }));
+    provides.forEach((provide) => _injector.set(provide, { ...defaultOptions, ..._options, provide, useClass: target }));
     return target;
   };
 
