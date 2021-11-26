@@ -1,7 +1,10 @@
 import { getProvider, Injector, LOCAL_STORAGE, Provider, StaticInjector } from '@di';
 import { IS_MICRO, MICRO_MANAGER } from '@font-end-micro/token';
 import { FETCH_TOKEN, RENDER_SSR } from '@university/common/token';
-import { LocatorStorage } from '@university/provider/services/local-storage/local-storage.service';
+import { LocatorStorage } from '@university/provider/services';
+import { cloneDeep } from 'lodash';
+import { Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { APPLICATION_CONTAINER, INSERT_STYLE_CONTAINER, RESOURCE_TOKEN } from '../../token';
 
 export type Render = (...args: any[]) => Promise<(container: HTMLElement) => void>;
@@ -10,6 +13,9 @@ declare const microStore: any;
 declare const fetchCacheData: any;
 
 export class Platform {
+  private rootInjector: Injector = getProvider(Injector as any);
+  private cacheObject: Map<string, Map<string, Observable<object>>> = new Map();
+
   constructor(private providers: Provider[]) { }
 
   bootstrapRender(render: Render) {
@@ -29,16 +35,15 @@ export class Platform {
   }
 
   private beforeBootstrapRender(providers: Provider[] = []) {
-    const rootInjector = getProvider(Injector as any);
-    const injector = this.isMicro ? new StaticInjector(rootInjector, { isScope: 'self' }) : rootInjector;
+    const injector = this.isMicro ? new StaticInjector(this.rootInjector, { isScope: 'self' }) : this.rootInjector;
     const _providers: Provider[] = [
       ...this.providers,
       { provide: RENDER_SSR, useValue: true },
       { provide: IS_MICRO, useValue: this.isMicro },
       { provide: LOCAL_STORAGE, useClass: LocatorStorage },
       { provide: FETCH_TOKEN, useValue: this.proxyFetch() },
-      { provide: RESOURCE_TOKEN, useValue: this.resource },
       { provide: INSERT_STYLE_CONTAINER, useValue: document.head },
+      { provide: RESOURCE_TOKEN, useFactory: this.factoryResourceCache.bind(this, 'file-static') },
       ...providers
     ];
     _providers.forEach((provider) => injector.set(provider.provide, provider));
@@ -48,6 +53,23 @@ export class Platform {
 
   private proxyFetch() {
     return (input: RequestInfo, init?: RequestInit) => fetch.apply(window, [input, init]);
+  }
+
+  private factoryResourceCache(type?: string) {
+    if (!type || this.cacheObject.has(type)) {
+      return type && this.cacheObject.get(type) || new Map();
+    }
+
+    const resourceObj = this.resource;
+    const cacheResource = new Map();
+    Object.keys(resourceObj).forEach((key) => {
+      const { source, type: sourceType } = resourceObj[key];
+      if (sourceType === type) {
+        cacheResource.set(key, of(source).pipe(map(cloneDeep)));
+      }
+    });
+    this.cacheObject.set(type, cacheResource);
+    return cacheResource;
   }
 
   private get isMicro() {

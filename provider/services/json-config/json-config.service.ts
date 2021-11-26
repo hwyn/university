@@ -13,10 +13,7 @@ export abstract class AbstractJsonConfigService implements JsonConfigImplements 
   public getJsonConfig(url: string): Observable<object> {
     let subject = this.cacheConfig.get(url);
     if (!subject) {
-      subject = this.getServerFetchData(url).pipe(
-        shareReplay(1),
-        map((json) => cloneDeep(json))
-      );
+      subject = this.getServerFetchData(url).pipe(shareReplay(1), map(cloneDeep));
       this.cacheConfig.set(url, subject);
     }
     return subject;

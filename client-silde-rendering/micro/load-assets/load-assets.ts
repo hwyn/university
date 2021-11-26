@@ -1,6 +1,6 @@
 import { Injectable } from '@di';
 import { createMicroElementTemplate } from '@font-end-micro/utils';
-import { HttpClient } from '@university/common';
+import { HttpClient } from '@university/common/http';
 import { isEmpty } from 'lodash';
 import { forkJoin, Observable, of } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
