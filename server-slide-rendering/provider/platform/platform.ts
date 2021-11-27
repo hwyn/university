@@ -12,12 +12,14 @@ type Render = (...args: any[]) => Promise<{ html: string, styles: string }>;
 type MicroMiddleware = () => Observable<any>;
 
 export class Platform {
-  private rootInjector: Injector = getProvider(Injector as any);
+  private rootInjector: Injector;
   private microMiddlewareList: MicroMiddleware[] = [];
   private staticFileSourceList: { [key: string]: any } = {};
   private currentPageFileSourceList: { [key: string]: any } = {};
 
-  constructor(private providers: Provider[] = []) { }
+  constructor(private providers: Provider[] = []) { 
+    this.rootInjector = getProvider(Injector as any);
+  }
 
   bootstrapRender(render: Render): void {
     exports.render = this.proxyRender.bind(this, render);

@@ -25,7 +25,7 @@ export class MicroManage implements MicroManageInterface {
     if (!subject) {
       const proxyMicroUrl = this.ls.getProvider<any>(SSR_MICRO_PATH);
       const { location: { pathname } } = this.ls.getProvider(HISTORY_TOKEN);
-      const microPath = `/micro-ssr/${pathname}`.replace(/[\/]+/, '/');
+      const microPath = `/micro-ssr/${pathname}`.replace(/[\/]+/g, '/');
       subject = this.http.get(proxyMicroUrl(microName, microPath)).pipe(
         catchError((error) => of({ html: `${microName}<br/>${error.message}`, styles: '' })),
         switchMap((microResult) => this.reeadLinkToStyles(microName, microResult)),
