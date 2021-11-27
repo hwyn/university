@@ -35,7 +35,7 @@ export class Platform {
   }
 
   private beforeBootstrapRender(providers: Provider[] = []) {
-    const injector = this.isMicro ? new StaticInjector(this.rootInjector, { isScope: 'self' }) : this.rootInjector;
+    const injector = new StaticInjector(this.rootInjector, { isScope: 'self' });
     const _providers: Provider[] = [
       ...this.providers,
       { provide: RENDER_SSR, useValue: true },

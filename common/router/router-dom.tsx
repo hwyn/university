@@ -1,4 +1,4 @@
-import { dynamicContext } from '@university/components';
+import { dynamicContext } from '@university/components/builder-element/provider';
 import { isEmpty } from 'lodash';
 import React, { ReactElement, useContext, useEffect, useState } from 'react';
 import { CustomRouter } from './router';

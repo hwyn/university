@@ -1,9 +1,10 @@
 import { Inject, Injectable } from '@di';
 import { MicroManageInterface, MicroStoreInterface } from '@font-end-micro/types';
 import { createMicroElementTemplate, templateZip } from '@font-end-micro/utils';
-import { HISTORY_TOKEN, HttpClient } from '@university/common';
+import { HttpClient } from '@university/common/http';
+import { HISTORY_TOKEN } from '@university/common/token';
 import { LocatorStorage } from '@university/provider/services';
-import { isEmpty } from 'lodash';
+import { cloneDeep, isEmpty } from 'lodash';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map, shareReplay, switchMap } from 'rxjs/operators';
 import { PROXY_HOST, REGISTRY_MICRO_MIDDER, SSR_MICRO_PATH } from '../../token';
@@ -11,6 +12,7 @@ import { PROXY_HOST, REGISTRY_MICRO_MIDDER, SSR_MICRO_PATH } from '../../token';
 @Injectable()
 export class MicroManage implements MicroManageInterface {
   private microCache: Map<string, Observable<any>> = new Map();
+  private microStaticCache: Map<string, Observable<any>> = new Map();
 
   constructor(
     private http: HttpClient,
@@ -41,9 +43,18 @@ export class MicroManage implements MicroManageInterface {
   private reeadLinkToStyles(microName: string, microResult: any) {
     const { links = [] } = microResult;
     const proxy = this.ls.getProvider(PROXY_HOST);
-    return isEmpty(links) ? of(microResult) : forkJoin(links.map((href: string) => this.http.getText(`${proxy}${href}`))).pipe(
+    return isEmpty(links) ? of(microResult) : forkJoin(links.map((href: string) => this.getLinkCache(`${proxy}${href}`))).pipe(
       map((styles) => ({ ...microResult, linkToStyles: styles }))
     );
+  }
+
+  private getLinkCache(href: string) {
+    let linkSubject = this.microStaticCache.get(href);
+    if (!linkSubject) {
+      linkSubject = this.http.getText(href).pipe(shareReplay(1), map(cloneDeep));
+      this.microStaticCache.set(href, linkSubject);
+    }
+    return linkSubject;
   }
 
   private createMicroTag(microName: string, microResult: any) {

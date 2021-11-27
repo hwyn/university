@@ -1,6 +1,6 @@
+import { Provider, registryProvider } from '@di';
 import { FormControl } from '@university/common/form/form-control';
 import { BIND_BUILDER_ELEMENT, BIND_FORM_CONTROL, BUILDER_EXTENSION, Grid } from 'dynamic-builder';
-import { Provider, registryProvider } from '@di';
 import { createElement } from 'react';
 import { BuilderLayout, RenderPropsModel } from '../grid';
 import { ListExtension } from './list/list.extension';

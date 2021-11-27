@@ -1,4 +1,4 @@
-import { getProvider, Injector, JSON_CONFIG, LOCAL_STORAGE, Provider } from '@di';
+import { getProvider, Injector, JSON_CONFIG, LOCAL_STORAGE, Provider, StaticInjector } from '@di';
 import { FETCH_TOKEN, HISTORY_TOKEN } from '@university/common/token';
 import { IS_MICRO, MICRO_MANAGER } from '@university/font-end-micro/token';
 import { LocatorStorage } from '@university/provider/services';
@@ -12,38 +12,40 @@ type Render = (...args: any[]) => Promise<{ html: string, styles: string }>;
 type MicroMiddleware = () => Observable<any>;
 
 export class Platform {
+  private rootInjector: Injector = getProvider(Injector as any);
   private microMiddlewareList: MicroMiddleware[] = [];
   private staticFileSourceList: { [key: string]: any } = {};
   private currentPageFileSourceList: { [key: string]: any } = {};
 
   constructor(private providers: Provider[] = []) { }
 
-  bootstrapRender(render: Render) {
-    return async (global: any, isMicro: boolean = false) => {
-      const { fetch, request, location, readAssets, readStaticFile, proxyHost, ssrMicroPath, ..._global } = global;
-      const providers = [
-        { provide: IS_MICRO, useValue: isMicro },
-        { provide: PROXY_HOST, useValue: proxyHost },
-        { provide: REQUEST_TOKEN, useValue: request },
-        { provide: SSR_MICRO_PATH, useValue: ssrMicroPath },
-        { provide: FETCH_TOKEN, useValue: this.proxyFetch(fetch) },
-        { provide: READ_FILE_STATIC, useValue: this.proxyReadStaticFile(readStaticFile) },
-        { provide: REGISTRY_MICRO_MIDDER, useValue: this.registryMicroMiddleware.bind(this) }
-      ];
-      const injector = this.beforeBootstrapRender(providers);
+  bootstrapRender(render: Render): void {
+    exports.render = this.proxyRender.bind(this, render);
+  }
 
-      this.microMiddlewareList = [];
-      this.currentPageFileSourceList = {};
-      injector.get(HISTORY_TOKEN).location = this.getLocation(request, isMicro);
-      const { js = [], links = [] } = readAssets();
-      const { html, styles } = await render(injector, { request, ..._global });
-      const execlResult = await this.execlMicroMiddleware({ html, styles, js, links, microTags: [], microFetchData: [] });
-      return { ...execlResult, fetchData: this.getStaticFileData() };
-    };
+  private async proxyRender(render: Render, global: any, isMicro: boolean = false) {
+    const { fetch, request, location, readAssets, readStaticFile, proxyHost, ssrMicroPath, ..._global } = global;
+    const providers = [
+      { provide: IS_MICRO, useValue: isMicro },
+      { provide: PROXY_HOST, useValue: proxyHost },
+      { provide: REQUEST_TOKEN, useValue: request },
+      { provide: SSR_MICRO_PATH, useValue: ssrMicroPath },
+      { provide: FETCH_TOKEN, useValue: this.proxyFetch(fetch) },
+      { provide: READ_FILE_STATIC, useValue: this.proxyReadStaticFile(readStaticFile) },
+      { provide: REGISTRY_MICRO_MIDDER, useValue: this.registryMicroMiddleware.bind(this) }
+    ];
+    const injector = this.beforeBootstrapRender(providers);
+    injector.get(HISTORY_TOKEN).location = this.getLocation(request, isMicro);
+    this.microMiddlewareList = [];
+    this.currentPageFileSourceList = {};
+    const { js = [], links = [] } = readAssets();
+    const { html, styles } = await render(injector, { request, ..._global });
+    const execlResult = await this.execlMicroMiddleware({ html, styles, js, links, microTags: [], microFetchData: [] });
+    return { ...execlResult, fetchData: this.getStaticFileData() };
   }
 
   private beforeBootstrapRender(providers: Provider[] = []): Injector {
-    const injector = getProvider(Injector as any);
+    const injector = new StaticInjector(this.rootInjector, { isScope: 'self' });
     const _providers: Provider[] = [
       ...this.providers,
       { provide: MICRO_MANAGER, useClass: MicroManage },
@@ -89,9 +91,9 @@ export class Platform {
   }
 
   private execlMicroMiddleware(options: any): Promise<any> {
-    return this.microMiddlewareList.reduce((input, middleware) => {
-      return input.pipe(switchMap(this.mergeMicroToSSR(middleware)));
-    }, of(options)).toPromise();
+    return this.microMiddlewareList.reduce((input, middleware) => (
+      input.pipe(switchMap(this.mergeMicroToSSR(middleware)))
+    ), of(options)).toPromise();
   }
 
   private registryMicroMiddleware(middleware: MicroMiddleware) {

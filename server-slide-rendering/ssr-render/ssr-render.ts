@@ -1,17 +1,16 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
-import NativeModule from 'module';
+import { Module as NativeModule } from 'module';
 import fetch, { RequestInit } from 'node-fetch';
 import path from 'path';
 import vm from 'vm';
 import { ProxyMicroUrl, SSROptions } from './type-api';
-import { vmModules } from './vm-modules';
+import { vmRequire } from './vm-modules';
 
 export class SSRRender {
   private host: string;
-  private code!: string;
   private microName: string;
-  private _compiledWrapp!: any;
+  private _compiledRender!: any;
   private assetFile: string;
   private staticDir: string;
   private ssrMicroPath?: ProxyMicroUrl;
@@ -75,21 +74,22 @@ export class SSRRender {
   }
 
   private factoryVmScript() {
-    this.code = fs.readFileSync(this.entryFile, 'utf-8');
-    const wrapper = NativeModule.wrap(this.code);
+    const m: any = { exports: {}, require: vmRequire };
+    const wrapper = NativeModule.wrap(fs.readFileSync(this.entryFile, 'utf-8'));
     const script = new vm.Script(wrapper, { filename: 'server-entry.js', displayErrors: true });
     const context = vm.createContext({ Buffer, process, console, setTimeout, setInterval });
-    this._compiledWrapp = script.runInContext(context);
+    const compiledWrapper = script.runInContext(context);
+    compiledWrapper(m.exports, m.require, m);
+    this._compiledRender = m.exports.render;
   }
 
   private async _render(request: Request, isMicro?: boolean) {
     try {
-      const m: any = { exports: {}, require: (modelName: string) => vmModules[modelName] };
-      if (this.isDevelopment || !this._compiledWrapp) {
+      const m: any = { exports: {}, require: vmRequire };
+      if (this.isDevelopment || !this._compiledRender) {
         this.factoryVmScript();
       }
-      this._compiledWrapp(m.exports, m.require, m);
-      return await m.exports.render({ ...this.global, request }, isMicro);
+      return await this._compiledRender({ ...this.global, request }, isMicro);
     } catch (e: any) {
       console.log(e);
       return { html: e.message, styles: '' };
