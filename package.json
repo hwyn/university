@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "./dist/cjs/index.js",
-  "files": ["dist"],
   "dependencies": {
     "@types/node-fetch": "^2.5.12",
     "express": "^4.17.1",
