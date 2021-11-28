@@ -1,2 +1,2 @@
-export * from './json-config/json-config.service';
+export * from './json-config';
 export * from './platform';

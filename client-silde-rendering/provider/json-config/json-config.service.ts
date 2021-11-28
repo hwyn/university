@@ -1,17 +1,18 @@
 import { RESOURCE_TOKEN } from '@client-silde-rendering/token';
 import { Inject, Injectable, LOCAL_STORAGE, LocatorStorageImplements } from '@di';
-import { HttpClient } from '@university/common/http';
-import { ENVIRONMENT } from '@university/token';
-import { AbstractJsonConfigService } from '@university/provider/json-config';
+import { HttpClient } from '@shared/common/http';
+import { AbstractJsonConfigService } from '@shared/provider/json-config';
+import { ENVIRONMENT } from '@shared/token';
 import { Observable } from 'rxjs';
 
 @Injectable()
 export class JsonConfigService extends AbstractJsonConfigService {
-  protected http: HttpClient = this.ls.getProvider(HttpClient);
-  protected environment = this.ls.getProvider(ENVIRONMENT);
-  protected cacheConfig = this.ls.getProvider(RESOURCE_TOKEN);
-
-  constructor(@Inject(LOCAL_STORAGE) protected ls: LocatorStorageImplements) {
+  constructor(
+    @Inject(LOCAL_STORAGE) protected ls: LocatorStorageImplements,
+    @Inject(ENVIRONMENT) protected environment: { [key: string]: any },
+    @Inject(RESOURCE_TOKEN) protected cacheConfig: Map<string, Observable<object>> = new Map(),
+    protected http: HttpClient,
+  ) {
     super(ls);
   }
 

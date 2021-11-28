@@ -1,9 +1,8 @@
 import { Inject, Injectable } from '@di';
-import { HttpClient } from '@university/common/http';
-import { MicroManageInterface, MicroStoreInterface } from '@university/common/micro/types';
-import { createMicroElementTemplate, templateZip } from '@university/common/micro/utils';
-import { HISTORY_TOKEN } from '@university/token';
-import { LocatorStorage } from '@university/provider';
+import { HttpClient } from '@shared/common/http';
+import { createMicroElementTemplate, MicroManageInterface, MicroStoreInterface, templateZip } from '@shared/common/micro';
+import { LocatorStorage } from '@shared/provider/local-storage';
+import { HISTORY_TOKEN } from '@shared/token';
 import { cloneDeep, isEmpty } from 'lodash';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map, shareReplay, switchMap } from 'rxjs/operators';

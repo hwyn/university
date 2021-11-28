@@ -1,6 +1,6 @@
 import { getProvider, Injector, LOCAL_STORAGE, Provider, StaticInjector } from '@di';
-import { FETCH_TOKEN, IS_MICRO, MICRO_MANAGER } from '@university/token';
-import { LocatorStorage } from '@university/provider/local-storage/local-storage.service';
+import { LocatorStorage } from '@shared/provider/local-storage';
+import { FETCH_TOKEN, IS_MICRO, MICRO_MANAGER } from '@shared/token';
 import { cloneDeep } from 'lodash';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';

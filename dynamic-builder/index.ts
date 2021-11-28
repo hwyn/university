@@ -1,5 +1,5 @@
-import { builderExtensions } from './builder-extension';
 import { registryProvider } from '@di';
+import { builderExtensions } from './builder-extension';
 
 registryProvider(builderExtensions);
 

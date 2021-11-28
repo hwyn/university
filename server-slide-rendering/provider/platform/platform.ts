@@ -1,11 +1,11 @@
 import { getProvider, Injector, JSON_CONFIG, LOCAL_STORAGE, Provider, StaticInjector } from '@di';
-import { FETCH_TOKEN, HISTORY_TOKEN, IS_MICRO, MICRO_MANAGER } from '@university/token';
-import { LocatorStorage } from '@university/provider';
+import { LocatorStorage } from '@shared/provider/local-storage';
+import { FETCH_TOKEN, HISTORY_TOKEN, IS_MICRO, MICRO_MANAGER } from '@shared/token';
 import { Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { MicroManage } from '../../micro';
 import { PROXY_HOST, READ_FILE_STATIC, REGISTRY_MICRO_MIDDER, REQUEST_TOKEN, SSR_MICRO_PATH } from '../../token';
-import { JsonConfigService } from '../json-config/json-config.service';
+import { JsonConfigService } from '../json-config';
 
 type Render = (...args: any[]) => Promise<{ html: string, styles: string }>;
 type MicroMiddleware = () => Observable<any>;
