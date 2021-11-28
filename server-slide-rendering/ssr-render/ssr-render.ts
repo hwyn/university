@@ -9,26 +9,28 @@ import { vmRequire } from './vm-modules';
 
 export class SSRRender {
   private host: string;
+  private index: string;
   private microName: string;
+  private manifestFile: string;
   private _compiledRender!: any;
-  private assetFile: string;
-  private staticDir: string;
-  private ssrMicroPath?: ProxyMicroUrl;
+  private staticDir: string | ((url: string) => string);
+  private microSSRPath?: ProxyMicroUrl;
   private isDevelopment: boolean = process.env.NODE_ENV === 'development';
 
   constructor(private entryFile: string, options: SSROptions) {
-    const { assetFile, staticDir, microName, proxyTarget = 'http://127.0.0.1:3000', ssrMicroPath } = options;
-    this.assetFile = assetFile;
-    this.staticDir = staticDir;
+    const { index, manifestFile, staticDir, microName, proxyTarget = 'http://127.0.0.1:3000', microSSRPath } = options;
+    this.manifestFile = manifestFile;
+    this.index = index || '';
+    this.staticDir = staticDir || '';
     this.microName = microName || '';
     this.host = proxyTarget;
-    this.ssrMicroPath = ssrMicroPath;
+    this.microSSRPath = microSSRPath;
   }
 
   private get global() {
     return {
       proxyHost: this.host,
-      ssrMicroPath: this.ssrMicroPath,
+      microSSRPath: this.microSSRPath,
       fetch: this.proxyFetch.bind(this),
       readStaticFile: this.readStaticFile.bind(this),
       readAssets: this.readAssets.bind(this)
@@ -47,7 +49,11 @@ export class SSRRender {
   }
 
   private readHtmlTemplate() {
-    let template = fs.readFileSync(path.join(this.staticDir, 'index.html'), 'utf-8');
+    let template = `<!-- inner-style --><!-- inner-html -->`;
+    if (this.index && fs.existsSync(this.index)) {
+      template = fs.readFileSync(this.index, 'utf-8');
+    }
+
     if (this.isDevelopment) {
       const { js } = this.readAssets();
       const hotResource = js.map((src: string) => `<script defer src="${src}"></script>`).join('');
@@ -58,11 +64,20 @@ export class SSRRender {
   }
 
   private readStaticFile(url: string) {
-    return fs.readFileSync(path.join(this.staticDir, url), 'utf-8');
+    let staticDir = this.staticDir;
+    if (typeof staticDir === 'function') {
+      staticDir = staticDir(url);
+    }
+    const filePath = staticDir ? path.join(staticDir, url) : '';
+    return filePath && fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf-8') : '';
   }
 
   private readAssets() {
-    const assetsResult = fs.readFileSync(this.assetFile, 'utf-8');
+    let assetsResult = '{entrypoints: {}}';
+    if (this.manifestFile && fs.existsSync(this.manifestFile)) {
+      assetsResult = fs.readFileSync(this.manifestFile, 'utf-8');
+    }
+
     const { entrypoints = {} } = JSON.parse(assetsResult);
     const staticAssets: any = { js: [], links: [], linksToStyle: [] };
     Object.keys(entrypoints).forEach((key: string) => {

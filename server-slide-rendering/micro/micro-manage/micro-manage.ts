@@ -13,20 +13,23 @@ import { PROXY_HOST, REGISTRY_MICRO_MIDDER, SSR_MICRO_PATH } from '../../token';
 export class MicroManage implements MicroManageInterface {
   private microCache: Map<string, Observable<any>> = new Map();
   private microStaticCache: Map<string, Observable<any>> = new Map();
+  private proxy: string;
 
   constructor(
     private http: HttpClient,
     private ls: LocatorStorage,
     @Inject(REGISTRY_MICRO_MIDDER) private registryParseHtmlMidde: any
-  ) { }
+  ) {
+    this.proxy = this.ls.getProvider(PROXY_HOST);
+  }
 
   bootstrapMicro(microName: string): Observable<MicroStoreInterface> {
     let subject = this.microCache.get(microName);
     if (!subject) {
       const proxyMicroUrl = this.ls.getProvider<any>(SSR_MICRO_PATH);
       const { location: { pathname } } = this.ls.getProvider(HISTORY_TOKEN);
-      const microPath = `/micro-ssr/${pathname}`.replace(/[\/]+/g, '/');
-      subject = this.http.get(proxyMicroUrl(microName, microPath)).pipe(
+      const microPath = `/${proxyMicroUrl(microName, `/micro-ssr/${pathname}`)}`.replace(/[\/]+/g, '/');
+      subject = this.http.get(`${this.proxy}${microPath}`).pipe(
         catchError((error) => of({ html: `${microName}<br/>${error.message}`, styles: '' })),
         switchMap((microResult) => this.reeadLinkToStyles(microName, microResult)),
         map((microResult) => ({ microResult: this.createMicroTag(microName, microResult), microName })),
@@ -42,8 +45,7 @@ export class MicroManage implements MicroManageInterface {
 
   private reeadLinkToStyles(microName: string, microResult: any) {
     const { links = [] } = microResult;
-    const proxy = this.ls.getProvider(PROXY_HOST);
-    return isEmpty(links) ? of(microResult) : forkJoin(links.map((href: string) => this.getLinkCache(`${proxy}${href}`))).pipe(
+    return isEmpty(links) ? of(microResult) : forkJoin(links.map((href: string) => this.getLinkCache(`${this.proxy}${href}`))).pipe(
       map((styles) => ({ ...microResult, linkToStyles: styles }))
     );
   }

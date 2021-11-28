@@ -17,7 +17,7 @@ export class Platform {
   private staticFileSourceList: { [key: string]: any } = {};
   private currentPageFileSourceList: { [key: string]: any } = {};
 
-  constructor(private providers: Provider[] = []) { 
+  constructor(private providers: Provider[] = []) {
     this.rootInjector = getProvider(Injector as any);
   }
 
@@ -26,12 +26,12 @@ export class Platform {
   }
 
   private async proxyRender(render: Render, global: any, isMicro: boolean = false) {
-    const { fetch, request, location, readAssets, readStaticFile, proxyHost, ssrMicroPath, ..._global } = global;
+    const { fetch, request, location, readAssets, readStaticFile, proxyHost, microSSRPath, ..._global } = global;
     const providers = [
       { provide: IS_MICRO, useValue: isMicro },
       { provide: PROXY_HOST, useValue: proxyHost },
       { provide: REQUEST_TOKEN, useValue: request },
-      { provide: SSR_MICRO_PATH, useValue: ssrMicroPath },
+      { provide: SSR_MICRO_PATH, useValue: microSSRPath },
       { provide: FETCH_TOKEN, useValue: this.proxyFetch(fetch) },
       { provide: READ_FILE_STATIC, useValue: this.proxyReadStaticFile(readStaticFile) },
       { provide: REGISTRY_MICRO_MIDDER, useValue: this.registryMicroMiddleware.bind(this) }

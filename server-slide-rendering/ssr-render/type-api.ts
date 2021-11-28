@@ -1,9 +1,10 @@
 export type ProxyMicroUrl = (microName: string, pathname: string) => string;
 
 export interface SSROptions {
-  staticDir: string;
-  assetFile: string;
+  index?: string;
+  staticDir?: string | ((url: string) => string);
+  manifestFile: string;
   microName?: string;
   proxyTarget?: string;
-  ssrMicroPath?: ProxyMicroUrl;
+  microSSRPath?: ProxyMicroUrl;
 }
