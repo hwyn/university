@@ -1,4 +1,4 @@
-import { MicroManageInterface, MicroStoreInterface } from '@shared/common/micro';
+import { MicroManageInterface, MicroStoreInterface } from '@shared/micro';
 import { StaticAssets } from '../load-assets/load-assets';
 
 export class MicroStore implements MicroStoreInterface {

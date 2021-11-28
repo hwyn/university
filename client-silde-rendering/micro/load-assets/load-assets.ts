@@ -1,6 +1,6 @@
 import { Injectable } from '@di';
 import { HttpClient } from '@shared/common/http';
-import { createMicroElementTemplate } from '@shared/common/micro';
+import { createMicroElementTemplate } from '@shared/micro';
 import { isEmpty } from 'lodash';
 import { forkJoin, Observable, of } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';

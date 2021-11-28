@@ -1,5 +1,5 @@
 import { Injectable } from '@di';
-import { MicroManageInterface } from '@shared/common/micro';
+import { MicroManageInterface } from '@shared/micro';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 import { LoadAssets, StaticAssets } from '../load-assets/load-assets';
