@@ -1,7 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "module": "CommonJs", // 组织代码的方式
-    "outDir": "../university-lib"
-  }
-}
