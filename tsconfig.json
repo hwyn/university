@@ -45,8 +45,8 @@
     "baseUrl": "./",                          /* Base directory to resolve non-absolute module names. */
     "paths": {                                /* A series of entries which re-map imports to lookup locations relative to the 'baseUrl'. */  
       "@di": ["./packages/di"],
-      "dynamic-builder": ["./packages/dynamic-builder"],
       "@university/*": ["./packages/*"],
+      "dynamic-builder": ["./packages/dynamic-builder"],
       "@client-silde-rendering": ["./packages/client-silde-rendering"],
       "@client-silde-rendering/*": ["./packages/client-silde-rendering/*"],
       "@server-slide-rendering": ["./packages/server-slide-rendering"],
