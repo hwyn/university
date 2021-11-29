@@ -4,6 +4,7 @@ export const templateZip = (template: string, mapping: any = {}) => {
   return keys.reduce((t: string, key: string) => t.replace(`{${key}}`, mapping[key]), formatTemplate);
 };
 
+// eslint-disable-next-line max-lines-per-function
 export const createMicroElementTemplate = (microName: string, options: any) => {
   const { initHtml = '', initStyle = '', linkToStyles = [] } = options;
   return templateZip(`
@@ -59,8 +60,8 @@ export const createMicroElementTemplate = (microName: string, options: any) => {
       customElements.define('${microName}-tag', Micro${microName}Element);
     })();
   `, {
-    initStyle: initStyle.replace(/\'/g, '\'').replace(/\n/g, ''),
-    initHtml: initHtml.replace(/\'/g, '\'').replace(/\n/g, ''),
+    initStyle: initStyle.replace(/'/g, '\'').replace(/\n/g, ''),
+    initHtml: initHtml.replace(/'/g, '\'').replace(/\n/g, ''),
     linkToStyles: JSON.stringify(linkToStyles)
   });
 };

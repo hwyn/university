@@ -24,7 +24,8 @@ export class Platform {
     exports.render = this.proxyRender.bind(this, render);
   }
 
-  private async proxyRender(render: Render, global: any, isMicro: boolean = false) {
+  private async proxyRender(render: Render, global: any, isMicro = false) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { fetch, request, location, readAssets, readStaticFile, proxyHost, microSSRPath, ..._global } = global;
     const providers = [
       { provide: IS_MICRO, useValue: isMicro },

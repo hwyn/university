@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { cloneDeep, isEmpty } from 'lodash';
 import { Observable, of } from 'rxjs';
 import { filter, switchMap, tap } from 'rxjs/operators';
@@ -13,8 +14,7 @@ export class LifeCycleExtension extends BasicExtension {
   protected lifeActions!: { [key: string]: (event?: Event, ...arg: any[]) => any };
   protected detectChanges: any = this.cache.detectChanges.pipe(filter(() => !this.hasChange));
 
-  protected extension() { 
-  }
+  protected extension() { }
 
   protected afterExtension() {
     this.serializeCalculators();

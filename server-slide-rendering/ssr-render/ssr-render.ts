@@ -38,7 +38,7 @@ export class SSRRender {
   }
 
   private proxyFetch(url: string, init?: RequestInit) {
-    const _url = /http|https/.test(url) ? url : `${this.host}/${url.replace(/^[\/]+/, '')}`;
+    const _url = /http|https/.test(url) ? url : `${this.host}/${url.replace(/^[/]+/, '')}`;
     return fetch(_url, init).then((res) => {
       const { status, statusText } = res;
       if (![404, 504].includes(status)) {
@@ -100,7 +100,6 @@ export class SSRRender {
 
   private async _render(request: Request, isMicro?: boolean) {
     try {
-      const m: any = { exports: {}, require: vmRequire };
       if (this.isDevelopment || !this._compiledRender) {
         this.factoryVmScript();
       }
@@ -112,6 +111,7 @@ export class SSRRender {
   }
 
   private createScriptTemplate(scriptId: string, insertInfo: string) {
+    // eslint-disable-next-line max-len
     return `<script id="${scriptId}">${insertInfo}(function(){ const script = document.querySelector('#${scriptId}');script.parentNode.removeChild(script);}());</script>`;
   }
 

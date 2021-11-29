@@ -32,10 +32,10 @@ export class InstanceExtension extends BasicExtension {
       instance.current = null;
       mountedIsEnd = false;
       instance.detectChanges = () => undefined;
-      if (onDestory && onDestory(id)) { }
+      if (onDestory) { onDestory(id); }
     });
     mounted.subscribe((id: string) => {
-      if (onMounted && !mountedIsEnd && onMounted(id)) { }
+      if (onMounted && !mountedIsEnd) { onMounted(id); }
       mountedIsEnd = true;
     });
     Object.defineProperty(instance, 'current', this.getCurrentProperty(builderField));
@@ -49,7 +49,7 @@ export class InstanceExtension extends BasicExtension {
     const set = (current: any) => {
       const hasMounted = !!current && _current !== current;
       _current = current;
-      if (hasMounted && instance.mounted.next(id)) { }
+      if (hasMounted) { instance.mounted.next(id); }
     };
     return { get, set };
   }

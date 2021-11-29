@@ -1,4 +1,4 @@
-export class InjectorToken<T = any> {
+export class InjectorToken {
   static get(_desc: string): InjectorToken {
     return new InjectorToken(_desc);
   }

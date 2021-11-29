@@ -2,6 +2,7 @@ import { Observable } from 'rxjs';
 import { BuilderField, BuilderModelImplements } from '../../builder';
 import { BuilderFieldExtensions } from '../type-api';
 
+// eslint-disable-next-line max-len
 export type TypeEvent = 'load' | 'dataSource' | 'calculator-datasource' | 'calculator' | 'click' | 'change' | 'focus' | 'blur' | 'keyUp' | 'keyDown' | string;
 
 export type EventHandler = (builderField: BuilderFieldExtensions, runObservable?: boolean) => any | Observable<any> | undefined;
@@ -12,6 +13,7 @@ export interface ActionInterceptProps {
 }
 export interface Calculator {
   dependent: { fieldId: string, type: TypeEvent };
+  // eslint-disable-next-line no-use-before-define
   action: Action;
   targetId: string;
 }

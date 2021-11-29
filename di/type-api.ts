@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 import { Observable } from 'rxjs';
 import { InjectorToken } from './injector-token';
 

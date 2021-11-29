@@ -1,3 +1,5 @@
+/* eslint-disable no-use-before-define */
+/* eslint-disable camelcase */
 import { isUndefined } from 'lodash';
 import 'reflect-metadata';
 import { Injector } from './abstract-injector';
@@ -79,15 +81,16 @@ function resolveClassProvider({ useNew = false, useClass }: ClassProvider) {
   };
 }
 
-function resolveMulitProvider(this: StaticInjector, { useValue, multi }: ValueProvider, { token, fn = () => [] }: Record) {
+function resolveMulitProvider(this: StaticInjector, { useValue, multi }: ValueProvider, { fn = () => [] }: Record) {
   const preValue = fn.call(this);
-  return function (this: StaticInjector, isSelfCall?: boolean) {
+  return function (this: StaticInjector) {
     return multi ? [...preValue, useValue] : useValue;
   };
 }
 
 function resolveFactoryProvider({ useFactory, deps = [] }: FactoryProvider) {
   return function (this: StaticInjector) {
+    // eslint-disable-next-line prefer-spread
     return useFactory.apply(undefined, deps.map((token: any) => this.get(token)));
   };
 }

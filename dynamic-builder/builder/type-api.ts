@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 import { Observable, Subject } from 'rxjs';
 import { LocatorStorageImplements } from '@di';
 import { Grid } from '../builder-extension';

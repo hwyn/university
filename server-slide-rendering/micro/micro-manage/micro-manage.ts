@@ -27,13 +27,14 @@ export class MicroManage implements MicroManageInterface {
     if (!subject) {
       const proxyMicroUrl = this.ls.getProvider<any>(SSR_MICRO_PATH);
       const { location: { pathname } } = this.ls.getProvider(HISTORY_TOKEN);
-      const microPath = `/${proxyMicroUrl(microName, `/micro-ssr/${pathname}`)}`.replace(/[\/]+/g, '/');
+      const microPath = `/${proxyMicroUrl(microName, `/micro-ssr/${pathname}`)}`.replace(/[/]+/g, '/');
       subject = this.http.get(`${this.proxy}${microPath}`).pipe(
         catchError((error) => of({ html: `${microName}<br/>${error.message}`, styles: '' })),
         switchMap((microResult) => this.reeadLinkToStyles(microName, microResult)),
         map((microResult) => ({ microResult: this.createMicroTag(microName, microResult), microName })),
         shareReplay(1)
       );
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       subject.subscribe(() => { }, () => { });
       this.registryParseHtmlMidde(() => subject);
       this.microCache.set(microName, subject);

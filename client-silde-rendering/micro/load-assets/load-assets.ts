@@ -38,6 +38,7 @@ export class LoadAssets {
   }
 
   private readJavascript(staticAssets: StaticAssets) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { javascript, script, ...other } = staticAssets;
     return forkJoin(javascript.map((src: string) => this.http.getText(src))).pipe(
       map((js: string[]) => ({ script: js, javascript, ...other }))
@@ -49,7 +50,7 @@ export class LoadAssets {
 
     return tag && tag.shadowRoot ? of(staticAssets) : this.reeadLinkToStyles(staticAssets.links).pipe(
       tap((linkToStyles: string[]) => {
-        // tslint:disable-next-line:function-constructor
+        // eslint-disable-next-line no-new-func
         new Function(createMicroElementTemplate(microName, { linkToStyles }))();
       }),
       map(() => staticAssets)

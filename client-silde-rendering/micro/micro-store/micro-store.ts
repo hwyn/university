@@ -9,7 +9,7 @@ export class MicroStore implements MicroStoreInterface {
 
   constructor(private microName: string, private staticAssets: StaticAssets, private microManage: MicroManageInterface) {
     const { script } = staticAssets;
-    // tslint:disable-next-line:function-constructor
+    // eslint-disable-next-line no-new-func
     this.execFunctions = script.map((source: string) => new Function('microStore', 'fetchCacheData', source));
     this._renderMicro = this.execJavascript();
   }

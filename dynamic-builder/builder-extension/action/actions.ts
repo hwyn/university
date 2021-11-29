@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import { flatMap, isEmpty } from 'lodash';
 import { Observable, of } from 'rxjs';
 import { concatMap, filter, map, switchMap, toArray } from 'rxjs/operators';
@@ -56,6 +57,7 @@ export class Action implements ActionIntercept {
     return actionSub;
   }
 
+  // eslint-disable-next-line complexity
   public invoke(
     action: ActionProps,
     props?: ActionInterceptProps,
@@ -77,6 +79,7 @@ export class Action implements ActionIntercept {
     return !!props && !!type && !isEmpty(props) ? this.invokeCalculators(_action, actionSub, props) : actionSub;
   }
 
+  // eslint-disable-next-line complexity
   public executeAction(
     actionPropos: ActionProps,
     actionContext?: ActionContext,
@@ -84,7 +87,7 @@ export class Action implements ActionIntercept {
   ): Observable<any> {
     const [actionEvent, ...otherEvent] = event;
     const { name = ``, handler } = serializeAction(actionPropos);
-    const [actionName, execute = 'execute'] = name.match(/([^\.]+)/ig) || [name];
+    const [actionName, execute = 'execute'] = name.match(/([^.]+)/ig) || [name];
     const context = { ...actionContext, actionPropos, actionEvent };
     let action = new BaseAction(this.ls, context);
     let executeHandler = handler;
