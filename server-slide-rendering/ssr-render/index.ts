@@ -12,4 +12,5 @@ const ssrMiiddleware = (entryFile: string, options: SSROptions): Router => {
 };
 
 export default ssrMiiddleware;
-export const creareMicroSSRPath = (prefix: string = 'static') => (microName: string, pathname: string) => `/${prefix}/${microName}${pathname}`;
+// eslint-disable-next-line max-len
+export const creareMicroSSRPath = (prefix = 'static') => (microName: string, pathname: string) => `/${prefix}/${microName}${pathname}`;
