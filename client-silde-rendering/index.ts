@@ -1,3 +1,3 @@
 export * from './micro';
-export * from './provider';
+export * from './providers';
 export * from './token';

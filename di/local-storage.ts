@@ -6,11 +6,11 @@ import { LocatorStorageImplements, Type } from "./type-api";
 export class LocatorStorage implements LocatorStorageImplements {
   constructor(private injector: Injector) { }
 
-  getProvider<T>(token: any) {
+  getProvider<T = any>(token: any): T {
     return this.injector.get<T>(token);
   }
 
-  getService<T>(target: Type<T>) {
+  getService<T>(target: Type<T>): T {
     return this.injector.get<T>(target);
   }
 }

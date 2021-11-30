@@ -1,7 +1,7 @@
 import { RESOURCE_TOKEN } from '@client-silde-rendering/token';
 import { Inject, Injectable, LocatorStorage } from '@di';
 import { HttpClient } from '@shared/common/http';
-import { AbstractJsonConfigService } from '@shared/services/json-config';
+import { AbstractJsonConfigService } from '@shared/providers/json-config';
 import { ENVIRONMENT } from '@shared/token';
 import { Observable } from 'rxjs';
 

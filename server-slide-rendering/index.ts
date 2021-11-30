@@ -1,2 +1,3 @@
 export * from './token';
-export * from './provider';
+export * from './providers';
+export * from './token';
