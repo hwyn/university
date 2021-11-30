@@ -1,5 +1,4 @@
-import { getProvider, Injector, LOCAL_STORAGE, Provider, StaticInjector } from '@di';
-import { LocatorStorage } from '@shared/provider/local-storage';
+import { getProvider, Injector, Provider, StaticInjector } from '@di';
 import { FETCH_TOKEN, IS_MICRO, MICRO_MANAGER } from '@shared/token';
 import { cloneDeep } from 'lodash';
 import { Observable, of } from 'rxjs';
@@ -22,13 +21,11 @@ export class Platform {
   }
 
   private async proxyRender(render: Render, container: HTMLElement, options: any) {
-    const { microManage, ..._options } = options;
-    const head = container.shadowRoot?.querySelector('[data-app="head"]') || document.head;
-    const shadowContainer = container.shadowRoot?.querySelector('[data-app="body"]');
+    const { microManage, head, body, ..._options } = options;
     const injector = this.beforeBootstrapRender([
       { provide: MICRO_MANAGER, useValue: microManage },
-      { provide: APPLICATION_CONTAINER, useValue: shadowContainer },
-      { provide: INSERT_STYLE_CONTAINER, useValue: head }
+      { provide: APPLICATION_CONTAINER, useValue: body || container },
+      { provide: INSERT_STYLE_CONTAINER, useValue: head || document.head }
     ]);
     return render(injector, _options);
   }
@@ -39,7 +36,6 @@ export class Platform {
       ...this.providers,
       { provide: RENDER_SSR, useValue: true },
       { provide: IS_MICRO, useValue: this.isMicro },
-      { provide: LOCAL_STORAGE, useClass: LocatorStorage },
       { provide: FETCH_TOKEN, useValue: this.proxyFetch() },
       { provide: INSERT_STYLE_CONTAINER, useValue: document.head },
       { provide: RESOURCE_TOKEN, useFactory: this.factoryResourceCache.bind(this, 'file-static') },

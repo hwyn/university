@@ -23,5 +23,3 @@ export const registryProvider = (provider: Provider | Provider[]) => toArray(pro
 export const Injectable = InjectableFactory(undefined, { useClass: true, useNew: false });
 
 export const getProvider = <T = any>(target: Type<T> | InjectorToken) => injector.get<T>(target);
-
-export * from './injector';

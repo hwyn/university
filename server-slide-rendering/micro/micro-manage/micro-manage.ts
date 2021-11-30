@@ -1,7 +1,6 @@
-import { Inject, Injectable } from '@di';
+import { Inject, Injectable, LocatorStorage } from '@di';
 import { HttpClient } from '@shared/common/http';
 import { createMicroElementTemplate, MicroManageInterface, MicroStoreInterface, templateZip } from '@shared/micro';
-import { LocatorStorage } from '@shared/provider/local-storage';
 import { HISTORY_TOKEN } from '@shared/token';
 import { cloneDeep, isEmpty } from 'lodash';
 import { forkJoin, Observable, of } from 'rxjs';

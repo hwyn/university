@@ -1,11 +1,11 @@
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 
 export interface MicroStoreInterface {
-  isFirstMounted?: boolean;
   onMounted(container: HTMLElement, options?: any): void;
   unMounted(container: HTMLElement): void;
 }
 
 export interface MicroManageInterface {
+  readonly loaderStyleSubject?: Subject<HTMLStyleElement>;
   bootstrapMicro(microName: string): Observable<MicroStoreInterface>;
 }

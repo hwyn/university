@@ -1,4 +1,5 @@
-import { Inject, Injectable, JsonConfigImplements, JSON_CONFIG } from '@di';
+import { Inject, Injectable, JsonConfigImplements } from '@di';
+import { JSON_CONFIG } from '@shared/token';
 import { flatMap } from 'lodash';
 import { Observable } from 'rxjs';
 import { UI_ELEMENT } from '../token';

@@ -1,11 +1,10 @@
-import { getProvider, Injector, JSON_CONFIG, LOCAL_STORAGE, Provider, StaticInjector } from '@di';
-import { LocatorStorage } from '@shared/provider/local-storage';
-import { FETCH_TOKEN, HISTORY_TOKEN, IS_MICRO, MICRO_MANAGER } from '@shared/token';
+import { getProvider, Injector, Provider, StaticInjector } from '@di';
+import { JsonConfigService } from '@server-slide-rendering/services/json-config';
+import { FETCH_TOKEN, HISTORY_TOKEN, IS_MICRO, JSON_CONFIG, MICRO_MANAGER } from '@shared/token';
 import { Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { MicroManage } from '../../micro';
 import { PROXY_HOST, READ_FILE_STATIC, REGISTRY_MICRO_MIDDER, REQUEST_TOKEN, SSR_MICRO_PATH } from '../../token';
-import { JsonConfigService } from '../json-config';
 
 type Render = (...args: any[]) => Promise<{ html: string, styles: string }>;
 type MicroMiddleware = () => Observable<any>;
@@ -51,7 +50,6 @@ export class Platform {
     const _providers: Provider[] = [
       ...this.providers,
       { provide: MICRO_MANAGER, useClass: MicroManage },
-      { provide: LOCAL_STORAGE, useClass: LocatorStorage },
       { provide: JSON_CONFIG, useClass: JsonConfigService },
       { provide: HISTORY_TOKEN, useValue: { location: {}, listen: () => () => void (0) } },
       ...providers

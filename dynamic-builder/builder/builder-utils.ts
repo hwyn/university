@@ -59,7 +59,7 @@ function getConfigJson(this: BuilderModelImplements, props: BuilderProps) {
   }
 
   const configSub = isJsonName ?
-    this.ls.getService(BuilderEngine).getJsonConfig(jsonName) :
+    this.ls.getProvider(BuilderEngine).getJsonConfig(jsonName) :
     of(cloneDeep({ id, ...Array.isArray(config) ? { fields: config } : config }));
 
   return configSub.pipe(
@@ -93,7 +93,7 @@ function getCacheObj(this: BuilderModelImplements, { fields = [] }: any): any {
 function createField(this: BuilderModelImplements, field: any): BuilderField {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { id, type, calculators, ...other } = field;
-  const element = this.ls.getService(BuilderEngine).getUiComponent(type);
+  const element = this.ls.getProvider(BuilderEngine).getUiComponent(type);
 
   return { id, type, element, field: other };
 }

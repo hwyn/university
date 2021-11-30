@@ -1,16 +1,17 @@
 import { Injectable } from '@di';
 import { MicroManageInterface } from '@shared/micro';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 import { LoadAssets, StaticAssets } from '../load-assets/load-assets';
 import { MicroStore } from '../micro-store/micro-store';
 
 @Injectable()
 export class MicroManage implements MicroManageInterface {
+  public loaderStyleSubject = new Subject<HTMLStyleElement>();
   private microCache: Map<string, Observable<MicroStore>> = new Map();
-  private _querySelector = document.querySelector.bind(document);
+
   constructor(private la: LoadAssets) {
-    document.querySelector = this.querySelector.bind(this);
+    document.querySelector = this.querySelectorProxy();
   }
 
   public bootstrapMicro(microName: string): Observable<MicroStore> {
@@ -26,15 +27,11 @@ export class MicroManage implements MicroManageInterface {
     return storeSubject;
   }
 
-  private queryShadowSelector(selectors: string) {
-    const shadowList = selectors.split('::shadow').filter((item) => !!item);
-    const end = shadowList.pop();
-    const ele = shadowList.reduce((dom: any, sel) => dom ? dom.querySelector(sel)?.shadowRoot : null, document);
-    return ele && ele.querySelector(end);
-  }
-
-  private querySelector(selectors: string) {
-    const _querySelector = selectors.indexOf('::shadow') !== -1 ? this.queryShadowSelector : this._querySelector;
-    return _querySelector.call(this, selectors);
+  private querySelectorProxy() {
+    const microRex = /^styleLoaderInsert:[^:]+::shadow$/g;
+    const loaderStyleHead = document.createElement('head');
+    const _querySelector = document.querySelector.bind(document);
+    Object.defineProperty(loaderStyleHead, 'appendChild', { value: this.loaderStyleSubject.next });
+    return (selectors: string) => microRex.test(selectors) ? loaderStyleHead : _querySelector(selectors);
   }
 }
