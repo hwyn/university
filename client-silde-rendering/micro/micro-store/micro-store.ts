@@ -12,7 +12,7 @@ export class MicroStore implements MicroStoreInterface {
     const { script } = staticAssets;
     // eslint-disable-next-line no-new-func
     this.execFunctions = script.map((source: string) => new Function('microStore', 'fetchCacheData', source));
-    this.microManage.loaderStyleSubject.subscribe(this.headAppendChildProxy.bind(this));
+    this.microManage.loaderStyleSubject?.subscribe(this.headAppendChildProxy.bind(this));
     this._renderMicro = this.execJavascript();
   }
 
@@ -29,8 +29,7 @@ export class MicroStore implements MicroStoreInterface {
       return;
     }
     this.mountedList.splice(this.mountedList.indexOf(exMicroInfo), 1);
-    const { unRender } = exMicroInfo;
-    await unRender();
+    await exMicroInfo.unRender(container.shadowRoot?.querySelector('[data-app="body"]'));
   }
 
   private async execMounted() {

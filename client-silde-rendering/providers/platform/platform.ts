@@ -27,7 +27,8 @@ export class Platform {
       { provide: APPLICATION_CONTAINER, useValue: body || container },
       { provide: INSERT_STYLE_CONTAINER, useValue: head || document.head }
     ]);
-    return render(injector, _options);
+    const unRender = await render(injector, _options);
+    return (_container: HTMLElement) => { unRender(_container); injector.clear(); }
   }
 
   private beforeBootstrapRender(providers: Provider[] = []) {

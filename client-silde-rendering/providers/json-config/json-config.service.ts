@@ -8,10 +8,10 @@ import { Observable } from 'rxjs';
 @Injectable()
 export class JsonConfigService extends AbstractJsonConfigService {
   constructor(
+    protected http: HttpClient,
     protected ls: LocatorStorage,
     @Inject(ENVIRONMENT) protected environment: { [key: string]: any },
-    @Inject(RESOURCE_TOKEN) protected cacheConfig: Map<string, Observable<object>> = new Map(),
-    protected http: HttpClient,
+    @Inject(RESOURCE_TOKEN) protected cacheConfig: Map<string, Observable<object>> = new Map()
   ) {
     super(ls);
   }

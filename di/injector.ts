@@ -36,9 +36,8 @@ export class StaticInjector implements Injector {
   }
 
   set(token: any, provider: Provider) {
-    const { provide, useClass, useValue, useFactory, deps = [] } = <any>provider;
+    const { provide, useClass, useValue, useFactory } = <any>provider;
     const record = this._recors.get(token) || <any>{};
-    deps.forEach((t: Provider) => serializeDeps.call(this, t));
     record.token = provide;
 
     if (!isUndefined(useValue)) {
@@ -55,13 +54,6 @@ export class StaticInjector implements Injector {
   clear(): void {
     this._recors.clear();
   }
-}
-
-function serializeDeps(this: StaticInjector, dep: any) {
-  if (dep[__PROVIDER_TYPE__] === __USECLASS__) {
-    return this.set(dep, { provide: dep, useClass: dep });
-  }
-  this.set(dep.provide, dep);
 }
 
 function resolveClassProvider({ useNew = false, useClass }: ClassProvider) {
