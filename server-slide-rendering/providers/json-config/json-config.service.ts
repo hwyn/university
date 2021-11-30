@@ -1,5 +1,5 @@
 import { Injectable, LocatorStorage } from '@di';
-import { AbstractJsonConfigService } from '@shared/services/json-config';
+import { AbstractJsonConfigService } from '@shared/providers/json-config';
 import { Observable } from 'rxjs';
 import { READ_FILE_STATIC } from '../../token';
 
