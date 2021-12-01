@@ -53,6 +53,8 @@ export class StaticInjector implements Injector {
 
   clear(): void {
     this._recors.clear();
+    this._instanceRecors.clear();
+    this.parentInjector = void (0);
   }
 }
 

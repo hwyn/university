@@ -1,7 +1,7 @@
 export const templateZip = (template: string, mapping: any = {}) => {
   const keys = Object.keys(mapping);
   const formatTemplate = template.replace(/\n*/g, '').replace(/[ ]+/g, ' ');
-  return keys.reduce((t: string, key: string) => t.replace(`{${key}}`, mapping[key]), formatTemplate);
+  return keys.reduce((t: string, key: string) => t.replace(new RegExp(`\\{${key}\\}`, 'g'), mapping[key]), formatTemplate);
 };
 
 // eslint-disable-next-line max-lines-per-function

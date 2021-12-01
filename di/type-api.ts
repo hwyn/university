@@ -1,6 +1,5 @@
 /* eslint-disable max-classes-per-file */
 import { Observable } from 'rxjs';
-import { InjectorToken } from './injector-token';
 
 export type Type<T = any> = new (...args: any[]) => T;
 

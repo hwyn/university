@@ -42,6 +42,7 @@ export class Platform {
     const { js = [], links = [] } = readAssets();
     const { html, styles } = await render(injector, { request, ..._global });
     const execlResult = await this.execlMicroMiddleware({ html, styles, js, links, microTags: [], microFetchData: [] });
+    injector.clear();
     return { ...execlResult, fetchData: this.getStaticFileData() };
   }
 

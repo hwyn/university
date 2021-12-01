@@ -13,18 +13,20 @@ export class SSRRender {
   private microName: string;
   private manifestFile: string;
   private _compiledRender!: any;
-  private staticDir: string | ((url: string) => string);
+  private vmContext: { [key: string]: any };
   private microSSRPath?: ProxyMicroUrl;
+  private staticDir: string | ((url: string) => string);
   private isDevelopment: boolean = process.env.NODE_ENV === 'development';
 
   constructor(private entryFile: string, options: SSROptions) {
     const { index, manifestFile, staticDir, microName, proxyTarget = 'http://127.0.0.1:3000', microSSRPath } = options;
-    this.manifestFile = manifestFile;
     this.index = index || '';
+    this.host = proxyTarget;
     this.staticDir = staticDir || '';
     this.microName = microName || '';
-    this.host = proxyTarget;
+    this.manifestFile = manifestFile;
     this.microSSRPath = microSSRPath;
+    this.vmContext = options.vmContext || {};
   }
 
   private get global() {
@@ -92,7 +94,7 @@ export class SSRRender {
     const m: any = { exports: {}, require: vmRequire };
     const wrapper = NativeModule.wrap(fs.readFileSync(this.entryFile, 'utf-8'));
     const script = new vm.Script(wrapper, { filename: 'server-entry.js', displayErrors: true });
-    const context = vm.createContext({ Buffer, process, console, setTimeout, setInterval });
+    const context = vm.createContext({ Buffer, process, console, setTimeout, setInterval, ...this.vmContext });
     const compiledWrapper = script.runInContext(context);
     compiledWrapper(m.exports, m.require, m);
     this._compiledRender = m.exports.render;

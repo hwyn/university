@@ -6,5 +6,6 @@ export interface SSROptions {
   manifestFile: string;
   microName?: string;
   proxyTarget?: string;
+  vmContext?: { [key: string]: any };
   microSSRPath?: ProxyMicroUrl;
 }

@@ -11,19 +11,17 @@ declare const microFetchData: any[];
 
 @Injectable()
 export class LoadAssets {
-  private cacheServerData: [{ microName: string, source: string }];
-  constructor(private http: HttpClient) {
-    this.cacheServerData = this.initialCacheServerData();
-  }
+  private cacheServerData = this.initialCacheServerData();
+  constructor(private http: HttpClient) { }
 
-  private initialCacheServerData(): any {
-    return typeof microFetchData !== 'undefined' ? microFetchData : [];
+  private initialCacheServerData(): [{ microName: string, source: string }] {
+    return typeof microFetchData !== 'undefined' ? microFetchData : [] as any;
   }
 
   private parseStatic(microName: string, entryPoints: { [key: string]: any }): Observable<StaticAssets> {
     const entryKeys = Object.keys(entryPoints);
     const microData = this.cacheServerData.find(({ microName: _microName }) => microName === _microName);
-    const fetchCacheData = microData ? JSON.parse(microData.source) : {};
+    const fetchCacheData = JSON.parse(microData && microData.source || '{}');
     const staticAssets: StaticAssets = { javascript: [], script: [], links: [], fetchCacheData };
     entryKeys.forEach((staticKey: string) => {
       const { js: staticJs = [], css: staticLinks = [] } = entryPoints[staticKey].assets;
@@ -37,9 +35,8 @@ export class LoadAssets {
     return isEmpty(links) ? of(links) : forkJoin(links.map((href) => this.http.getText(href)));
   }
 
-  private readJavascript(staticAssets: StaticAssets) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { javascript, script, ...other } = staticAssets;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private readJavascript({ javascript, script, ...other }: StaticAssets) {
     return forkJoin(javascript.map((src: string) => this.http.getText(src))).pipe(
       map((js: string[]) => ({ script: js, javascript, ...other }))
     );
@@ -49,10 +46,8 @@ export class LoadAssets {
     const tag = document.createElement(`${microName}-tag`);
 
     return tag && tag.shadowRoot ? of(staticAssets) : this.reeadLinkToStyles(staticAssets.links).pipe(
-      tap((linkToStyles: string[]) => {
-        // eslint-disable-next-line no-new-func
-        new Function(createMicroElementTemplate(microName, { linkToStyles }))();
-      }),
+      // eslint-disable-next-line no-new-func
+      tap((linkToStyles: string[]) => new Function(createMicroElementTemplate(microName, { linkToStyles }))()),
       map(() => staticAssets)
     );
   }

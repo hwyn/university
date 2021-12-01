@@ -9,9 +9,8 @@ export class MicroStore implements MicroStoreInterface {
   private _renderMicro: (...args: any[]) => Promise<any>;
 
   constructor(private microName: string, private staticAssets: StaticAssets, private microManage: MicroManageInterface) {
-    const { script } = staticAssets;
     // eslint-disable-next-line no-new-func
-    this.execFunctions = script.map((source: string) => new Function('microStore', 'fetchCacheData', source));
+    this.execFunctions = staticAssets.script.map((source: string) => new Function('microStore', 'fetchCacheData', source));
     this.microManage.loaderStyleSubject?.subscribe(this.headAppendChildProxy.bind(this));
     this._renderMicro = this.execJavascript();
   }
@@ -33,12 +32,10 @@ export class MicroStore implements MicroStoreInterface {
   }
 
   private async execMounted() {
-    const [[container, options]] = this.execMountedList;
-    const ownerDocument = container.ownerDocument;
+    const [container, options] = <[HTMLElement, any]>this.execMountedList.shift();
     this.mountendAppendLoadStyleNode(container);
-    const unRender = await this._renderMicro(container, this.parseRenderOptions(container, options));
-    this.mountedList.push({ unRender, container, document: ownerDocument });
-    this.execMountedList.shift();
+    const unRender = await this._renderMicro(this.parseRenderOptions(container, options));
+    this.mountedList.push({ unRender, container });
     if (this.execMountedList.length !== 0) {
       await this.execMounted();
     }

@@ -20,12 +20,12 @@ export class Platform {
     !this.isMicro ? render(this.beforeBootstrapRender()) : microStore.render = this.proxyRender.bind(this, render);
   }
 
-  private async proxyRender(render: Render, container: HTMLElement, options: any) {
+  private async proxyRender(render: Render, options: any) {
     const { microManage, head, body, ..._options } = options;
     const injector = this.beforeBootstrapRender([
       { provide: MICRO_MANAGER, useValue: microManage },
-      { provide: APPLICATION_CONTAINER, useValue: body || container },
-      { provide: INSERT_STYLE_CONTAINER, useValue: head || document.head }
+      { provide: APPLICATION_CONTAINER, useValue: body },
+      { provide: INSERT_STYLE_CONTAINER, useValue: head }
     ]);
     const unRender = await render(injector, _options);
     return (_container: HTMLElement) => { unRender(_container); injector.clear(); }
