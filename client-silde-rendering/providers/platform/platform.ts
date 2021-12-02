@@ -23,7 +23,7 @@ export class Platform {
   private async proxyRender(render: Render, options: any) {
     const { microManage, head, body, ..._options } = options;
     const injector = this.beforeBootstrapRender([
-      { provide: MICRO_MANAGER, useValue: microManage },
+      { provide: MICRO_MANAGER, useFactory: () => microManage },
       { provide: APPLICATION_CONTAINER, useValue: body },
       { provide: INSERT_STYLE_CONTAINER, useValue: head }
     ]);

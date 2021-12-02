@@ -28,10 +28,9 @@ export class MicroManage implements MicroManageInterface {
   }
 
   private querySelectorProxy() {
-    const microRex = /^styleLoaderInsert:[^:]+::shadow$/g;
     const loaderStyleHead = document.createElement('head');
     const _querySelector = document.querySelector.bind(document);
-    Object.defineProperty(loaderStyleHead, 'appendChild', { value: this.loaderStyleSubject.next });
-    return (selectors: string) => microRex.test(selectors) ? loaderStyleHead : _querySelector(selectors);
+    Object.defineProperty(loaderStyleHead, 'appendChild', { value: this.loaderStyleSubject.next.bind(this.loaderStyleSubject) });
+    return (selectors: string) => /^styleLoaderInsert:[^:]+::shadow$/g.test(selectors) ? loaderStyleHead : _querySelector(selectors);
   }
 }

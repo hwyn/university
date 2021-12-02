@@ -9,9 +9,9 @@ export class MicroStore implements MicroStoreInterface {
   private _renderMicro: (...args: any[]) => Promise<any>;
 
   constructor(private microName: string, private staticAssets: StaticAssets, private microManage: MicroManageInterface) {
+    this.microManage.loaderStyleSubject?.subscribe(this.headAppendChildProxy.bind(this));
     // eslint-disable-next-line no-new-func
     this.execFunctions = staticAssets.script.map((source: string) => new Function('microStore', 'fetchCacheData', source));
-    this.microManage.loaderStyleSubject?.subscribe(this.headAppendChildProxy.bind(this));
     this._renderMicro = this.execJavascript();
   }
 
