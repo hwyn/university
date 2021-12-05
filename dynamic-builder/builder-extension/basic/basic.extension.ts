@@ -3,7 +3,7 @@ import { cloneDeep, isArray, isString, merge } from 'lodash';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { BuilderProps, CacheObj } from '../../builder';
-import { LocatorStorageImplements } from '@di';
+import { LocatorStorage } from '@di';
 import { transformObservable, withValue } from '../../utility';
 import { Action, BaseAction } from '../action';
 import { getEventType } from '../action/create-actions';
@@ -18,7 +18,7 @@ export const serializeAction = (action: string | Action): Action => {
 
 export abstract class BasicExtension {
   protected jsonFields: any[];
-  protected ls: LocatorStorageImplements;
+  protected ls: LocatorStorage;
 
   constructor(
     protected builder: BuilderModelExtensions,

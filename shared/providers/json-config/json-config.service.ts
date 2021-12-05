@@ -1,12 +1,13 @@
-import { JsonConfigImplements, LocatorStorageImplements } from '@di';
+import { LocatorStorage } from '@di';
 import { cloneDeep } from 'lodash';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
+import { AbstractJsonConfig } from './json-config.abstract';
 
-export abstract class AbstractJsonConfigService implements JsonConfigImplements {
+export abstract class AbstractJsonConfigService implements AbstractJsonConfig {
   protected cacheConfig: Map<string, Observable<object>> = new Map();
 
-  constructor(protected ls: LocatorStorageImplements) { }
+  constructor(protected ls: LocatorStorage) { }
 
   protected abstract getServerFetchData(url: string): Observable<object>;
 

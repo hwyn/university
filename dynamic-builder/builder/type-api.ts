@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define */
 import { Observable, Subject } from 'rxjs';
-import { LocatorStorageImplements, Type } from '@di';
+import { LocatorStorage, Type } from '@di';
 import { Grid } from '../builder-extension';
 import { Action } from '../builder-extension/action';
 
@@ -65,7 +65,7 @@ export interface BuilderModelImplements {
   readonly fields: BuilderField[];
   readonly grid?: Grid;
   readonly Element: any;
-  readonly ls: LocatorStorageImplements;
+  readonly ls: LocatorStorage;
   getFieldByTypes<T = BuilderField>(id: string): T[];
   getAllFieldByTypes<T = BuilderField>(id: string): T[];
   getFieldById<T = BuilderField>(id: string | undefined): T;

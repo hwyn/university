@@ -2,7 +2,7 @@
 /* eslint-disable camelcase */
 import { isUndefined } from 'lodash';
 import 'reflect-metadata';
-import { Injector } from './abstract-injector';
+import { Injector } from './injector.abstract';
 import { ClassProvider, FactoryProvider, Provider, Type, ValueProvider } from './type-api';
 
 interface Record { token: any; fn: (...args: any[]) => any; }

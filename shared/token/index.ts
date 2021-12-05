@@ -9,3 +9,6 @@ export const MICRO_MANAGER = InjectorToken.get('MICRO_MANAGER');
 
 export const APP_INITIALIZER = InjectorToken.get('APP_INITIALIZER');
 export const JSON_CONFIG = InjectorToken.get('JSON_CONFIG');
+
+export const ROUTER_CONFIG = InjectorToken.get('ROUTER_CONFIG');
+export const ROUTER_INTERCEPT = InjectorToken.get('ROUTER_INTERCEPT');

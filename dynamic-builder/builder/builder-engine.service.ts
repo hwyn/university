@@ -1,4 +1,5 @@
-import { Inject, Injectable, JsonConfigImplements } from '@di';
+import { Inject, Injectable } from '@di';
+import { AbstractJsonConfig } from '@shared/providers/json-config';
 import { JSON_CONFIG } from '@shared/token';
 import { flatMap } from 'lodash';
 import { Observable } from 'rxjs';
@@ -10,7 +11,7 @@ export class BuilderEngine {
 
   constructor(
     @Inject(UI_ELEMENT) uiComponents: any[][],
-    @Inject(JSON_CONFIG) private JsonConfigService: JsonConfigImplements
+    @Inject(JSON_CONFIG) private JsonConfigService: AbstractJsonConfig
   ) {
     this.uiElement = flatMap(uiComponents);
   }

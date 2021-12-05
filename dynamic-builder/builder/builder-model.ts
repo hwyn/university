@@ -1,5 +1,5 @@
 import { isEmpty } from 'lodash';
-import { LocatorStorageImplements } from '@di';
+import { LocatorStorage } from '@di';
 import { init } from './builder-utils';
 import { BuilderField, BuilderModelImplements, CacheObj } from './type-api';
 
@@ -10,7 +10,7 @@ export class BuilderModel implements BuilderModelImplements {
   public $$cache: CacheObj = {} as unknown as CacheObj;
   public Element!: any;
 
-  constructor(public ls: LocatorStorageImplements) {
+  constructor(public ls: LocatorStorage) {
     init.call(this);
   }
 

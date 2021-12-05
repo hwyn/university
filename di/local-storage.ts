@@ -1,6 +1,8 @@
-import { Injector } from "./abstract-injector";
+// eslint-disable-next-line max-classes-per-file
+import { Injector } from "./injector.abstract";
 import { Injectable } from "./injectable";
-import { LocatorStorageImplements, Type } from "./type-api";
+import { LocatorStorageImplements } from "./local-storage.abstract";
+import { Type } from "./type-api";
 
 @Injectable()
 export class LocatorStorage implements LocatorStorageImplements {

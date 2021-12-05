@@ -1,4 +1,4 @@
-import { LocatorStorageImplements } from '@di';
+import { LocatorStorage } from '@di';
 import { ACTION_INTERCEPT } from '../../token';
 import { serializeAction } from '../basic/basic.extension';
 import { BuilderFieldExtensions, BuilderModelExtensions, InstanceExtensions } from '../type-api';
@@ -12,7 +12,7 @@ export class BaseAction<T = any> {
   protected _actionIntercept!: ActionIntercept;
   protected _actionResult!: T;
 
-  constructor(protected ls: LocatorStorageImplements, context: any = {}) {
+  constructor(protected ls: LocatorStorage, context: any = {}) {
     this._actionIntercept = this.ls.getProvider(ACTION_INTERCEPT);
     this.invokeContext(context);
   }
