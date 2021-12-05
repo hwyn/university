@@ -1,19 +1,17 @@
 import { isEmpty } from 'lodash';
 import { LocatorStorageImplements } from '@di';
 import { init } from './builder-utils';
-import { BuilderField, BuilderModelImplements, BuilderProps, CacheObj } from './type-api';
+import { BuilderField, BuilderModelImplements, CacheObj } from './type-api';
 
 export class BuilderModel implements BuilderModelImplements {
   public id: string | undefined;
   public parent: BuilderModelImplements | null = null;
   public children: BuilderModelImplements[] = [];
   public $$cache: CacheObj = {} as unknown as CacheObj;
-  public ls!: LocatorStorageImplements;
   public Element!: any;
 
-  constructor(ls: LocatorStorageImplements, props: BuilderProps) {
-    this.ls = props.builder?.ls || ls;
-    init.call(this, props);
+  constructor(public ls: LocatorStorageImplements) {
+    init.call(this);
   }
 
   public getFieldByTypes<T = BuilderField>(type: string): T[] {

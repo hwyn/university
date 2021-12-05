@@ -30,6 +30,6 @@ export abstract class JsonConfigImplements {
 
 // tslint:disable-next-line:max-classes-per-file
 export abstract class LocatorStorageImplements {
-  abstract getProvider<T = any>(target: any): T;
+  abstract getProvider<T = any>(target: any, ...params: any[]): T;
   abstract getService<T>(target: Type<T>) : T;
 }

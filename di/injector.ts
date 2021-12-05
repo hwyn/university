@@ -5,7 +5,7 @@ import 'reflect-metadata';
 import { Injector } from './abstract-injector';
 import { ClassProvider, FactoryProvider, Provider, Type, ValueProvider } from './type-api';
 
-interface Record { token: any; fn: () => any; }
+interface Record { token: any; fn: (...args: any[]) => any; }
 
 const designParamtypes = `design:paramtypes`;
 const __provide__inject__ = `design:__provide__inject__`;
@@ -30,9 +30,9 @@ export class StaticInjector implements Injector {
     this.isSelfContext = options ? options.isScope === 'self' : false;
   }
 
-  get<T>(token: any): T {
+  get<T>(token: any, ...params: any[]): T {
     const record = this._recors.get(token) || (this.parentInjector as this)?._recors.get(token);
-    return record ? record.fn.call(this) : null;
+    return record ? record.fn.apply(this, params) : null;
   }
 
   set(token: any, provider: Provider) {
@@ -83,8 +83,8 @@ function resolveMulitProvider(this: StaticInjector, { useValue, multi }: ValuePr
 }
 
 function resolveFactoryProvider({ useFactory, deps = [] }: FactoryProvider) {
-  return function (this: StaticInjector) {
+  return function (this: StaticInjector, ...params: any[]) {
     // eslint-disable-next-line prefer-spread
-    return useFactory.apply(undefined, deps.map((token: any) => this.get(token)));
+    return useFactory.apply(undefined, [...deps.map((token: any) => this.get(token)), ...params]);
   };
 }

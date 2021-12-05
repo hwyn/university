@@ -23,10 +23,9 @@ export class GridExtension extends BasicExtension {
   }
 
   private createLoadGrid(): void {
-    const bindBuilderElement = this.ls.getProvider(BIND_BUILDER_ELEMENT);
     this.defineProperty(this.cache, 'grid', this.createGrid());
     this.layoutBuildFields = this.mapFields(this.jsonFields, this.addFieldLayout.bind(this, {}));
-    this.defineProperty(this.builder, 'Element', bindBuilderElement(this.cache.grid));
+    this.defineProperty(this.builder, 'Element', this.ls.getProvider(BIND_BUILDER_ELEMENT, this.cache.grid));
   }
 
   private addFieldLayout(cursor: { [key: string]: number }, [, builderField]: CallBackOptions) {

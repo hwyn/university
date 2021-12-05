@@ -9,12 +9,12 @@ import { transformObservable, withValue } from '../utility';
 import { BuilderEngine } from './builder-engine.service';
 import { BuilderField, BuilderModelImplements, BuilderProps } from './type-api';
 
-export function init(this: BuilderModelImplements, props: BuilderProps) {
+export function init(this: BuilderModelImplements) {
   Object.defineProperty(this, '$$cache', withValue(getCacheObj.call(this, {})));
   Object.defineProperties(this, {
     onChanges: withValue(() => { }),
     onDestory: withValue(this.$$cache.destory.bind(this)),
-    loadForBuild: withValue(() => {
+    loadForBuild: withValue((props: BuilderProps) => {
       delete (this as any).loadForBuild;
       loadForBuild.call(this, props).subscribe(() => this.detectChanges());
       return this;

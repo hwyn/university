@@ -29,10 +29,9 @@ export class FormExtension extends BasicExtension {
 
   private addControl(jsonField: any, builderField: BuilderFieldExtensions) {
     const { viewModel } = this.builder;
-    const bindFormControl = this.ls.getProvider(BIND_FORM_CONTROL);
     const { dataBinding: { path, default: defaultValue } } = jsonField;
     const value = get(viewModel, path, defaultValue);
-    this.defineProperty(builderField, 'control', bindFormControl(value));
+    this.defineProperty(builderField, 'control', this.ls.getProvider(BIND_FORM_CONTROL, value));
     builderField.control.changeValues.subscribe((_value: any) => set(viewModel, path, _value));
 
     delete builderField.field.dataBinding;

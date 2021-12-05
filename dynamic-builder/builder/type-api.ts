@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define */
 import { Observable, Subject } from 'rxjs';
-import { LocatorStorageImplements } from '@di';
+import { LocatorStorageImplements, Type } from '@di';
 import { Grid } from '../builder-extension';
 import { Action } from '../builder-extension/action';
 
@@ -46,6 +46,7 @@ export interface BuilderProps extends BuilderElement {
   className?: string;
   builder?: BuilderModelImplements;
   jsonName?: string;
+  BuilderModel?: Type<BuilderModelImplements>;
   events?: { [key: string]: (params?: any) => Observable<any> };
   config?: {
     grid?: Grid;
