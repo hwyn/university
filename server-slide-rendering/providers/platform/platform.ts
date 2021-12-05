@@ -1,9 +1,9 @@
 import { getProvider, Injector, Provider, StaticInjector } from '@di';
-import { FETCH_TOKEN, HISTORY_TOKEN, IS_MICRO, JSON_CONFIG, MICRO_MANAGER } from '@shared/token';
+import { FETCH, HISTORY, IS_MICRO, JSON_CONFIG, MICRO_MANAGER } from '@shared/token';
 import { Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { MicroManage } from '../../micro';
-import { PROXY_HOST, READ_FILE_STATIC, REGISTRY_MICRO_MIDDER, REQUEST_TOKEN, SSR_MICRO_PATH } from '../../token';
+import { PROXY_HOST, READ_FILE_STATIC, REGISTRY_MICRO_MIDDER, REQUEST, SSR_MICRO_PATH } from '../../token';
 import { JsonConfigService } from '../json-config';
 
 type Render = (...args: any[]) => Promise<{ html: string, styles: string }>;
@@ -29,14 +29,13 @@ export class Platform {
     const providers = [
       { provide: IS_MICRO, useValue: isMicro },
       { provide: PROXY_HOST, useValue: proxyHost },
-      { provide: REQUEST_TOKEN, useValue: request },
+      { provide: REQUEST, useValue: request },
       { provide: SSR_MICRO_PATH, useValue: microSSRPath },
-      { provide: FETCH_TOKEN, useValue: this.proxyFetch(fetch) },
+      { provide: FETCH, useValue: this.proxyFetch(fetch) },
       { provide: READ_FILE_STATIC, useValue: this.proxyReadStaticFile(readStaticFile) },
-      { provide: REGISTRY_MICRO_MIDDER, useValue: this.registryMicroMiddleware.bind(this) }
+      { provide: HISTORY, useValue: { location: this.getLocation(request, isMicro), listen: () => () => void (0) } }
     ];
     const injector = this.beforeBootstrapRender(providers);
-    injector.get(HISTORY_TOKEN).location = this.getLocation(request, isMicro);
     this.microMiddlewareList = [];
     this.currentPageFileSourceList = {};
     const { js = [], links = [] } = readAssets();
@@ -52,7 +51,7 @@ export class Platform {
       ...this.providers,
       { provide: MICRO_MANAGER, useClass: MicroManage },
       { provide: JSON_CONFIG, useClass: JsonConfigService },
-      { provide: HISTORY_TOKEN, useValue: { location: {}, listen: () => () => void (0) } },
+      { provide: REGISTRY_MICRO_MIDDER, useValue: this.registryMicroMiddleware.bind(this) },
       ...providers
     ];
     _providers.forEach((provider) => injector.set(provider.provide, provider));

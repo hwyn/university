@@ -1,7 +1,7 @@
 import { Inject, Injectable, LocatorStorage } from '@di';
 import { HttpClient } from '@shared/common/http';
 import { createMicroElementTemplate, MicroManageInterface, MicroStoreInterface, templateZip } from '@shared/micro';
-import { HISTORY_TOKEN } from '@shared/token';
+import { HISTORY } from '@shared/token';
 import { cloneDeep, isEmpty } from 'lodash';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map, shareReplay, switchMap } from 'rxjs/operators';
@@ -25,7 +25,7 @@ export class MicroManage implements MicroManageInterface {
     let subject = this.microCache.get(microName);
     if (!subject) {
       const proxyMicroUrl = this.ls.getProvider<any>(SSR_MICRO_PATH);
-      const { location: { pathname } } = this.ls.getProvider(HISTORY_TOKEN);
+      const { location: { pathname } } = this.ls.getProvider(HISTORY);
       const microPath = `/${proxyMicroUrl(microName, `/micro-ssr/${pathname}`)}`.replace(/[/]+/g, '/');
       subject = this.http.get(`${this.proxy}${microPath}`).pipe(
         catchError((error) => of({ html: `${microName}<br/>${error.message}`, styles: '' })),

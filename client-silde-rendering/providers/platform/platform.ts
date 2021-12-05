@@ -1,9 +1,9 @@
 import { getProvider, Injector, Provider, StaticInjector } from '@di';
-import { FETCH_TOKEN, IS_MICRO, MICRO_MANAGER } from '@shared/token';
+import { FETCH, IS_MICRO, MICRO_MANAGER } from '@shared/token';
 import { cloneDeep } from 'lodash';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { APPLICATION_CONTAINER, INSERT_STYLE_CONTAINER, RENDER_SSR, RESOURCE_TOKEN } from '../../token';
+import { CONTAINER, STYLE_CONTAINER, RENDER_SSR, RESOURCE } from '../../token';
 
 export type Render = (...args: any[]) => Promise<(container: HTMLElement) => void>;
 
@@ -24,8 +24,8 @@ export class Platform {
     const { microManage, head, body, ..._options } = options;
     const injector = this.beforeBootstrapRender([
       { provide: MICRO_MANAGER, useFactory: () => microManage },
-      { provide: APPLICATION_CONTAINER, useValue: body },
-      { provide: INSERT_STYLE_CONTAINER, useValue: head }
+      { provide: CONTAINER, useValue: body },
+      { provide: STYLE_CONTAINER, useValue: head }
     ]);
     const unRender = await render(injector, _options);
     return (_container: HTMLElement) => { unRender(_container); injector.clear(); }
@@ -37,9 +37,9 @@ export class Platform {
       ...this.providers,
       { provide: RENDER_SSR, useValue: true },
       { provide: IS_MICRO, useValue: this.isMicro },
-      { provide: FETCH_TOKEN, useValue: this.proxyFetch() },
-      { provide: INSERT_STYLE_CONTAINER, useValue: document.head },
-      { provide: RESOURCE_TOKEN, useFactory: this.factoryResourceCache.bind(this, 'file-static') },
+      { provide: FETCH, useFactory: this.proxyFetch },
+      { provide: STYLE_CONTAINER, useValue: document.head },
+      { provide: RESOURCE, useFactory: this.factoryResourceCache.bind(this) },
       ...providers
     ];
     _providers.forEach((provider) => injector.set(provider.provide, provider));

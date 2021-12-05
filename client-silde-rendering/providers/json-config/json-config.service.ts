@@ -1,4 +1,4 @@
-import { RESOURCE_TOKEN } from '@client-silde-rendering/token';
+import { RESOURCE } from '@client-silde-rendering/token';
 import { Inject, Injectable, LocatorStorage } from '@di';
 import { HttpClient } from '@shared/common/http';
 import { AbstractJsonConfigService } from '@shared/providers/json-config';
@@ -10,14 +10,14 @@ export class JsonConfigService extends AbstractJsonConfigService {
   constructor(
     protected http: HttpClient,
     protected ls: LocatorStorage,
-    @Inject(ENVIRONMENT) protected environment: { [key: string]: any },
-    @Inject(RESOURCE_TOKEN) protected cacheConfig: Map<string, Observable<object>> = new Map()
+    @Inject(ENVIRONMENT) protected environment: { [key: string]: any }
   ) {
     super(ls);
+    this.cacheConfig = this.ls.getProvider(RESOURCE, 'file-static');
   }
 
   protected getServerFetchData(url: string): Observable<object> {
-    const { publicPath = '/' } = this.environment;
+    const { publicPath = '/' } = this.environment || {};
     return this.http.get<object>(`${publicPath}/${url}`.replace(/\/+/g, '/'));
   }
 }

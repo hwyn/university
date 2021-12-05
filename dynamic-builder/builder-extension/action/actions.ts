@@ -5,7 +5,7 @@ import { concatMap, filter, map, switchMap, toArray } from 'rxjs/operators';
 import { ActionIntercept, ActionInterceptProps, BaseAction } from '.';
 import { BuilderModelImplements } from '../../builder';
 import { Inject, LocatorStorage } from '@di';
-import { ACTIONS_CONFIG_TOKEN } from '../../token';
+import { ACTIONS_CONFIG } from '../../token';
 import { transformObservable } from '../../utility';
 import { serializeAction } from '../basic/basic.extension';
 import { BuilderModelExtensions } from '../type-api';
@@ -15,7 +15,7 @@ export class Action implements ActionIntercept {
 
   constructor(
     @Inject(LocatorStorage) private ls: LocatorStorage,
-    @Inject(ACTIONS_CONFIG_TOKEN) actions: any[][],
+    @Inject(ACTIONS_CONFIG) actions: any[][],
   ) {
     this.actions = flatMap(actions);
   }

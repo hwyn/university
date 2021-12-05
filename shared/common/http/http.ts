@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@di';
 import { from, Observable } from 'rxjs';
-import { FETCH_TOKEN } from '../../token';
+import { FETCH } from '../../token';
 
 type Fetch = (input: RequestInfo, init?: RequestInit) => Promise<Response>;
 
@@ -10,7 +10,7 @@ function factoryRequest<T>(fetch: Fetch, method: string, parseData: (res: Respon
 
 @Injectable()
 export class HttpClient {
-  constructor(@Inject(FETCH_TOKEN) private fetch: Fetch) { }
+  constructor(@Inject(FETCH) private fetch: Fetch) { }
 
   public get<T = any>(req: RequestInfo | string, params?: RequestInit): Observable<T> {
     return factoryRequest<T>(this.fetch, 'get', (res: Response) => res.json())(req, params);
