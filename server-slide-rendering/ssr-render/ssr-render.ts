@@ -75,15 +75,15 @@ export class SSRRender {
   }
 
   private readAssets() {
-    let assetsResult = '{entrypoints: {}}';
+    let assetsResult = '{}';
     if (this.manifestFile && fs.existsSync(this.manifestFile)) {
       assetsResult = fs.readFileSync(this.manifestFile, 'utf-8');
     }
 
-    const { entrypoints = {} } = JSON.parse(assetsResult);
+    const entrypoints = JSON.parse(assetsResult);
     const staticAssets: any = { js: [], links: [], linksToStyle: [] };
     Object.keys(entrypoints).forEach((key: string) => {
-      const { js = [], css = [] } = entrypoints[key].assets as { js: string[], css: string[] };
+      const { js = [], css = [] } = entrypoints[key] as { js: string[], css: string[] };
       staticAssets.js.push(...js);
       staticAssets.links.push(...css);
     });

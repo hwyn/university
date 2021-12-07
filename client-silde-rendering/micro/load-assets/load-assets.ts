@@ -18,13 +18,13 @@ export class LoadAssets {
     return typeof microFetchData !== 'undefined' ? microFetchData : [] as any;
   }
 
-  private parseStatic(microName: string, entryPoints: { [key: string]: any }): Observable<StaticAssets> {
-    const entryKeys = Object.keys(entryPoints);
+  private parseStatic(microName: string, entrypoints: { [key: string]: any }): Observable<StaticAssets> {
+    const entryKeys = Object.keys(entrypoints);
     const microData = this.cacheServerData.find(({ microName: _microName }) => microName === _microName);
     const fetchCacheData = JSON.parse(microData && microData.source || '{}');
     const staticAssets: StaticAssets = { javascript: [], script: [], links: [], fetchCacheData };
     entryKeys.forEach((staticKey: string) => {
-      const { js: staticJs = [], css: staticLinks = [] } = entryPoints[staticKey].assets;
+      const { js: staticJs = [], css: staticLinks = [] } = entrypoints[staticKey];
       staticAssets.javascript.push(...staticJs);
       staticAssets.links.push(...staticLinks);
     });
@@ -54,7 +54,7 @@ export class LoadAssets {
 
   public readMicroStatic(microName: string): Observable<any> {
     return this.http.get(`/static/${microName}/static/assets.json`).pipe(
-      switchMap((result: any) => this.parseStatic(microName, result.entrypoints)),
+      switchMap((result: any) => this.parseStatic(microName, result)),
       switchMap((result: StaticAssets) => this.createMicroTag(microName, result))
     );
   }
