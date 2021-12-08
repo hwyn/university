@@ -1,7 +1,9 @@
 /* eslint-disable no-use-before-define */
 /* eslint-disable camelcase */
-import { isUndefined } from 'lodash';
 import 'reflect-metadata';
+
+import { isUndefined } from 'lodash';
+
 import { Injector } from './injector.abstract';
 import { ClassProvider, FactoryProvider, Provider, Type, ValueProvider } from './type-api';
 

@@ -1,4 +1,4 @@
-import { StaticInjector, __PROVIDER_TYPE__, __USECLASS__ } from './injector';
+import { __PROVIDER_TYPE__, __USECLASS__,StaticInjector } from './injector';
 import { InjectorToken } from './injector-token';
 import { Provider, Type } from './type-api';
 

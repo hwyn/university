@@ -1,6 +1,6 @@
 // eslint-disable-next-line max-classes-per-file
-import { Injector } from "./injector.abstract";
 import { Injectable } from "./injectable";
+import { Injector } from "./injector.abstract";
 import { LocatorStorageImplements } from "./local-storage.abstract";
 import { Type } from "./type-api";
 

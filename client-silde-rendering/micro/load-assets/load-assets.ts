@@ -1,17 +1,23 @@
-import { Injectable } from '@di';
+import { Inject, Injectable } from '@di';
 import { HttpClient } from '@shared/common/http';
 import { createMicroElementTemplate } from '@shared/micro';
-import { isEmpty } from 'lodash';
+import { MICRO_OPTIONS } from '@shared/token';
+import { isEmpty, merge } from 'lodash';
 import { forkJoin, Observable, of } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 
 declare const microFetchData: any[];
 export interface StaticAssets { script: string[]; javascript: string[]; links: string[]; fetchCacheData: { [url: string]: any }; }
 
+const defaultAssetsPath = (microName: string) => `/static/${microName}/static/assets.json`;
+const defaultOptions = { assetsPath: defaultAssetsPath };
+
 @Injectable()
 export class LoadAssets {
   private cacheServerData = this.initialCacheServerData();
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, @Inject(MICRO_OPTIONS) private options: any = {}) {
+    this.options = merge(defaultOptions, this.options);
+  }
 
   private initialCacheServerData(): [{ microName: string, source: string }] {
     return typeof microFetchData !== 'undefined' ? microFetchData : [] as any;
@@ -52,7 +58,8 @@ export class LoadAssets {
   }
 
   public readMicroStatic(microName: string): Observable<any> {
-    return this.http.get(`/static/${microName}/static/assets.json`).pipe(
+    const { assetsPath } = this.options;
+    return this.http.get(assetsPath(microName)).pipe(
       switchMap((result: any) => this.parseStatic(microName, result)),
       switchMap((result: StaticAssets) => this.createMicroTag(microName, result))
     );

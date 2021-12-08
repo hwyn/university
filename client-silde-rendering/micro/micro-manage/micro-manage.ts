@@ -1,9 +1,9 @@
 import { Injectable } from '@di';
-import { MicroManageInterface } from '@shared/micro';
 import { Observable, Subject } from 'rxjs';
+import { MicroManageInterface } from '@shared/micro';
 import { map, shareReplay } from 'rxjs/operators';
-import { LoadAssets, StaticAssets } from '../load-assets/load-assets';
 import { MicroStore } from '../micro-store/micro-store';
+import { LoadAssets, StaticAssets } from '../load-assets/load-assets';
 
 @Injectable()
 export class MicroManage implements MicroManageInterface {
