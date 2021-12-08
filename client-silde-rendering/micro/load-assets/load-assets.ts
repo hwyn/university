@@ -5,9 +5,8 @@ import { isEmpty } from 'lodash';
 import { forkJoin, Observable, of } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 
-export interface StaticAssets { script: string[]; javascript: string[]; links: string[]; fetchCacheData: { [url: string]: any }; }
-
 declare const microFetchData: any[];
+export interface StaticAssets { script: string[]; javascript: string[]; links: string[]; fetchCacheData: { [url: string]: any }; }
 
 @Injectable()
 export class LoadAssets {

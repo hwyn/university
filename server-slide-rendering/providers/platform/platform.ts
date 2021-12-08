@@ -26,16 +26,15 @@ export class Platform {
   private async proxyRender(render: Render, global: any, isMicro = false) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { fetch, request, location, readAssets, readStaticFile, proxyHost, microSSRPath, ..._global } = global;
-    const providers = [
+    const injector = this.beforeBootstrapRender([
+      { provide: REQUEST, useValue: request },
       { provide: IS_MICRO, useValue: isMicro },
       { provide: PROXY_HOST, useValue: proxyHost },
-      { provide: REQUEST, useValue: request },
       { provide: SSR_MICRO_PATH, useValue: microSSRPath },
       { provide: FETCH, useValue: this.proxyFetch(fetch) },
       { provide: READ_FILE_STATIC, useValue: this.proxyReadStaticFile(readStaticFile) },
       { provide: HISTORY, useValue: { location: this.getLocation(request, isMicro), listen: () => () => void (0) } }
-    ];
-    const injector = this.beforeBootstrapRender(providers);
+    ]);
     this.microMiddlewareList = [];
     this.currentPageFileSourceList = {};
     const { js = [], links = [] } = readAssets();
