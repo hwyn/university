@@ -1,4 +1,5 @@
 import { isEmpty } from 'lodash';
+
 import { RouteInfo } from './type-api';
 
 export const serializeRouter = (router: any, parentRouter?: any): RouteInfo[] => {

@@ -2,6 +2,7 @@ import { LocatorStorage } from '@di';
 import { cloneDeep } from 'lodash';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
+
 import { AbstractJsonConfig } from './json-config.abstract';
 
 export abstract class AbstractJsonConfigService implements AbstractJsonConfig {

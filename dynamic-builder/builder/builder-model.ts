@@ -1,5 +1,6 @@
-import { isEmpty } from 'lodash';
 import { LocatorStorage } from '@di';
+import { isEmpty } from 'lodash';
+
 import { init } from './builder-utils';
 import { BuilderField, BuilderModelImplements, CacheObj } from './type-api';
 

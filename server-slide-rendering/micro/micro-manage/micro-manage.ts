@@ -5,6 +5,7 @@ import { HISTORY } from '@shared/token';
 import { cloneDeep, isEmpty } from 'lodash';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map, shareReplay, switchMap } from 'rxjs/operators';
+
 import { PROXY_HOST, REGISTRY_MICRO_MIDDER, SSR_MICRO_PATH } from '../../token';
 
 @Injectable()

@@ -4,6 +4,7 @@ import { Module as NativeModule } from 'module';
 import fetch, { RequestInit } from 'node-fetch';
 import path from 'path';
 import vm from 'vm';
+
 import { ProxyMicroUrl, SSROptions } from './type-api';
 import { vmRequire } from './vm-modules';
 

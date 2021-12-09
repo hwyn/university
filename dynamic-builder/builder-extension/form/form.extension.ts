@@ -1,8 +1,9 @@
 import { get, isEmpty, set } from 'lodash';
+
+import { BIND_FORM_CONTROL } from '../../token';
 import { BaseAction } from '../action';
 import { BasicExtension, CallBackOptions } from '../basic/basic.extension';
 import { BuilderFieldExtensions } from '../type-api';
-import { BIND_FORM_CONTROL } from '../../token';
 
 export class FormExtension extends BasicExtension {
   private builderFields: BuilderFieldExtensions[] = [];

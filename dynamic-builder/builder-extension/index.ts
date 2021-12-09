@@ -1,4 +1,5 @@
 import { Provider } from '@di';
+
 import { ACTION_INTERCEPT, BUILDER_EXTENSION } from '../token';
 import { Action } from './action/actions';
 import { ActionExtension } from './action/actions.extension';
@@ -25,10 +26,10 @@ export const builderExtensions: Provider[] = [
   { provide: BUILDER_EXTENSION, multi: true, useValue: LifeCycleExtension }
 ];
 
-export * from './type-api';
 export * from './action';
-export * from './form/type-api';
 export * from './action/create-actions';
 export * from './basic/basic.extension';
+export * from './form/type-api';
+export * from './type-api';
 
 export { serializeAction };

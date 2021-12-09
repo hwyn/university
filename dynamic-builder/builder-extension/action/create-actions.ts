@@ -1,7 +1,8 @@
+import { LocatorStorage } from '@di';
 import { groupBy } from 'lodash';
 import { forkJoin } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { LocatorStorage } from '@di';
+
 import { ACTION_INTERCEPT } from '../../token';
 import { transformObservable } from '../../utility';
 import { Action, ActionIntercept, ActionInterceptProps } from './type-api';

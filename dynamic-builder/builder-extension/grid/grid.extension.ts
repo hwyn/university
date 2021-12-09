@@ -1,4 +1,5 @@
 import { cloneDeep, groupBy, merge } from 'lodash';
+
 import { BIND_BUILDER_ELEMENT } from '../../token';
 import { BasicExtension, CallBackOptions } from '../basic/basic.extension';
 import { BuilderFieldExtensions, Grid } from '../type-api';

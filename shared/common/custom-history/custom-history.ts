@@ -4,9 +4,10 @@ import { cloneDeep } from 'lodash';
 import { parse } from 'querystring';
 import { Subject } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
-import { serializeRouter } from './serialize-router';
-import { ROUTER_INTERCEPT, HISTORY, ROUTER_CONFIG } from '../../token';
+
+import { HISTORY, ROUTER_CONFIG,ROUTER_INTERCEPT } from '../../token';
 import { AbstractRouterIntercept } from './router-intercept.abstract';
+import { serializeRouter } from './serialize-router';
 import { RouteInfo } from './type-api';
 
 @Injectable()

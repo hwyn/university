@@ -2,6 +2,7 @@ import { getProvider, Injector, Provider, StaticInjector } from '@di';
 import { FETCH, HISTORY, IS_MICRO, JSON_CONFIG, MICRO_MANAGER } from '@shared/token';
 import { Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
+
 import { MicroManage } from '../../micro';
 import { PROXY_HOST, READ_FILE_STATIC, REGISTRY_MICRO_MIDDER, REQUEST, SSR_MICRO_PATH } from '../../token';
 import { JsonConfigService } from '../json-config';

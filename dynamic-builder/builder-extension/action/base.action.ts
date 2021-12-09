@@ -1,4 +1,5 @@
 import { LocatorStorage } from '@di';
+
 import { ACTION_INTERCEPT } from '../../token';
 import { serializeAction } from '../basic/basic.extension';
 import { BuilderFieldExtensions, BuilderModelExtensions, InstanceExtensions } from '../type-api';

@@ -3,6 +3,7 @@ import { AbstractJsonConfig } from '@shared/providers/json-config';
 import { JSON_CONFIG } from '@shared/token';
 import { flatMap } from 'lodash';
 import { Observable } from 'rxjs';
+
 import { UI_ELEMENT } from '../token';
 
 @Injectable()

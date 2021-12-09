@@ -1,4 +1,5 @@
 import { MicroManageInterface, MicroStoreInterface } from '@shared/micro';
+
 import { StaticAssets } from '../load-assets/load-assets';
 
 export class MicroStore implements MicroStoreInterface {
@@ -24,11 +25,10 @@ export class MicroStore implements MicroStoreInterface {
 
   public async unMounted(container: HTMLElement) {
     const [exMicroInfo] = this.mountedList.filter(({ container: _container }: any) => container === _container);
-    if (!exMicroInfo) {
-      return;
+    if (exMicroInfo) {
+      this.mountedList.splice(this.mountedList.indexOf(exMicroInfo), 1);
+      await exMicroInfo.unRender(container.shadowRoot?.querySelector('[data-app="body"]'));
     }
-    this.mountedList.splice(this.mountedList.indexOf(exMicroInfo), 1);
-    await exMicroInfo.unRender(container.shadowRoot?.querySelector('[data-app="body"]'));
   }
 
   private async execMounted() {

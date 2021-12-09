@@ -1,14 +1,15 @@
 /* eslint-disable max-lines-per-function */
+import { Inject, LocatorStorage } from '@di';
 import { flatMap, isEmpty } from 'lodash';
 import { Observable, of } from 'rxjs';
 import { concatMap, filter, map, switchMap, toArray } from 'rxjs/operators';
-import { ActionIntercept, ActionInterceptProps, BaseAction } from '.';
+
 import { BuilderModelImplements } from '../../builder';
-import { Inject, LocatorStorage } from '@di';
 import { ACTIONS_CONFIG } from '../../token';
 import { transformObservable } from '../../utility';
 import { serializeAction } from '../basic/basic.extension';
 import { BuilderModelExtensions } from '../type-api';
+import { ActionIntercept, ActionInterceptProps, BaseAction } from '.';
 import { Action as ActionProps, ActionContext } from './type-api';
 export class Action implements ActionIntercept {
   private actions: any[];

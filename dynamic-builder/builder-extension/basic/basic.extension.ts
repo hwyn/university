@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
+import { LocatorStorage } from '@di';
 import { cloneDeep, isArray, isString, merge } from 'lodash';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+
 import { BuilderProps, CacheObj } from '../../builder';
-import { LocatorStorage } from '@di';
 import { transformObservable, withValue } from '../../utility';
 import { Action, BaseAction } from '../action';
 import { getEventType } from '../action/create-actions';
