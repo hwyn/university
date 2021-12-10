@@ -1,12 +1,11 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
-import { Module as NativeModule } from 'module';
+import { createRequire,Module as NativeModule } from 'module';
 import fetch, { RequestInit } from 'node-fetch';
 import path from 'path';
 import vm from 'vm';
 
 import { ProxyMicroUrl, SSROptions } from './type-api';
-import { vmRequire } from './vm-modules';
 
 export class SSRRender {
   private host: string;
@@ -92,7 +91,7 @@ export class SSRRender {
   }
 
   private factoryVmScript() {
-    const m: any = { exports: {}, require: vmRequire };
+    const m: any = { exports: {}, require: createRequire(this.entryFile) };
     const wrapper = NativeModule.wrap(fs.readFileSync(this.entryFile, 'utf-8'));
     const script = new vm.Script(wrapper, { filename: 'server-entry.js', displayErrors: true });
     const context = vm.createContext({ Buffer, process, console, setTimeout, setInterval, ...this.vmContext });
