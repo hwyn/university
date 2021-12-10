@@ -9,18 +9,11 @@ import { ClassProvider, FactoryProvider, Provider, Type, ValueProvider } from '.
 
 interface Record { token: any; fn: (...args: any[]) => any; }
 
+const reflect = typeof global === "object" ? global.Reflect : typeof self === "object" ? self.Reflect : Reflect;
 const designParamtypes = `design:paramtypes`;
-const __provide__inject__ = `design:__provide__inject__`;
-
+export const __PROVIDE__INJECT__ = `design:__provide__inject__`;
 export const __PROVIDER_TYPE__ = '__PROVIDER_TYPE__';
 export const __USECLASS__ = '__USECLASS__';
-
-export const Inject = (token: any) => (target: any, name: string, index: number) => {
-  if (!target[__provide__inject__]) {
-    target[__provide__inject__] = [];
-  }
-  target[__provide__inject__].push({ token, index });
-};
 
 export class StaticInjector implements Injector {
   protected isSelfContext = false;
@@ -53,6 +46,14 @@ export class StaticInjector implements Injector {
     this._recors.set(record.token, record);
   }
 
+  createClass<T = any>(clazz: Type<T>): T {
+    const deps = reflect.getMetadata(designParamtypes, clazz) || [];
+    const injectTypes = (clazz as any)[__PROVIDE__INJECT__] || [];
+    const arvgs = deps.map((token: any) => this.get(token));
+    injectTypes.forEach(({ token, index }: any) => arvgs[index] = this.get(token));
+    return new clazz(...arvgs);
+  }
+
   clear(): void {
     this._recors.clear();
     this._instanceRecors.clear();
@@ -66,11 +67,7 @@ function resolveClassProvider({ useNew = false, useClass }: ClassProvider) {
     const isSelfContext = this.isSelfContext;
     let newInstance = isSelfContext ? this._instanceRecors.get(useClass) : instance;
     if (useNew || !newInstance) {
-      const deps = Reflect.getMetadata(designParamtypes, useClass) || [];
-      const injectTypes = (useClass as any)[__provide__inject__] || [];
-      const arvgs = deps.map((token: any) => this.get(token));
-      injectTypes.forEach(({ token, index }: any) => arvgs[index] = this.get(token));
-      newInstance = new useClass(...arvgs);
+      newInstance = this.createClass(useClass);
       isSelfContext ? this._instanceRecors.set(useClass, newInstance) : instance = newInstance;
     }
     return newInstance;
@@ -79,9 +76,7 @@ function resolveClassProvider({ useNew = false, useClass }: ClassProvider) {
 
 function resolveMulitProvider(this: StaticInjector, { useValue, multi }: ValueProvider, { fn = () => [] }: Record) {
   const preValue = fn.call(this);
-  return function (this: StaticInjector) {
-    return multi ? [...preValue, useValue] : useValue;
-  };
+  return () => multi ? [...preValue, useValue] : useValue;
 }
 
 function resolveFactoryProvider({ useFactory, deps = [] }: FactoryProvider) {

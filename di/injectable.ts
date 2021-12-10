@@ -1,4 +1,4 @@
-import { __PROVIDER_TYPE__, __USECLASS__,StaticInjector } from './injector';
+import { __PROVIDE__INJECT__,__PROVIDER_TYPE__, __USECLASS__, StaticInjector } from './injector';
 import { InjectorToken } from './injector-token';
 import { Provider, Type } from './type-api';
 
@@ -17,6 +17,13 @@ const InjectableFactory = (defaultToken?: InjectorToken, defaultOptions?: object
     providers.forEach((provide) => _injector.set(provide, { ...defaultOptions, ..._options, provide, useClass: target }));
     return target;
   };
+
+export const Inject = (token: any) => (target: any, name: string, index: number) => {
+  if (!target[__PROVIDE__INJECT__]) {
+    target[__PROVIDE__INJECT__] = [];
+  }
+  target[__PROVIDE__INJECT__].push({ token, index });
+};
 
 export const registryProvider = (provider: Provider | Provider[]) => toArray(provider).forEach((p: Provider) => injector.set(p.provide, p));
 

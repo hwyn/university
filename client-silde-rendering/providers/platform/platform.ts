@@ -1,4 +1,4 @@
-import { getProvider,Injector, Provider, StaticInjector } from '@di';
+import { getProvider, Injector, Provider, StaticInjector } from '@di';
 import { FETCH, IS_MICRO, MICRO_MANAGER } from '@shared/token';
 import { cloneDeep } from 'lodash';
 import { Observable, of } from 'rxjs';

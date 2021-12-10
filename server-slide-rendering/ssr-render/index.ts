@@ -9,8 +9,11 @@ export const creareMicroSSRPath = (prefix = 'static') => (microName: string, pat
 export default (entryFile: string, options: SSROptions): Router => {
   const router = Router();
   const ssr = new SSRRender(entryFile, options);
-  router.get('/micro-ssr/:pathname', ssr.renderMicro.bind(ssr));
-  router.get('/micro-ssr/*', ssr.renderMicro.bind(ssr));
+  const renderMicro = ssr.renderMicro.bind(ssr);
+  router.get('/micro-ssr/:pathname', renderMicro);
+  router.get('/micro-ssr/*', renderMicro);
   router.get('*', ssr.render.bind(ssr));
   return router;
 };
+
+export * from './control';
