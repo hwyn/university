@@ -30,7 +30,7 @@ const factoryRouterDecoratorMethod = (method: RouterMethod) => (url: string) => 
 
 const createFactoryRouter = <T = any>(baseUrl: string, clazz: Type<T>) => (injector: Injector) => {
   const router = Router() as any;
-  const routeItems: RouteItem[] = clazz.prototype[__ROUTER__];
+  const routeItems: RouteItem[] = clazz.prototype[__ROUTER__] || [];
   const newClazz = injector.createClass(clazz);
   routeItems.forEach(({ method, url, agent }) => {
     const routeUrl = `${baseUrl}/${url}`.replace(/[\\/]+/g, '/');

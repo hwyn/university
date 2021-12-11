@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
-import { createRequire,Module as NativeModule } from 'module';
+import { createRequire, Module as NativeModule } from 'module';
 import fetch, { RequestInit } from 'node-fetch';
 import path from 'path';
 import vm from 'vm';
 
-import { ProxyMicroUrl, SSROptions } from './type-api';
+import { SSROptions } from './type-api';
 
 export class SSRRender {
   private host: string;
@@ -14,25 +14,29 @@ export class SSRRender {
   private manifestFile: string;
   private _compiledRender!: any;
   private vmContext: { [key: string]: any };
-  private microSSRPath?: ProxyMicroUrl;
+  private microSSRPathPrefix: string;
   private staticDir: string | ((url: string) => string);
   private isDevelopment: boolean = process.env.NODE_ENV === 'development';
 
   constructor(private entryFile: string, options: SSROptions) {
-    const { index, manifestFile, staticDir, microName, proxyTarget = 'http://127.0.0.1:3000', microSSRPath } = options;
+    const { index, manifestFile, staticDir, microName, proxyTarget, microSSRPathPrefix } = options;
     this.index = index || '';
-    this.host = proxyTarget;
+    this.host = proxyTarget || 'http://127.0.0.1:3000';
     this.staticDir = staticDir || '';
     this.microName = microName || '';
     this.manifestFile = manifestFile;
-    this.microSSRPath = microSSRPath;
+    this.microSSRPathPrefix = microSSRPathPrefix || '';
     this.vmContext = options.vmContext || {};
+  }
+
+  private microSSRPath(microName: string, pathname: string) {
+    return `/${this.microSSRPathPrefix}/${microName}${pathname}`;
   }
 
   private get global() {
     return {
       proxyHost: this.host,
-      microSSRPath: this.microSSRPath,
+      microSSRPath: this.microSSRPath.bind(this),
       fetch: this.proxyFetch.bind(this),
       readStaticFile: this.readStaticFile.bind(this),
       readAssets: this.readAssets.bind(this)

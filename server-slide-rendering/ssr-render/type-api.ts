@@ -7,5 +7,5 @@ export interface SSROptions {
   microName?: string;
   proxyTarget?: string;
   vmContext?: { [key: string]: any };
-  microSSRPath?: ProxyMicroUrl;
+  microSSRPathPrefix?: string;
 }
