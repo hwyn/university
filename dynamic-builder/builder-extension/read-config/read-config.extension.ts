@@ -14,12 +14,12 @@ export class ReadConfigExtension extends BasicExtension {
   protected extension(): void | Observable<any> { }
 
   protected beforeExtension() {
+    Object.defineProperty(this.builder, 'id', withValue(this.props.id));
     return this.getConfigJson().pipe(
       tap((json) => {
-        json.id = json.id || this.props.id;
+        json.id = this.props.id;
         this.props.config = json;
         this.checkFieldRepeat(json.fields, json.id);
-        Object.defineProperty(this.builder, 'id', withValue(json.id));
       })
     );
   }
@@ -28,18 +28,17 @@ export class ReadConfigExtension extends BasicExtension {
     const props = this.props;
     const { id, jsonName = ``, jsonNameAction = ``, config, configAction = '' } = props;
     const isJsonName = !!jsonName || !!jsonNameAction;
-    const isJsConfig = !isEmpty(config) || !!configAction;
-
+    const isJsConfig = !isEmpty(config) || Array.isArray(config) || !!configAction;
     if (!isJsonName && !isJsConfig) {
       throw new Error(`Builder configuration is incorrect: ${id}`);
     }
 
     if (isJsonName) {
       const getJsonName = jsonNameAction ? this.createLoadConfigAction(jsonNameAction) : of(jsonName);
-      return getJsonName.pipe(switchMap((configName: string) => this.ls.getProvider(BuilderEngine).getJsonConfig(configName)))
+      return getJsonName.pipe(switchMap((configName: string) => this.ls.getProvider(BuilderEngine).getJsonConfig(configName)));
     } else {
       const getConfig = configAction ? this.createLoadConfigAction(configAction) : of(config);
-      return getConfig.pipe(map((_config: any[] = []) => (cloneDeep({ id, ...(Array.isArray(_config) ? { fields: _config } : _config) }))))
+      return getConfig.pipe(map((_config: any[] = []) => (cloneDeep({ id, ...(Array.isArray(_config) ? { fields: _config } : _config) }))));
     }
   }
 

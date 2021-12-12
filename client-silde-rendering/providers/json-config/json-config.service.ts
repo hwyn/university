@@ -18,6 +18,6 @@ export class JsonConfigService extends AbstractJsonConfigService {
 
   protected getServerFetchData(url: string): Observable<object> {
     const { publicPath = '/' } = this.environment || {};
-    return this.http.get<object>(`${publicPath}/${url}`.replace(/\/+/g, '/'));
+    return this.http.get<object>(/http|https/.test(url) ? url : `${publicPath}/${url}`.replace(/\/+/g, '/'));
   }
 }
