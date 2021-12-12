@@ -91,6 +91,10 @@ export abstract class BasicExtension {
     Object.defineProperty(object, prototypeName, withValue(value));
   }
 
+  protected unDefineProperty(object: any, prototypeNames: string[]) {
+    prototypeNames.forEach((prototypeName: string) => this.defineProperty(object, prototypeName, null));
+  }
+
   protected serializeAction(action: string | Action) {
     return serializeAction(action);
   }

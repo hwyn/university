@@ -1,7 +1,6 @@
 import { cloneDeep, isEmpty } from "lodash";
 import { Observable, of } from "rxjs";
 import { map, switchMap, tap } from "rxjs/operators";
-import { withValue } from "university/dynamic-builder/utility";
 
 import { BuilderEngine } from "../../builder/builder-engine.service";
 import { BuilderField } from "../../builder/type-api";
@@ -14,7 +13,7 @@ export class ReadConfigExtension extends BasicExtension {
   protected extension(): void | Observable<any> { }
 
   protected beforeExtension() {
-    Object.defineProperty(this.builder, 'id', withValue(this.props.id));
+    this.defineProperty(this.builder, 'id', this.props.id);
     return this.getConfigJson().pipe(
       tap((json) => {
         json.id = this.props.id;
@@ -25,8 +24,7 @@ export class ReadConfigExtension extends BasicExtension {
   }
 
   private getConfigJson(): Observable<any> {
-    const props = this.props;
-    const { id, jsonName = ``, jsonNameAction = ``, config, configAction = '' } = props;
+    const { id, jsonName = ``, jsonNameAction = ``, config, configAction = '' } = this.props;
     const isJsonName = !!jsonName || !!jsonNameAction;
     const isJsConfig = !isEmpty(config) || Array.isArray(config) || !!configAction;
     if (!isJsonName && !isJsConfig) {

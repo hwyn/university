@@ -83,7 +83,7 @@ export class LifeCycleExtension extends BasicExtension {
       tap(() => {
         this.lifeActions = {};
         delete this.detectChanges;
-        this.builder.calculators.splice(0);
+        this.unDefineProperty(this.builder, ['calculators', 'onChanges']);
         this.defineProperty(this.cache, 'originCalculators', null);
       }),
       switchMap(() => transformObservable(super.destory()))

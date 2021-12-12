@@ -78,9 +78,9 @@ function createField(this: BuilderModelImplements, field: any): BuilderField {
 
 function destory(this: BuilderModelImplements | any): void {
   const cacheObj = this.$$cache;
-  const { extensionDestorys = [], ready = false } = cacheObj;
+  const { extensionDestorys = [], ready = false, destoryed } = cacheObj;
   cacheObj.destoryed = true;
-  if (ready) {
+  if (ready && !destoryed) {
     try {
       forkJoin([...extensionDestorys].map(
         (extensionDestory) => extensionDestory && extensionDestory()
@@ -94,7 +94,6 @@ function destory(this: BuilderModelImplements | any): void {
         cacheObj.extensionDestorys.splice(0);
         this.children.splice(0);
         removeChild.call(this.parent, this);
-        this.parent = null;
       });
     } catch (e) {
       console.error(e);
@@ -109,4 +108,5 @@ function addChild(this: BuilderModelImplements, child: BuilderModelImplements): 
 
 function removeChild(this: BuilderModelImplements, child: BuilderModelImplements): void {
   this?.children.splice(this.children.indexOf(child), 1);
+  child.parent = null;
 }

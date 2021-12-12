@@ -64,9 +64,8 @@ export class InstanceExtension extends BasicExtension {
       const { instance } = buildField;
       instance.destory.unsubscribe();
       instance.mounted.unsubscribe();
-      instance.detectChanges = () => undefined;
+      this.unDefineProperty(instance, ['detectChanges', 'current']);
       this.defineProperty(buildField, 'instance', null);
-      this.defineProperty(instance, 'current', null);
     });
     return super.destory();
   }
