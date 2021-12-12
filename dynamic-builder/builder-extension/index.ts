@@ -10,11 +10,13 @@ import { GridExtension } from './grid/grid.extension';
 import { InstanceExtension } from './instance/instance.extension';
 import { LifeCycleExtension } from './life-cycle/life-cycle.extension';
 import { MetadataExtension } from './metadata/metadata.extension';
+import { ReadConfigExtension } from './read-config/read-config.extension';
 import { ViewModelExtension } from './view-model/view-model.extension';
 import { CheckVisibilityExtension } from './visibility/check-visibility.extension';
 
 export const builderExtensions: Provider[] = [
   { provide: ACTION_INTERCEPT, useClass: Action },
+  { provide: BUILDER_EXTENSION, multi: true, useValue: ReadConfigExtension },
   { provide: BUILDER_EXTENSION, multi: true, useValue: CheckVisibilityExtension },
   { provide: BUILDER_EXTENSION, multi: true, useValue: GridExtension },
   { provide: BUILDER_EXTENSION, multi: true, useValue: InstanceExtension },

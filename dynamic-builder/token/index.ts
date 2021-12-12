@@ -7,3 +7,4 @@ export const BUILDER_EXTENSION = InjectorToken.get('BUILDER_EXTENSION');
 export const BIND_BUILDER_ELEMENT = InjectorToken.get('BIND_BUILDER_ELEMENT');
 export const BIND_FORM_CONTROL = InjectorToken.get('BIND_FORM_CONTROL');
 export const FACTORY_BUILDER = InjectorToken.get('FACTORY_BUILDER');
+export const SCOPE_BUILDER = InjectorToken.get('SCOPE_BUILDER');

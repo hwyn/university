@@ -46,10 +46,12 @@ export interface BuilderProps extends BuilderElement {
   id?: string;
   className?: string;
   builder?: BuilderModelImplements;
-  jsonName?: string;
   BuilderModel?: Type<BuilderModelImplements>;
   events?: { [key: string]: (params?: any) => Observable<any> };
   children?: any;
+  jsonName?: string;
+  jsonNameAction?: string;
+  configAction?: string;
   config?: {
     grid?: Grid;
     fields: BuilderField[];
