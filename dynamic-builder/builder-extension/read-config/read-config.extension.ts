@@ -5,7 +5,7 @@ import { withValue } from "university/dynamic-builder/utility";
 
 import { BuilderEngine } from "../../builder/builder-engine.service";
 import { BuilderField } from "../../builder/type-api";
-import { ActionInterceptProps, createActions } from "../action";
+import { ActionInterceptProps, createActions, getEventType } from "../action";
 import { BasicExtension } from "../basic/basic.extension";
 
 export class ReadConfigExtension extends BasicExtension {
@@ -39,14 +39,14 @@ export class ReadConfigExtension extends BasicExtension {
       return getJsonName.pipe(switchMap((configName: string) => this.ls.getProvider(BuilderEngine).getJsonConfig(configName)))
     } else {
       const getConfig = configAction ? this.createLoadConfigAction(configAction) : of(config);
-      return getConfig.pipe(map((_config: any) => cloneDeep({ id, ...Array.isArray(_config) ? { fields: _config } : _config })))
+      return getConfig.pipe(map((_config: any[] = []) => (cloneDeep({ id, ...(Array.isArray(_config) ? { fields: _config } : _config) }))))
     }
   }
 
   private createLoadConfigAction(actionName: string) {
     const props = { builder: this.builder, id: this.builder.id } as unknown as ActionInterceptProps;
-    const actions = createActions([{ type: this.loadConfigType, name: actionName }], props, { ls: this.ls });
-    return actions[this.loadConfigType](this.props as any);
+    const actions = createActions([{ type: this.loadConfigType, name: actionName }], props, { runObservable: true, ls: this.ls });
+    return actions[getEventType(this.loadConfigType)](this.props as any);
   }
 
   private checkFieldRepeat(fields: BuilderField[], jsonName: string | undefined) {
