@@ -1,5 +1,5 @@
 import { LocatorStorage } from '@di';
-import { isEmpty } from 'lodash';
+import { flatMap, isEmpty, uniq } from 'lodash';
 
 import { init } from './builder-utils';
 import { BuilderField, BuilderModelImplements, CacheObj } from './type-api';
@@ -33,9 +33,9 @@ export class BuilderModel implements BuilderModelImplements {
   }
 
   public getAllFieldById<T = BuilderField>(id: string): T[] {
-    const fields: T[] = this.children.map((child) => child.getFieldById(id));
+    const fields: T[] = flatMap(this.children.map((child) => child.getAllFieldById(id)));
     fields.push(this.getFieldById(id));
-    return fields.filter((field) => !isEmpty(field));
+    return uniq(fields.filter((field) => !isEmpty(field)));
   }
 
   public detectChanges() {
