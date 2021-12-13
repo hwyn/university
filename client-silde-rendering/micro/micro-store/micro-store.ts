@@ -3,21 +3,20 @@ import { MicroManageInterface, MicroStoreInterface } from '@shared/micro';
 import { StaticAssets } from '../load-assets/load-assets';
 
 export class MicroStore implements MicroStoreInterface {
-  private execFunctions: any[];
   private mountedList: any[] = [];
   private loaderStyleNodes: HTMLStyleElement[] = [];
   private execMountedList: [HTMLElement, any][] = [];
-  private _renderMicro: (...args: any[]) => Promise<any>;
+  private _renderMicro!: (...args: any[]) => Promise<any>;
 
   constructor(private microName: string, private staticAssets: StaticAssets, private microManage: MicroManageInterface) {
     this.microManage.loaderStyleSubject?.subscribe(this.headAppendChildProxy.bind(this));
-    // eslint-disable-next-line no-new-func
-    this.execFunctions = staticAssets.script.map((source: string) => new Function('microStore', 'fetchCacheData', source));
-    this._renderMicro = this.execJavascript();
   }
 
   public async onMounted(container: HTMLElement, options?: any): Promise<any> {
     this.execMountedList.push([container, options]);
+    if (!this._renderMicro) {
+      await this.loadScriptContext();
+    }
     if (this.execMountedList.length === 1) {
       await this.execMounted();
     }
@@ -41,10 +40,10 @@ export class MicroStore implements MicroStoreInterface {
     }
   }
 
-  private execJavascript(): (...args: any[]) => Promise<any> {
+  private execJavascript(execFunctions: any[]): () => Promise<any> {
     const { fetchCacheData } = this.staticAssets;
     const microStore: any = { render: () => void (0) };
-    this.execFunctions.forEach((fun: any) => fun(microStore, fetchCacheData));
+    execFunctions.forEach((fun: any) => fun(microStore, fetchCacheData));
     return microStore.render;
   }
 
@@ -66,5 +65,24 @@ export class MicroStore implements MicroStoreInterface {
     if (styleContainer) {
       styleNodes.forEach((styleNode) => styleContainer.appendChild(styleNode.cloneNode(true)));
     }
+  }
+
+  private async loadScriptContext() {
+    const { script, javascript } = this.staticAssets;
+    return Promise.all(script.map((source: string, index) => {
+      const hasSourceMap = /[\S]+\.[\S]+\.js$/.test(javascript[index]);
+      // eslint-disable-next-line no-new-func
+      return hasSourceMap ? Promise.resolve(new Function('microStore', 'fetchCacheData', source)) : this.loadBlobScript(source);
+    })).then((execFunctions: any[]) => this._renderMicro = this.execJavascript(execFunctions));
+  }
+
+  private async loadBlobScript(source: string) {
+    return new Promise(resolve => {
+      const funName = `anonymous${Math.random().toString().replace(/0.([\d]{5})\d*/ig, '$1')}`;
+      const script = document.createElement('script');
+      script.src = URL.createObjectURL(new Blob([`window.${funName}=function(microStore, fetchCacheData){ ${source}\n}`]));
+      document.body.appendChild(script);
+      script.onload = () => resolve((window as any)[funName]);
+    });
   }
 }
