@@ -78,7 +78,9 @@ export interface BuilderFieldExtensions
 
 export interface BuilderModelExtensions extends BuilderModelImplements {
   readonly grid: Grid;
+  readonly root: BuilderModelExtensions;
   readonly fields: BuilderFieldExtensions[];
+  readonly children: BuilderModelExtensions[];
   parent: BuilderModelExtensions | null;
   viewModel?: any;
   calculators: OriginCalculators[];

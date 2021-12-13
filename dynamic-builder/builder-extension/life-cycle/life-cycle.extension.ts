@@ -53,13 +53,10 @@ export class LifeCycleExtension extends BasicExtension {
       const { type, fieldId } = dependent;
       const sourceField: BuilderFieldExtensions = this.getJsonFieldById(fieldId) || this.json;
       const { actions = [], id: sourceId } = sourceField;
-      const hasAction = actions.some((action) => action.type === type);
+      const nonSource = fieldId !== sourceId;
+      const nonAction = !actions.some((action) => action.type === type);
 
-      if (fieldId !== sourceId) {
-        dependent.fieldId = sourceId;
-      }
-
-      if (!hasAction) {
+      if (!nonSource && nonAction) {
         sourceField.actions = [{ type }, ...actions];
       }
     });
