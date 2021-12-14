@@ -1,8 +1,8 @@
+import { JSON_CONFIG } from "@di";
 import { cloneDeep, isEmpty, uniq } from "lodash";
 import { Observable, of } from "rxjs";
 import { map, switchMap, tap } from "rxjs/operators";
 
-import { BuilderEngine } from "../../builder/builder-engine.service";
 import { BuilderField } from "../../builder/type-api";
 import { ActionInterceptProps, createActions } from "../action";
 import { BasicExtension } from "../basic/basic.extension";
@@ -10,7 +10,7 @@ import { BasicExtension } from "../basic/basic.extension";
 export class ReadConfigExtension extends BasicExtension {
   protected loadConfigType = 'loadConfigAction';
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  protected extension(): void | Observable<any> { 
+  protected extension(): void | Observable<any> {
     this.defineProperty(this.builder, 'id', this.props.id);
     return this.getConfigJson().pipe(
       tap((json) => {
@@ -31,7 +31,7 @@ export class ReadConfigExtension extends BasicExtension {
 
     if (isJsonName) {
       const getJsonName = jsonNameAction ? this.createLoadConfigAction(jsonNameAction) : of(jsonName);
-      return getJsonName.pipe(switchMap((configName: string) => this.ls.getProvider(BuilderEngine).getJsonConfig(configName)));
+      return getJsonName.pipe(switchMap((configName: string) => this.ls.getProvider(JSON_CONFIG).getJsonConfig(configName)));
     } else {
       const getConfig = configAction ? this.createLoadConfigAction(configAction) : of(config);
       return getConfig.pipe(map((_config: any[] = []) => (cloneDeep({ id, ...(Array.isArray(_config) ? { fields: _config } : _config) }))));
