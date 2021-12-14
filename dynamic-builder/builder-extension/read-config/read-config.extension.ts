@@ -10,9 +10,7 @@ import { BasicExtension } from "../basic/basic.extension";
 export class ReadConfigExtension extends BasicExtension {
   protected loadConfigType = 'loadConfigAction';
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  protected extension(): void | Observable<any> { }
-
-  protected beforeExtension() {
+  protected extension(): void | Observable<any> { 
     this.defineProperty(this.builder, 'id', this.props.id);
     return this.getConfigJson().pipe(
       tap((json) => {

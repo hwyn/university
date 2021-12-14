@@ -1,6 +1,6 @@
 import { Provider } from '@di';
 
-import { ACTION_INTERCEPT, BUILDER_EXTENSION } from '../token';
+import { ACTION_INTERCEPT, BUILDER_EXTENSION, LOAD_BUILDER_CONFIG } from '../token';
 import { Action } from './action/actions';
 import { ActionExtension } from './action/actions.extension';
 import { serializeAction } from './basic/basic.extension';
@@ -16,7 +16,7 @@ import { CheckVisibilityExtension } from './visibility/check-visibility.extensio
 
 export const builderExtensions: Provider[] = [
   { provide: ACTION_INTERCEPT, useClass: Action },
-  { provide: BUILDER_EXTENSION, multi: true, useValue: ReadConfigExtension },
+  { provide: LOAD_BUILDER_CONFIG, useValue: ReadConfigExtension },
   { provide: BUILDER_EXTENSION, multi: true, useValue: CheckVisibilityExtension },
   { provide: BUILDER_EXTENSION, multi: true, useValue: GridExtension },
   { provide: BUILDER_EXTENSION, multi: true, useValue: InstanceExtension },

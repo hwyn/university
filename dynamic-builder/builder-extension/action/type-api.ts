@@ -12,12 +12,6 @@ export interface ActionInterceptProps {
   builder: BuilderModelImplements;
   id: string;
 }
-export interface Calculator {
-  dependent: { fieldId: string, type: TypeEvent };
-  // eslint-disable-next-line no-use-before-define
-  action: Action;
-  targetId: string;
-}
 
 export interface Action {
   type: TypeEvent;

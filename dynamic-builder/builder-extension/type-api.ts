@@ -84,5 +84,6 @@ export interface BuilderModelExtensions extends BuilderModelImplements {
   parent: BuilderModelExtensions | null;
   viewModel?: any;
   calculators: OriginCalculators[];
+  nonSelfCalculators: OriginCalculators[];
 }
 

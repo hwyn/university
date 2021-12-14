@@ -1,25 +1,28 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { cloneDeep, isEmpty } from 'lodash';
+import { cloneDeep, flatMap, isEmpty } from 'lodash';
 import { Observable, of } from 'rxjs';
 import { filter, switchMap, tap } from 'rxjs/operators';
 
 import { BuilderProps } from '../../builder';
 import { transformObservable } from '../../utility';
-import { ActionInterceptProps, Calculator, createActions } from '../action';
+import { ActionInterceptProps, createActions } from '../action';
 import { BasicExtension } from '../basic/basic.extension';
-import { BuilderFieldExtensions } from '../type-api';
+import { BuilderFieldExtensions, BuilderModelExtensions, OriginCalculators } from '../type-api';
 
 export class LifeCycleExtension extends BasicExtension {
   protected hasChange = false;
-  protected calculators: Calculator[] = [];
+  protected calculators: OriginCalculators[] = [];
+  protected nonSelfCalculators: OriginCalculators[] = [];
   protected lifeActions!: { [key: string]: (event?: Event, ...arg: any[]) => any };
   protected detectChanges: any = this.cache.detectChanges.pipe(filter(() => !this.hasChange));
 
-  protected extension() { }
+  protected extension() {
+    const nonSelfBuilder = this.builder.root.$$cache.nonSelfBuilder;
+    this.defineProperty(this.cache, 'nonSelfBuilder', nonSelfBuilder || []);
+  }
 
   protected afterExtension() {
     this.serializeCalculators();
-    this.defineProperty(this.cache, 'originCalculators', this.calculators);
     return this.createLife();
   }
 
@@ -45,21 +48,26 @@ export class LifeCycleExtension extends BasicExtension {
   protected serializeCalculators() {
     this.createCalculators();
     this.linkCalculators();
-    this.builder.calculators = this.calculators;
+    this.bindCalculator();
   }
 
   protected linkCalculators() {
-    this.calculators.forEach(({ dependent }) => {
-      const { type, fieldId } = dependent;
-      const sourceField: BuilderFieldExtensions = this.getJsonFieldById(fieldId) || this.json;
-      const { actions = [], id: sourceId } = sourceField;
-      const nonSource = fieldId !== sourceId;
-      const nonAction = !actions.some((action) => action.type === type);
+    this.calculators.forEach((calculator) => this.linkCalculator(calculator));
+    this.getNonSelfCalculators().forEach((calculator) => this.linkCalculator(calculator, true));
+  }
 
-      if (!nonSource && nonAction) {
-        sourceField.actions = [{ type }, ...actions];
-      }
-    });
+  protected linkCalculator(calculator: OriginCalculators, nonSelfCalculator?: boolean) {
+    const { type, fieldId } = calculator.dependent;
+    const sourceField: BuilderFieldExtensions = this.getJsonFieldById(fieldId as string) || this.json;
+    const { actions = [], id: sourceId } = sourceField;
+    const nonSource = fieldId !== sourceId;
+    const nonAction = !actions.some((action) => action.type === type);
+    if (nonSource && !nonSelfCalculator) {
+      this.nonSelfCalculators.push(calculator);
+    }
+    if (!nonSource && nonAction) {
+      sourceField.actions = [{ type }, ...actions];
+    }
   }
 
   private createCalculators() {
@@ -75,13 +83,32 @@ export class LifeCycleExtension extends BasicExtension {
     });
   }
 
+  private getNonSelfCalculators(): OriginCalculators[] {
+    return flatMap(this.nonSelfBuilder.map((nonSelf: BuilderModelExtensions) => nonSelf.nonSelfCalculators));
+  }
+
+  get nonSelfBuilder() {
+    return this.cache.nonSelfBuilder;
+  }
+
+  private bindCalculator() {
+    this.builder.calculators = this.calculators;
+    this.builder.nonSelfCalculators = this.nonSelfCalculators;
+    this.defineProperty(this.cache, 'originCalculators', this.calculators);
+    this.defineProperty(this.cache, 'originNonSelfCalculators', this.nonSelfCalculators);
+    if (this.nonSelfCalculators.length) {
+      this.nonSelfBuilder.push(this.builder);
+    }
+  }
+
   protected destory() {
     return this.invokeLifeCycle('onDestory').pipe(
       tap(() => {
         this.lifeActions = {};
         delete this.detectChanges;
-        this.unDefineProperty(this.builder, ['calculators', 'onChanges']);
-        this.defineProperty(this.cache, 'originCalculators', null);
+        this.nonSelfBuilder.splice(this.nonSelfBuilder.indexOf(this.builder), 1);
+        this.unDefineProperty(this.builder, ['calculators', 'nonSelfCalculators', 'onChanges']);
+        this.unDefineProperty(this.cache, ['originCalculators', 'originNonSelfCalculators', 'nonSelfBuilder']);
       }),
       switchMap(() => transformObservable(super.destory()))
     );

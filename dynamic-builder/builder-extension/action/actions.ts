@@ -1,14 +1,14 @@
 /* eslint-disable max-lines-per-function */
 import { Inject, LocatorStorage } from '@di';
 import { flatMap, isEmpty } from 'lodash';
-import { Observable, of } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
 import { concatMap, filter, map, switchMap, toArray } from 'rxjs/operators';
 
 import { BuilderModelImplements } from '../../builder';
 import { ACTIONS_CONFIG } from '../../token';
 import { transformObservable } from '../../utility';
 import { serializeAction } from '../basic/basic.extension';
-import { BuilderModelExtensions } from '../type-api';
+import { BuilderModelExtensions, OriginCalculators } from '../type-api';
 import { ActionIntercept, ActionInterceptProps, BaseAction } from '.';
 import { Action as ActionProps, ActionContext } from './type-api';
 export class Action implements ActionIntercept {
@@ -43,19 +43,27 @@ export class Action implements ActionIntercept {
     return isEmpty(builder) ? {} : { builder, builderField: builder.getFieldById(id) };
   }
 
-  private invokeCalculators({ type }: ActionProps, actionSub: Observable<any>, props: ActionInterceptProps) {
+  private invokeCallCalculators(calculators: OriginCalculators[], { type }: ActionProps, props: ActionInterceptProps) {
     const { builder, id: currentId } = props;
-    const { calculators = [] } = builder as BuilderModelExtensions;
     const filterCalculators = calculators.filter(
       ({ dependent: { fieldId, type: calculatorType } }) => fieldId === currentId && calculatorType === type
     );
+    return !isEmpty(filterCalculators) ? this.callCalculatorsInvokes(filterCalculators, builder) : (value: any) => of(value);
+  }
 
-    if (!isEmpty(filterCalculators)) {
-      const calculatorsInvokes = this.callCalculatorsInvokes(filterCalculators, builder);
-      actionSub = actionSub.pipe(switchMap((value) => calculatorsInvokes(value)));
-    }
-
-    return actionSub;
+  private invokeCalculators(actionProps: ActionProps, actionSub: Observable<any>, props: ActionInterceptProps) {
+    const { builder, id } = props;
+    const { calculators } = builder as BuilderModelExtensions;
+    const nonSelfBuilder: BuilderModelExtensions[] = builder.$$cache.nonSelfBuilder;
+    const nonSelfCalculatorsInvokes = nonSelfBuilder.map((nonBuild) =>
+      this.invokeCallCalculators(nonBuild.nonSelfCalculators, actionProps, { builder: nonBuild, id })
+    );
+    nonSelfCalculatorsInvokes.push(this.invokeCallCalculators(calculators, actionProps, props))
+    return actionSub.pipe(
+      switchMap((value) => forkJoin(
+        nonSelfCalculatorsInvokes.map((invokeCalculators: any) => invokeCalculators(value))
+      ))
+    );
   }
 
   // eslint-disable-next-line complexity

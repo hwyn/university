@@ -31,14 +31,9 @@ export abstract class BasicExtension {
     this.jsonFields = this.json?.fields;
   }
 
-  protected beforeExtension() { }
   protected abstract extension(): void | Observable<any>;
   protected afterExtension() { }
   protected destory(): void { }
-
-  public beforeInit(): Observable<BasicExtension> {
-    return transformObservable(this.beforeExtension()).pipe(map(() => this));
-  }
 
   public init(): Observable<BasicExtension> {
     return transformObservable(this.extension()).pipe(map(() => this));

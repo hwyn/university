@@ -2,7 +2,7 @@ import { isEmpty, isUndefined } from 'lodash';
 
 import { BaseAction } from '../action';
 import { BasicExtension, CallBackOptions } from '../basic/basic.extension';
-import { BuilderFieldExtensions, Calculators, OriginCalculators } from '../type-api';
+import { BuilderFieldExtensions, BuilderModelExtensions, Calculators, OriginCalculators } from '../type-api';
 
 export class CheckVisibilityExtension extends BasicExtension {
   private visibilityTypeName = 'checkVisibility';
@@ -61,10 +61,16 @@ export class CheckVisibilityExtension extends BasicExtension {
     const newIds = hiddenList.join('');
     if (ids !== newIds) {
       cache.ids = newIds;
-      const originCalculators: OriginCalculators[] = this.cache.originCalculators;
-      this.builder.calculators = originCalculators.filter(({ targetId, action: { type }, dependent: { type: dType } }) => {
-        return type === this.visibilityTypeName || dType === this.visibilityTypeName || !hiddenList.includes(targetId);
+      this.builder.calculators = this.filterNoneCalculators(this.cache.originCalculators, hiddenList);
+      this.builder.$$cache.nonSelfBuilder.forEach((nonBuild: BuilderModelExtensions) => {
+        nonBuild.nonSelfCalculators = this.filterNoneCalculators(nonBuild.$$cache.originCalculators, hiddenList);
       });
     }
+  }
+
+  private filterNoneCalculators(originCalculators: OriginCalculators[], hiddenList: string[]) {
+    return originCalculators.filter(({ targetId, action: { type }, dependent: { type: dType } }) => {
+      return type === this.visibilityTypeName || dType === this.visibilityTypeName || !hiddenList.includes(targetId);
+    });
   }
 }

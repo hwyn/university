@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable no-use-before-define */
-import { forkJoin, Observable, of, Subject, } from 'rxjs';
-import { switchMap, tap } from 'rxjs/operators';
+import { forkJoin, Observable, Subject, } from 'rxjs';
+import { map, switchMap, tap } from 'rxjs/operators';
 
-import { BUILDER_EXTENSION } from '../token';
+import { BUILDER_EXTENSION, LOAD_BUILDER_CONFIG } from '../token';
 import { transformObservable, withValue } from '../utility';
 import { BuilderEngine } from './builder-engine.service';
 import { BuilderField, BuilderModelImplements, BuilderProps } from './type-api';
@@ -22,21 +22,16 @@ export function init(this: BuilderModelImplements) {
 }
 
 function loadForBuild(this: BuilderModelImplements | any, props: BuilderProps): Observable<object> {
+  const LoadConfig = this.ls.getProvider(LOAD_BUILDER_CONFIG);
   const Extensions: any[] = this.ls.getProvider(BUILDER_EXTENSION);
-  const examples: any[] = [];
-  let config = props.config;
   props.builder && addChild.call(props.builder, this);
-  return Extensions.reduce((before: Observable<any>, Extension: any) => before.pipe(switchMap(() => {
-    if (config !== props.config) {
-      config = props.config;
-      Object.defineProperty(this, '$$cache', withValue(getCacheObj.call(this, config || {})));
-    }
-    const example = new Extension(this, props, this.$$cache, props.config);
-    examples.push(example);
-    return example.beforeInit();
-  })), of(null)).pipe(
-    switchMap(() => forkJoin(examples.map((example) => example.init()))),
-    switchMap(() => forkJoin(examples.map((example) => example.afterInit()))),
+  return new LoadConfig(this, props, this.$$cache).init().pipe(
+    switchMap((loadExample: any) => {
+      Object.defineProperty(this, '$$cache', withValue(getCacheObj.call(this, props.config)));
+      const beforeInits = Extensions.map((Extension) => new Extension(this, props, this.$$cache, props.config).init());
+      return forkJoin(beforeInits).pipe(map((result: any[]) => [loadExample, ...result]));
+    }),
+    switchMap((examples: any[]) => forkJoin(examples.map((example) => example.afterInit()))),
     tap((extensionDestorys) => this.$$cache.extensionDestorys = extensionDestorys || []),
     tap(() => {
       this.$$cache.ready = true;
