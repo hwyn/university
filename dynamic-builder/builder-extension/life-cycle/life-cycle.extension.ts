@@ -104,11 +104,13 @@ export class LifeCycleExtension extends BasicExtension {
   protected destory() {
     return this.invokeLifeCycle('onDestory').pipe(
       tap(() => {
-        this.lifeActions = {};
-        delete this.detectChanges;
-        this.nonSelfBuilder.splice(this.nonSelfBuilder.indexOf(this.builder), 1);
+        if (this.nonSelfCalculators.length) {
+          this.nonSelfBuilder.splice(this.nonSelfBuilder.indexOf(this.builder), 1);
+        }
         this.unDefineProperty(this.builder, ['calculators', 'nonSelfCalculators', 'onChanges']);
         this.unDefineProperty(this.cache, ['originCalculators', 'originNonSelfCalculators', 'nonSelfBuilder']);
+        this.lifeActions = {};
+        delete this.detectChanges;
       }),
       switchMap(() => transformObservable(super.destory()))
     );
