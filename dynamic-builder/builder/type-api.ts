@@ -15,7 +15,6 @@ export interface CacheObj {
   addChild: (child: BuilderModelImplements) => void;
   removeChild: (child: BuilderModelImplements) => void;
   detectChanges: Subject<any>;
-  onChanges: Subject<BuilderProps>;
   extensionDestorys: any[];
 }
 interface Field {

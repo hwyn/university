@@ -2,6 +2,7 @@ import { Subject } from 'rxjs';
 
 import { Instance } from '../..//builder';
 import { BasicExtension, CallBackOptions } from '../basic/basic.extension';
+import { CURRENT, INSTANCE, LOAD_ACTION } from '../constant/calculator.constant';
 import { BuilderFieldExtensions } from '../type-api';
 
 export class InstanceExtension extends BasicExtension {
@@ -21,7 +22,7 @@ export class InstanceExtension extends BasicExtension {
     const handler = this.eachFields.bind(this, this.jsonFields, this.createInstanceLife.bind(this));
     this.pushCalculators(this.json, {
       action: this.bindCalculatorAction(handler),
-      dependents: { type: 'loadAction', fieldId: this.builder.id }
+      dependents: { type: LOAD_ACTION, fieldId: this.builder.id }
     });
   }
 
@@ -39,7 +40,7 @@ export class InstanceExtension extends BasicExtension {
       if (onMounted && !mountedIsEnd) { onMounted(id); }
       mountedIsEnd = true;
     });
-    Object.defineProperty(instance, 'current', this.getCurrentProperty(builderField));
+    Object.defineProperty(instance, CURRENT, this.getCurrentProperty(builderField));
     delete events.onMounted;
     delete events.onDestory;
   }
@@ -56,7 +57,7 @@ export class InstanceExtension extends BasicExtension {
   }
 
   private addInstance([, builderField]: CallBackOptions) {
-    this.defineProperty(builderField, 'instance', InstanceExtension.createInstance());
+    this.defineProperty(builderField, INSTANCE, InstanceExtension.createInstance());
   }
 
   public destory() {
@@ -64,8 +65,8 @@ export class InstanceExtension extends BasicExtension {
       const { instance } = buildField;
       instance.destory.unsubscribe();
       instance.mounted.unsubscribe();
-      this.unDefineProperty(instance, ['detectChanges', 'current']);
-      this.defineProperty(buildField, 'instance', null);
+      this.unDefineProperty(instance, ['detectChanges', CURRENT]);
+      this.defineProperty(buildField, INSTANCE, null);
     });
     return super.destory();
   }

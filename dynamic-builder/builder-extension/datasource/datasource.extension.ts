@@ -2,6 +2,7 @@ import { isEmpty, isUndefined } from 'lodash';
 
 import { BaseAction } from '../action';
 import { BasicExtension, CallBackOptions } from '../basic/basic.extension';
+import { DATD_SOURCE, LOAD_ACTION, LOAD_VIEW_MODEL } from '../constant/calculator.constant';
 import { BuilderFieldExtensions } from '../type-api';
 
 export class DataSourceExtension extends BasicExtension {
@@ -16,7 +17,7 @@ export class DataSourceExtension extends BasicExtension {
     if (!isEmpty(this.builderFields)) {
       this.pushCalculators(this.json, [{
         action: this.bindCalculatorAction(this.createOnDataSourceConfig.bind(this)),
-        dependents: { type: 'loadAction', fieldId: this.builder.id }
+        dependents: { type: LOAD_ACTION, fieldId: this.builder.id }
       }]);
     }
   }
@@ -40,7 +41,7 @@ export class DataSourceExtension extends BasicExtension {
   private createOnDataSourceConfig(): void {
     this.builderFields.forEach((builderField) => {
       const { events = {}, field } = builderField;
-      this.defineProperty(builderField, 'onDataSource', events.onDataSource);
+      this.defineProperty(builderField, this.getEventType(DATD_SOURCE), events.onDataSource);
       delete field.dataSource;
       delete events.onDataSource;
     });
@@ -48,8 +49,8 @@ export class DataSourceExtension extends BasicExtension {
 
   private serializeDataSourceConfig(jsonField: any) {
     const { dataSource: jsonDataSource } = jsonField;
-    const defaultDependents = { type: 'loadViewModel', fieldId: this.builder.id };
-    const dataSource = this.serializeCalculatorConfig(jsonDataSource, 'dataSource', defaultDependents);
+    const defaultDependents = { type: LOAD_VIEW_MODEL, fieldId: this.builder.id };
+    const dataSource = this.serializeCalculatorConfig(jsonDataSource, DATD_SOURCE, defaultDependents);
     const { action, source } = dataSource;
 
     if (!isEmpty(source)) {

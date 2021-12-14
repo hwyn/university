@@ -7,6 +7,7 @@ import { BuilderProps } from '../../builder';
 import { transformObservable } from '../../utility';
 import { ActionInterceptProps, createActions } from '../action';
 import { BasicExtension } from '../basic/basic.extension';
+import { CHANGE, DESTORY, LOAD, NON_SELF_BUILSERS, ORIGIN_CALCULATORS, ORIGIN_NON_SELF_CALCULATORS } from '../constant/calculator.constant';
 import { BuilderFieldExtensions, BuilderModelExtensions, OriginCalculators } from '../type-api';
 
 export class LifeCycleExtension extends BasicExtension {
@@ -17,8 +18,8 @@ export class LifeCycleExtension extends BasicExtension {
   protected detectChanges: any = this.cache.detectChanges.pipe(filter(() => !this.hasChange));
 
   protected extension() {
-    const nonSelfBuilder = this.builder.root.$$cache.nonSelfBuilder;
-    this.defineProperty(this.cache, 'nonSelfBuilder', nonSelfBuilder || []);
+    const nonSelfBuilders = this.builder.root.$$cache.nonSelfBuilders;
+    this.defineProperty(this.cache, NON_SELF_BUILSERS, nonSelfBuilders || []);
   }
 
   protected afterExtension() {
@@ -30,13 +31,13 @@ export class LifeCycleExtension extends BasicExtension {
     const { actions = [] } = this.json;
     const props = { builder: this.builder, id: this.builder.id } as unknown as ActionInterceptProps;
     this.lifeActions = createActions(actions, props, { runObservable: true, ls: this.ls });
-    this.defineProperty(this.builder, 'onChanges', this.onLifeChange.bind(this));
-    return this.invokeLifeCycle('onLoad', this.props);
+    this.defineProperty(this.builder, this.getEventType(CHANGE), this.onLifeChange.bind(this));
+    return this.invokeLifeCycle(this.getEventType(LOAD), this.props);
   }
 
   protected onLifeChange(props: BuilderProps) {
     this.hasChange = true;
-    this.invokeLifeCycle('onChange', props).subscribe();
+    this.invokeLifeCycle(this.getEventType(CHANGE), props).subscribe();
     this.hasChange = false;
   }
 
@@ -84,31 +85,31 @@ export class LifeCycleExtension extends BasicExtension {
   }
 
   private getNonSelfCalculators(): OriginCalculators[] {
-    return flatMap(this.nonSelfBuilder.map((nonSelf: BuilderModelExtensions) => nonSelf.nonSelfCalculators));
+    return flatMap(this.nonSelfBuilders.map((nonSelf) => nonSelf.nonSelfCalculators));
   }
 
-  get nonSelfBuilder() {
-    return this.cache.nonSelfBuilder;
+  get nonSelfBuilders(): BuilderModelExtensions[] {
+    return this.cache.nonSelfBuilders;
   }
 
   private bindCalculator() {
     this.builder.calculators = this.calculators;
     this.builder.nonSelfCalculators = this.nonSelfCalculators;
-    this.defineProperty(this.cache, 'originCalculators', this.calculators);
-    this.defineProperty(this.cache, 'originNonSelfCalculators', this.nonSelfCalculators);
+    this.defineProperty(this.cache, ORIGIN_CALCULATORS, this.calculators);
+    this.defineProperty(this.cache, ORIGIN_NON_SELF_CALCULATORS, this.nonSelfCalculators);
     if (this.nonSelfCalculators.length) {
-      this.nonSelfBuilder.push(this.builder);
+      this.nonSelfBuilders.push(this.builder);
     }
   }
 
   protected destory() {
-    return this.invokeLifeCycle('onDestory').pipe(
+    return this.invokeLifeCycle(this.getEventType(DESTORY)).pipe(
       tap(() => {
         if (this.nonSelfCalculators.length) {
-          this.nonSelfBuilder.splice(this.nonSelfBuilder.indexOf(this.builder), 1);
+          this.nonSelfBuilders.splice(this.nonSelfBuilders.indexOf(this.builder), 1);
         }
-        this.unDefineProperty(this.builder, ['calculators', 'nonSelfCalculators', 'onChanges']);
-        this.unDefineProperty(this.cache, ['originCalculators', 'originNonSelfCalculators', 'nonSelfBuilder']);
+        this.unDefineProperty(this.builder, ['calculators', 'nonSelfCalculators', this.getEventType(CHANGE)]);
+        this.unDefineProperty(this.cache, [ORIGIN_CALCULATORS, ORIGIN_NON_SELF_CALCULATORS, NON_SELF_BUILSERS]);
         this.lifeActions = {};
         delete this.detectChanges;
       }),

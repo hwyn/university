@@ -2,10 +2,11 @@ import { isEmpty, isUndefined } from 'lodash';
 
 import { BaseAction } from '../action';
 import { BasicExtension, CallBackOptions } from '../basic/basic.extension';
+import { CHANGE, CHECK_VISIBILITY, LOAD_ACTION } from '../constant/calculator.constant';
 import { BuilderFieldExtensions, BuilderModelExtensions, Calculators, OriginCalculators } from '../type-api';
 
 export class CheckVisibilityExtension extends BasicExtension {
-  private visibilityTypeName = 'checkVisibility';
+  private visibilityTypeName = CHECK_VISIBILITY;
   private builderFields!: BuilderFieldExtensions[];
   protected extension() {
     this.builderFields = this.mapFields(
@@ -16,10 +17,10 @@ export class CheckVisibilityExtension extends BasicExtension {
     if (!isEmpty(this.builderFields)) {
       this.pushCalculators(this.json, [{
         action: this.bindCalculatorAction(this.checkVisibility.bind(this, {})),
-        dependents: { type: 'change', fieldId: this.builder.id }
+        dependents: { type: CHANGE, fieldId: this.builder.id }
       }, {
         action: this.bindCalculatorAction(this.removeOnEvent.bind(this)),
-        dependents: { type: 'loadAction', fieldId: this.builder.id }
+        dependents: { type: LOAD_ACTION, fieldId: this.builder.id }
       }]);
     }
   }
@@ -40,7 +41,7 @@ export class CheckVisibilityExtension extends BasicExtension {
 
   private serializeCheckVisibilityConfig(jsonField: any): Calculators {
     const { checkVisibility: jsonCheckVisibility } = jsonField;
-    const defaultDependents = { type: 'change', fieldId: this.builder.id };
+    const defaultDependents = { type: CHANGE, fieldId: this.builder.id };
     return this.serializeCalculatorConfig(jsonCheckVisibility, this.visibilityTypeName, defaultDependents);
   }
 
@@ -62,7 +63,7 @@ export class CheckVisibilityExtension extends BasicExtension {
     if (ids !== newIds) {
       cache.ids = newIds;
       this.builder.calculators = this.filterNoneCalculators(this.cache.originCalculators, hiddenList);
-      this.builder.$$cache.nonSelfBuilder.forEach((nonBuild: BuilderModelExtensions) => {
+      this.builder.$$cache.nonSelfBuilders.forEach((nonBuild: BuilderModelExtensions) => {
         nonBuild.nonSelfCalculators = this.filterNoneCalculators(nonBuild.$$cache.originCalculators, hiddenList);
       });
     }

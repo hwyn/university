@@ -54,8 +54,8 @@ export class Action implements ActionIntercept {
   private invokeCalculators(actionProps: ActionProps, actionSub: Observable<any>, props: ActionInterceptProps) {
     const { builder, id } = props;
     const { calculators } = builder as BuilderModelExtensions;
-    const nonSelfBuilder: BuilderModelExtensions[] = builder.$$cache.nonSelfBuilder;
-    const nonSelfCalculatorsInvokes = nonSelfBuilder.map((nonBuild) =>
+    const nonSelfBuilders: BuilderModelExtensions[] = builder.$$cache.nonSelfBuilders;
+    const nonSelfCalculatorsInvokes = nonSelfBuilders.map((nonBuild) =>
       this.invokeCallCalculators(nonBuild.nonSelfCalculators, actionProps, { builder: nonBuild, id })
     );
     nonSelfCalculatorsInvokes.push(this.invokeCallCalculators(calculators, actionProps, props))
@@ -99,8 +99,7 @@ export class Action implements ActionIntercept {
     if (!executeHandler && action.builder) {
       let builder = action.builder;
       while (builder) {
-        const builderHandler = (builder as any)[name];
-        executeHandler = builderHandler ? builderHandler.bind(builder) : executeHandler;
+        executeHandler = builder.getExecuteHandler(name);
         if (builder === builder.root) {
           break;
         }

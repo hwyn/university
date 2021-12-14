@@ -4,7 +4,7 @@ import { map, switchMap, tap } from "rxjs/operators";
 
 import { BuilderEngine } from "../../builder/builder-engine.service";
 import { BuilderField } from "../../builder/type-api";
-import { ActionInterceptProps, createActions, getEventType } from "../action";
+import { ActionInterceptProps, createActions } from "../action";
 import { BasicExtension } from "../basic/basic.extension";
 
 export class ReadConfigExtension extends BasicExtension {
@@ -41,7 +41,7 @@ export class ReadConfigExtension extends BasicExtension {
   private createLoadConfigAction(actionName: string) {
     const props = { builder: this.builder, id: this.builder.id } as unknown as ActionInterceptProps;
     const actions = createActions([{ type: this.loadConfigType, name: actionName }], props, { runObservable: true, ls: this.ls });
-    return actions[getEventType(this.loadConfigType)](this.props as any);
+    return actions[this.getEventType(this.loadConfigType)](this.props as any);
   }
 
   private checkFieldRepeat(fields: BuilderField[], jsonName: string | undefined) {

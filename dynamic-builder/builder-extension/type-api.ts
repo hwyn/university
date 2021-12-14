@@ -1,5 +1,5 @@
 import { BuilderField, BuilderModelImplements, Instance } from '../builder';
-import { Action, BuilderFieldAction, TypeEvent } from './action';
+import { Action, BuilderFieldAction, ExecuteHandler, TypeEvent } from './action';
 
 type Column = boolean | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 'auto' | 11 | 12 | undefined;
 
@@ -77,12 +77,13 @@ export interface BuilderFieldExtensions
 }
 
 export interface BuilderModelExtensions extends BuilderModelImplements {
+  readonly viewModel?: any;
   readonly grid: Grid;
   readonly root: BuilderModelExtensions;
   readonly fields: BuilderFieldExtensions[];
   readonly children: BuilderModelExtensions[];
+  getExecuteHandler: (actionName: string) => undefined | ExecuteHandler; 
   parent: BuilderModelExtensions | null;
-  viewModel?: any;
   calculators: OriginCalculators[];
   nonSelfCalculators: OriginCalculators[];
 }

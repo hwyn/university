@@ -3,11 +3,12 @@ import { get, isEmpty, set } from 'lodash';
 import { BIND_FORM_CONTROL } from '../../token';
 import { BaseAction } from '../action';
 import { BasicExtension, CallBackOptions } from '../basic/basic.extension';
+import { CHANGE, CONTROL, LOAD_ACTION } from '../constant/calculator.constant';
 import { BuilderFieldExtensions } from '../type-api';
 
 export class FormExtension extends BasicExtension {
   private builderFields: BuilderFieldExtensions[] = [];
-  private defaultChangeType = 'change';
+  private defaultChangeType = CHANGE;
 
   protected extension() {
     this.builderFields = this.mapFields<BuilderFieldExtensions>(
@@ -24,7 +25,7 @@ export class FormExtension extends BasicExtension {
       dependents: { type: this.getChangeType(jsonField), fieldId: id }
     }, {
       action: this.bindCalculatorAction(this.addControl.bind(this, jsonField, builderField)),
-      dependents: { type: 'loadAction', fieldId: this.builder.id }
+      dependents: { type: LOAD_ACTION, fieldId: this.builder.id }
     }]);
   }
 
@@ -32,7 +33,7 @@ export class FormExtension extends BasicExtension {
     const { viewModel } = this.builder;
     const { dataBinding: { path, default: defaultValue } } = jsonField;
     const value = get(viewModel, path, defaultValue);
-    this.defineProperty(builderField, 'control', this.ls.getProvider(BIND_FORM_CONTROL, value));
+    this.defineProperty(builderField, CONTROL, this.ls.getProvider(BIND_FORM_CONTROL, value));
     builderField.control.changeValues.subscribe((_value: any) => set(viewModel, path, _value));
 
     delete builderField.field.dataBinding;
@@ -60,7 +61,7 @@ export class FormExtension extends BasicExtension {
   public destory() {
     this.builderFields.forEach((builderField) => {
       builderField.control?.destory();
-      this.defineProperty(builderField, 'control', null);
+      this.defineProperty(builderField, CONTROL, null);
     });
     return super.destory();
   }

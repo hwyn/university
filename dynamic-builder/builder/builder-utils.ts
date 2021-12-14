@@ -11,7 +11,7 @@ import { BuilderField, BuilderModelImplements, BuilderProps } from './type-api';
 export function init(this: BuilderModelImplements) {
   Object.defineProperty(this, '$$cache', withValue(getCacheObj.call(this, {})));
   Object.defineProperties(this, {
-    onChanges: withValue(() => { }),
+    onChange: withValue(() => { }),
     onDestory: withValue(this.$$cache.destory.bind(this)),
     loadForBuild: withValue((props: BuilderProps) => {
       delete (this as any).loadForBuild;
@@ -44,7 +44,6 @@ function getCacheObj(this: BuilderModelImplements, { fields = [] }: any): any {
   const {
     ready = false,
     destoryed = false,
-    onChanges = new Subject<any>(),
     detectChanges = new Subject<any>(),
     destory: modelDestory = destory.bind(this),
     addChild: modelAddChild = addChild.bind(this),
@@ -54,7 +53,6 @@ function getCacheObj(this: BuilderModelImplements, { fields = [] }: any): any {
   return {
     ready,
     destoryed,
-    onChanges,
     detectChanges,
     destory: modelDestory,
     addChild: modelAddChild,
@@ -84,7 +82,6 @@ function destory(this: BuilderModelImplements | any): void {
       ).subscribe(() => {
         cacheObj.ready = false;
         cacheObj.fields.splice(0);
-        cacheObj.onChanges.unsubscribe();
         cacheObj.detectChanges.unsubscribe();
         cacheObj.extensionDestorys.splice(0);
         this.children.splice(0);
