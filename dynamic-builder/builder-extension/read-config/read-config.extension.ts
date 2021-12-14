@@ -1,4 +1,4 @@
-import { cloneDeep, isEmpty } from "lodash";
+import { cloneDeep, isEmpty, uniq } from "lodash";
 import { Observable, of } from "rxjs";
 import { map, switchMap, tap } from "rxjs/operators";
 
@@ -47,7 +47,7 @@ export class ReadConfigExtension extends BasicExtension {
   }
 
   private checkFieldRepeat(fields: BuilderField[], jsonName: string | undefined) {
-    const filedIds = [...new Set(fields.map(({ id }) => id))];
+    const filedIds = uniq(fields.map(({ id }) => id));
     if (filedIds.includes(<string>jsonName)) {
       throw new Error(`The same ID as jsonID exists in the configuration file: ${jsonName}`);
     }
