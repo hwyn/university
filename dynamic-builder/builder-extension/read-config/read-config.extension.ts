@@ -29,14 +29,18 @@ export class ReadConfigExtension extends BasicExtension {
     if (!isJsonName && !isJsConfig) {
       throw new Error(`Builder configuration is incorrect: ${id}`);
     }
-
+    let configObs;
     if (isJsonName) {
       const getJsonName = jsonNameAction ? this.createLoadConfigAction(jsonNameAction) : of(jsonName);
-      return getJsonName.pipe(switchMap((configName: string) => this.ls.getProvider(JSON_CONFIG).getJsonConfig(configName)));
+      configObs = getJsonName.pipe(switchMap((configName: string) => this.ls.getProvider(JSON_CONFIG).getJsonConfig(configName)));
     } else {
-      const getConfig = configAction ? this.createLoadConfigAction(configAction) : of(config);
-      return getConfig.pipe(map((_config: any[] = []) => (cloneDeep({ id, ...(Array.isArray(_config) ? { fields: _config } : _config) }))));
+      configObs = configAction ? this.createLoadConfigAction(configAction) : of(config);
     }
+
+    return configObs.pipe(map((_config: any[] = []) => cloneDeep({
+      ...{ id, fields: [] },
+      ...(Array.isArray(_config) ? { fields: _config } : _config)
+    })));
   }
 
   private createLoadConfigAction(actionName: string) {
@@ -46,12 +50,12 @@ export class ReadConfigExtension extends BasicExtension {
   }
 
   private checkFieldRepeat(fields: BuilderField[], jsonName: string | undefined) {
-    const filedIds = uniq(fields.map(({ id }) => id));
+    const filedIds = uniq(fields.map(({ id }) => id) || []);
     if (filedIds.includes(<string>jsonName)) {
       throw new Error(`The same ID as jsonID exists in the configuration file: ${jsonName}`);
     }
 
-    if (filedIds.length !== fields.length) {
+    if (!isEmpty(filedIds) && filedIds.length !== fields.length) {
       throw new Error(`The same ID exists in the configuration file: ${jsonName}`);
     }
   }

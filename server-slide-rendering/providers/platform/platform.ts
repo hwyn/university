@@ -70,7 +70,8 @@ export class Platform {
     return (url: string) => {
       let fileCache = this.staticFileSourceList[url];
       if (!fileCache) {
-        fileCache = { type: 'file-static', source: JSON.parse(readStaticFile(url)) };
+        const fileSource = readStaticFile(url) || '{}';
+        fileCache = { type: 'file-static', source: JSON.parse(fileSource) };
         this.staticFileSourceList[url] = fileCache;
       }
       this.currentPageFileSourceList[url] = fileCache;
