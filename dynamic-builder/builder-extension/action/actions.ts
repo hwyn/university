@@ -45,7 +45,7 @@ export class Action implements ActionIntercept {
 
   private invokeCallCalculators(calculators: OriginCalculators[], { type }: ActionProps, props: ActionInterceptProps) {
     const { builder, id: currentId } = props;
-    const filterCalculators = calculators.filter(
+    const filterCalculators = (calculators || []).filter(
       ({ dependent: { fieldId, type: calculatorType } }) => fieldId === currentId && calculatorType === type
     );
     return !isEmpty(filterCalculators) ? this.callCalculatorsInvokes(filterCalculators, builder) : (value: any) => of(value);
@@ -54,7 +54,7 @@ export class Action implements ActionIntercept {
   private invokeCalculators(actionProps: ActionProps, actionSub: Observable<any>, props: ActionInterceptProps) {
     const { builder, id } = props;
     const { calculators } = builder as BuilderModelExtensions;
-    const nonSelfBuilders: BuilderModelExtensions[] = builder.$$cache.nonSelfBuilders;
+    const nonSelfBuilders: BuilderModelExtensions[] = builder.$$cache.nonSelfBuilders || [];
     const nonSelfCalculatorsInvokes = nonSelfBuilders.map((nonBuild) =>
       this.invokeCallCalculators(nonBuild.nonSelfCalculators, actionProps, { builder: nonBuild, id })
     );
@@ -62,7 +62,7 @@ export class Action implements ActionIntercept {
     return actionSub.pipe(
       switchMap((value) => forkJoin(
         nonSelfCalculatorsInvokes.map((invokeCalculators: any) => invokeCalculators(value))
-      ))
+      ).pipe(map(() => value)))
     );
   }
 
@@ -99,7 +99,7 @@ export class Action implements ActionIntercept {
     if (!executeHandler && action.builder) {
       let builder = action.builder;
       while (builder) {
-        executeHandler = builder.getExecuteHandler(name);
+        executeHandler = builder.getExecuteHandler(name) || executeHandler;
         if (builder === builder.root) {
           break;
         }

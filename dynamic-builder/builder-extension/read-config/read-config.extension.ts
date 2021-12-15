@@ -12,6 +12,7 @@ export class ReadConfigExtension extends BasicExtension {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   protected extension(): void | Observable<any> {
     this.defineProperty(this.builder, 'id', this.props.id);
+    this.builder.getExecuteHandler = this.createGetExecuteHandler();
     return this.getConfigJson().pipe(
       tap((json) => {
         json.id = this.props.id;
@@ -53,5 +54,18 @@ export class ReadConfigExtension extends BasicExtension {
     if (filedIds.length !== fields.length) {
       throw new Error(`The same ID exists in the configuration file: ${jsonName}`);
     }
+  }
+
+  private createGetExecuteHandler() {
+    const builder: any = this.builder;
+    return (actionName: string) => {
+      const executeHandler = builder[actionName];
+      return executeHandler && typeof executeHandler === 'function' ? executeHandler.bind(builder) : undefined;
+    };
+  }
+
+  protected destory() {
+    this.unDefineProperty(this.builder, ['getExecuteHandler']);
+    super.destory();
   }
 }
