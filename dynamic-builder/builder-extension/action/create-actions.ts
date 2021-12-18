@@ -7,7 +7,7 @@ import { ACTION_INTERCEPT } from '../../token';
 import { transformObservable } from '../../utility';
 import { Action, ActionIntercept, ActionInterceptProps } from './type-api';
 
-interface CreateOptions {
+export interface CreateOptions {
   ls: LocatorStorage;
   runObservable?: boolean;
   interceptFn?: (...args: any[]) => any;

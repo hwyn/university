@@ -6,5 +6,4 @@ registryProvider(builderExtensions);
 
 export * from './builder';
 export * from './builder-extension';
-export * from './decorator';
 export * from './token';

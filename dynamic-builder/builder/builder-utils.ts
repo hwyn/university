@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable no-use-before-define */
+import { isEmpty } from 'lodash';
 import { forkJoin, Observable, Subject, } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 
@@ -15,6 +16,8 @@ export function init(this: BuilderModelImplements) {
     onDestory: withValue(this.$$cache.destory.bind(this)),
     loadForBuild: withValue((props: BuilderProps) => {
       delete (this as any).loadForBuild;
+      Object.defineProperty(this, 'extensionProviders', withValue(props.extensionProviders || []));
+      props.builder && addChild.call(props.builder, this);
       loadForBuild.call(this, props).subscribe(() => this.detectChanges());
       return this;
     })
@@ -23,16 +26,16 @@ export function init(this: BuilderModelImplements) {
 
 function loadForBuild(this: BuilderModelImplements | any, props: BuilderProps): Observable<object> {
   const LoadConfig = this.ls.getProvider(LOAD_BUILDER_CONFIG);
-  const Extensions: any[] = this.ls.getProvider(BUILDER_EXTENSION);
-  props.builder && addChild.call(props.builder, this);
+  const extensionProviders = this.extensionProviders.map(({ extension }: any) => extension);
+  const Extensions: any[] = [...this.ls.getProvider(BUILDER_EXTENSION), ...extensionProviders];
   return new LoadConfig(this, props, this.$$cache).init().pipe(
     switchMap((loadExample: any) => {
-      Object.defineProperty(this, '$$cache', withValue(getCacheObj.call(this, props.config)));
+      Object.defineProperty(this, '$$cache', withValue(getCacheObj.call(this, props)));
       const beforeInits = Extensions.map((Extension) => new Extension(this, props, this.$$cache, props.config).init());
       return forkJoin(beforeInits).pipe(map((result: any[]) => [loadExample, ...result]));
     }),
     switchMap((examples: any[]) => forkJoin(examples.map((example) => example.afterInit()))),
-    tap((extensionDestorys) => this.$$cache.extensionDestorys = extensionDestorys || []),
+    tap((beforeDestorys) => this.$$cache.beforeDestorys = beforeDestorys || []),
     tap(() => {
       this.$$cache.ready = true;
       this.$$cache.destoryed && destory.apply(this);
@@ -40,7 +43,8 @@ function loadForBuild(this: BuilderModelImplements | any, props: BuilderProps): 
   );
 }
 
-function getCacheObj(this: BuilderModelImplements, { fields = [] }: any): any {
+function getCacheObj(this: BuilderModelImplements, props: any): any {
+  const { config: { fields = [] } = {} } = props;
   const {
     ready = false,
     destoryed = false,
@@ -71,21 +75,25 @@ function createField(this: BuilderModelImplements, field: any): BuilderField {
 
 function destory(this: BuilderModelImplements | any): void {
   const cacheObj = this.$$cache;
-  const { extensionDestorys = [], ready = false, destoryed } = cacheObj;
+  const { beforeDestorys = [], ready = false, destoryed } = cacheObj;
   cacheObj.destoryed = true;
   if (ready && !destoryed) {
     try {
-      forkJoin([...extensionDestorys].map(
-        (extensionDestory) => extensionDestory && extensionDestory()
+      forkJoin([...beforeDestorys].map(
+        (beforeDestory) => beforeDestory && beforeDestory()
       )).pipe(
+        switchMap((extensionDestorys: any[]) => forkJoin(extensionDestorys.map(
+          (extensionDestory) => extensionDestory && extensionDestory()
+        ))),
         switchMap(() => transformObservable(this.destory && this.destory.call(this)))
       ).subscribe(() => {
         cacheObj.ready = false;
         cacheObj.fields.splice(0);
         cacheObj.detectChanges.unsubscribe();
-        cacheObj.extensionDestorys.splice(0);
+        cacheObj.beforeDestorys.splice(0);
         this.children.splice(0);
-        removeChild.call(this.parent, this);
+        this.extensionProviders?.splice(0);
+        this.parent && removeChild.call(this.parent, this);
       });
     } catch (e) {
       console.error(e);
@@ -93,12 +101,22 @@ function destory(this: BuilderModelImplements | any): void {
   }
 }
 
+function extendsExtensionProviders(this: BuilderModelImplements, child: BuilderModelImplements) {
+  this.extensionProviders?.forEach((extensionProvider) => {
+    const { needExtends, extension: parentExtension } = extensionProvider;
+    if (needExtends && !child.extensionProviders?.some(({ extension }) => extension === parentExtension)) {
+      child.extensionProviders?.push(extensionProvider);
+    }
+  });
+}
+
 function addChild(this: BuilderModelImplements, child: BuilderModelImplements): void {
-  this?.children.push(child);
   child.parent = this;
+  this.children.push(child);
+  !isEmpty(this.extensionProviders) && extendsExtensionProviders.call(this, child);
 }
 
 function removeChild(this: BuilderModelImplements, child: BuilderModelImplements): void {
-  this?.children.splice(this.children.indexOf(child), 1);
+  this.children.splice(this.children.indexOf(child), 1);
   child.parent = null;
 }

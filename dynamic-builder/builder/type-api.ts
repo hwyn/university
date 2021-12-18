@@ -41,22 +41,33 @@ export interface BuilderField extends Field {
   field: Field;
 }
 
+export interface BuilderJsonField {
+  id: string;
+  type: string;
+  actions?: Action[];
+  [key: string]: any;
+}
+
+export type extensionProviders = { extension: any, needExtends?: boolean };
+
 export interface BuilderProps extends BuilderElement {
   id?: string;
   className?: string;
   builder?: BuilderModelImplements;
   BuilderModel?: Type<BuilderModelImplements>;
+  extensionProviders?: extensionProviders[];
   events?: { [key: string]: (params?: any) => Observable<any> };
   children?: any;
   jsonName?: string;
   jsonNameAction?: string;
   configAction?: string;
-  config?: {
+  config?: BuilderJsonField[] | {
     grid?: Grid;
-    fields: BuilderField[];
-    actions: Action[];
+    fields: BuilderJsonField[];
+    actions?: Action[];
   };
 }
+
 
 export interface BuilderModelImplements {
   parent: BuilderModelImplements | null;
@@ -69,6 +80,7 @@ export interface BuilderModelImplements {
   readonly grid?: Grid;
   readonly Element: any;
   readonly ls: LocatorStorage;
+  readonly extensionProviders?: extensionProviders[];
   getFieldByTypes<T = BuilderField>(id: string): T[];
   getAllFieldByTypes<T = BuilderField>(id: string): T[];
   getFieldById<T = BuilderField>(id: string | undefined): T;

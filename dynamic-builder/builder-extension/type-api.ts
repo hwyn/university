@@ -77,6 +77,7 @@ export interface BuilderFieldExtensions
 }
 
 export interface BuilderModelExtensions extends BuilderModelImplements {
+  [x: string]: any;
   readonly viewModel?: any;
   readonly grid: Grid;
   readonly root: BuilderModelExtensions;

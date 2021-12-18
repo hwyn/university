@@ -68,9 +68,6 @@ export class Action implements ActionIntercept {
 
   // eslint-disable-next-line complexity
   public invoke(action: ActionProps, props?: ActionInterceptProps, event: Event | any = null, ...otherEventParam: any[]): Observable<any> {
-    if (props && props.builder && props.builder.$$cache.destoryed) {
-      return of(null).pipe(filter(() => false));
-    }
     const _action = serializeAction(action);
     const { type, name, handler, stop } = _action;
     if (stop && !isEmpty(event) && event?.stopPropagation) {

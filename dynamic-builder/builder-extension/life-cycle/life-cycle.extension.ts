@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { cloneDeep, flatMap, isEmpty } from 'lodash';
 import { Observable, of } from 'rxjs';
-import { filter, switchMap, tap } from 'rxjs/operators';
+import { filter } from 'rxjs/operators';
 
 import { BuilderProps } from '../../builder';
-import { transformObservable } from '../../utility';
 import { ActionInterceptProps, createActions } from '../action';
 import { BasicExtension } from '../basic/basic.extension';
 import { CHANGE, DESTORY, LOAD, NON_SELF_BUILSERS, ORIGIN_CALCULATORS, ORIGIN_NON_SELF_CALCULATORS } from '../constant/calculator.constant';
@@ -102,18 +101,18 @@ export class LifeCycleExtension extends BasicExtension {
     }
   }
 
+  protected beforeDestory() {
+    return this.invokeLifeCycle(this.getEventType(DESTORY));
+  }
+
   protected destory() {
-    return this.invokeLifeCycle(this.getEventType(DESTORY)).pipe(
-      tap(() => {
-        if (this.nonSelfCalculators.length) {
-          this.nonSelfBuilders.splice(this.nonSelfBuilders.indexOf(this.builder), 1);
-        }
-        this.unDefineProperty(this.builder, ['calculators', 'nonSelfCalculators', this.getEventType(CHANGE)]);
-        this.unDefineProperty(this.cache, [ORIGIN_CALCULATORS, ORIGIN_NON_SELF_CALCULATORS, NON_SELF_BUILSERS]);
-        this.lifeActions = {};
-        delete this.detectChanges;
-      }),
-      switchMap(() => transformObservable(super.destory()))
-    );
+    if (this.nonSelfCalculators.length) {
+      this.nonSelfBuilders.splice(this.nonSelfBuilders.indexOf(this.builder), 1);
+    }
+    this.unDefineProperty(this.builder, ['calculators', 'nonSelfCalculators', this.getEventType(CHANGE)]);
+    this.unDefineProperty(this.cache, [ORIGIN_CALCULATORS, ORIGIN_NON_SELF_CALCULATORS, NON_SELF_BUILSERS]);
+    this.lifeActions = {};
+    delete this.detectChanges;
+    return super.destory();
   }
 }

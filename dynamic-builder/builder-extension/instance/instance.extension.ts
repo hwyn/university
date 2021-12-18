@@ -1,4 +1,5 @@
-import { Subject } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
+import { shareReplay } from 'rxjs/operators';
 
 import { Instance } from '../..//builder';
 import { BasicExtension, CallBackOptions } from '../basic/basic.extension';
@@ -12,7 +13,7 @@ export class InstanceExtension extends BasicExtension {
     return {
       current: null,
       mounted: new Subject<any>(),
-      destory: new Subject<any>(),
+      destory: new Subject<any>().pipe(shareReplay(1)) as Subject<any>,
       detectChanges: () => undefined,
     };
   }
@@ -58,6 +59,10 @@ export class InstanceExtension extends BasicExtension {
 
   private addInstance([, builderField]: CallBackOptions) {
     this.defineProperty(builderField, INSTANCE, InstanceExtension.createInstance());
+  }
+
+  protected beforeDestory() {
+    return forkJoin(this.buildFieldList.map(({ instance }) => instance.destory ))
   }
 
   public destory() {

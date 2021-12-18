@@ -6,8 +6,8 @@ import { map } from 'rxjs/operators';
 
 import { BuilderProps, CacheObj } from '../../builder';
 import { transformObservable, withValue } from '../../utility';
-import { Action, BaseAction } from '../action';
-import { getEventType } from '../action/create-actions';
+import { Action, ActionInterceptProps, BaseAction } from '../action';
+import { createActions, CreateOptions, getEventType } from '../action/create-actions';
 import { BuilderFieldExtensions, BuilderModelExtensions, Calculators, CalculatorsDependent } from '../type-api';
 
 export type CallBackOptions = [any, BuilderFieldExtensions];
@@ -33,7 +33,8 @@ export abstract class BasicExtension {
 
   protected abstract extension(): void | Observable<any>;
   protected afterExtension() { }
-  protected destory(): void { }
+  protected destory(): void | Observable<any> { }
+  protected beforeDestory(): void | Observable<any> { }
 
   public init(): Observable<BasicExtension> {
     return transformObservable(this.extension()).pipe(map(() => this));
@@ -41,7 +42,9 @@ export abstract class BasicExtension {
 
   public afterInit(): Observable<() => void> {
     return transformObservable(this.afterExtension()).pipe(
-      map(() => () => transformObservable(this.destory()))
+      map(() => () => transformObservable(this.beforeDestory()).pipe(
+        map(() => () => transformObservable(this.destory()))
+      ))
     );
   }
 
@@ -92,6 +95,10 @@ export abstract class BasicExtension {
 
   protected serializeAction(action: string | Action) {
     return serializeAction(action);
+  }
+
+  protected createActions(actions: Action[], props: ActionInterceptProps, options: CreateOptions) {
+    return createActions(actions, props, options);
   }
 
   protected getEventType(type: string) {

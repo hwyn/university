@@ -1,7 +1,6 @@
 import { InjectorToken } from '@di';
 
 export const UI_ELEMENT = InjectorToken.get('UI_ELEMENT');
-export const SCOPE_BUILDER = InjectorToken.get('SCOPE_BUILDER');
 export const ACTIONS_CONFIG = InjectorToken.get('ACTION_CONFIG');
 export const ACTION_INTERCEPT = InjectorToken.get('ACTION_INTERCEPT');
 export const BUILDER_EXTENSION = InjectorToken.get('BUILDER_EXTENSION');

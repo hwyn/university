@@ -62,14 +62,19 @@ export class ReadConfigExtension extends BasicExtension {
 
   private createGetExecuteHandler() {
     const builder: any = this.builder;
+    const exisityGetExecuteHandler = this.builder.getExecuteHandler;
     return (actionName: string) => {
-      const executeHandler = builder[actionName];
+      let executeHandler = builder[actionName];
+      if (typeof exisityGetExecuteHandler === 'function') {
+        executeHandler = exisityGetExecuteHandler.call(this.builder, actionName);
+      }
+      executeHandler = executeHandler || builder[actionName];
       return executeHandler && typeof executeHandler === 'function' ? executeHandler.bind(builder) : undefined;
     };
   }
 
   protected destory() {
     this.unDefineProperty(this.builder, ['getExecuteHandler']);
-    super.destory();
+    return super.destory();
   }
 }
