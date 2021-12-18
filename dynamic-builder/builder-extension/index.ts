@@ -31,6 +31,7 @@ export const builderExtensions: Provider[] = [
 export * from './action';
 export * from './action/create-actions';
 export * from './basic/basic.extension';
+export * from './constant/calculator.constant';
 export * from './form/type-api';
 export * from './type-api';
 

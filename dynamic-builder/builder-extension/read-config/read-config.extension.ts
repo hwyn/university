@@ -49,14 +49,14 @@ export class ReadConfigExtension extends BasicExtension {
     return actions[this.getEventType(this.loadConfigType)](this.props as any);
   }
 
-  private checkFieldRepeat(fields: BuilderField[], jsonName: string | undefined) {
+  private checkFieldRepeat(fields: BuilderField[], jsonId: string | undefined) {
     const filedIds = uniq(fields.map(({ id }) => id) || []);
-    if (filedIds.includes(<string>jsonName)) {
-      throw new Error(`The same ID as jsonID exists in the configuration file: ${jsonName}`);
+    if (filedIds.includes(<string>jsonId)) {
+      throw new Error(`The same ID as jsonID exists in the configuration file: ${jsonId}`);
     }
 
     if (!isEmpty(filedIds) && filedIds.length !== fields.length) {
-      throw new Error(`The same ID exists in the configuration file: ${jsonName}`);
+      throw new Error(`The same ID exists in the configuration file: ${jsonId}`);
     }
   }
 
