@@ -6,6 +6,8 @@ export const LOAD_VIEW_MODEL = 'loadViewModel';
 export const DATD_SOURCE = 'dataSource';
 export const CHECK_VISIBILITY = 'checkVisibility';
 
+export const ADD_EVENT_LISTENER = 'addEventListener';
+
 export const VIEW_MODEL = 'viewModel';
 
 export const CONTROL = 'control';

@@ -64,9 +64,18 @@ export class LifeCycleExtension extends BasicExtension {
     const nonAction = !actions.some((action) => action.type === type);
     if (nonSource && !nonSelfCalculator) {
       this.nonSelfCalculators.push(calculator);
+      this.linkOtherCalculator(calculator);
     }
     if (!nonSource && nonAction) {
       sourceField.actions = [{ type }, ...actions];
+    }
+  }
+
+  private linkOtherCalculator(calculator: OriginCalculators) {
+    const { type, fieldId = '' } = calculator.dependent;
+    const otherFields = this.builder.root.getAllFieldById<BuilderFieldExtensions>(fieldId);
+    if (!isEmpty(otherFields)) {
+      otherFields.forEach((otherField) => otherField.addEventListener({ type }));
     }
   }
 

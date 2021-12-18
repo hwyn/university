@@ -64,7 +64,7 @@ export class CheckVisibilityExtension extends BasicExtension {
       cache.ids = newIds;
       this.builder.calculators = this.filterNoneCalculators(this.cache.originCalculators, hiddenList);
       this.builder.$$cache.nonSelfBuilders.forEach((nonBuild: BuilderModelExtensions) => {
-        nonBuild.nonSelfCalculators = this.filterNoneCalculators(nonBuild.$$cache.originCalculators, hiddenList);
+        nonBuild.nonSelfCalculators = this.filterNoneCalculators(nonBuild.$$cache.originNonSelfCalculators, hiddenList);
       });
     }
   }

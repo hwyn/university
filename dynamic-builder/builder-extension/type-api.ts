@@ -83,7 +83,7 @@ export interface BuilderModelExtensions extends BuilderModelImplements {
   readonly root: BuilderModelExtensions;
   readonly fields: BuilderFieldExtensions[];
   readonly children: BuilderModelExtensions[];
-  getExecuteHandler: (actionName: string) => undefined | ExecuteHandler; 
+  getExecuteHandler: (actionName: string) => undefined | ExecuteHandler;
   parent: BuilderModelExtensions | null;
   calculators: OriginCalculators[];
   nonSelfCalculators: OriginCalculators[];

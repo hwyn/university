@@ -27,6 +27,7 @@ export interface Action {
 
 export interface BuilderFieldAction extends BuilderField {
   actions: Action[];
+  addEventListener: (actions: Action | Action[]) => any;
 }
 
 export interface ActionContext {

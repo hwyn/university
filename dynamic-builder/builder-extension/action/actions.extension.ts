@@ -1,8 +1,9 @@
+import { BuilderFieldExtensions } from 'dynamic-builder';
 import { isEmpty } from 'lodash';
 
 import { BasicExtension, CallBackOptions } from '../basic/basic.extension';
-import { LOAD_ACTION, LOAD_VIEW_MODEL } from '../constant/calculator.constant';
-import { createActions } from './create-actions';
+import { ADD_EVENT_LISTENER, LOAD_ACTION, LOAD_VIEW_MODEL } from '../constant/calculator.constant';
+import { Action } from './type-api';
 
 export class ActionExtension extends BasicExtension {
   protected extension() {
@@ -16,11 +17,18 @@ export class ActionExtension extends BasicExtension {
 
   private createFieldAction([jsonField, builderField]: CallBackOptions) {
     const { actions = [] } = jsonField;
-    const { id, field } = builderField;
-    if (!isEmpty(actions)) {
-      const events = createActions(this.toArray(actions), { builder: this.builder, id }, { ls: this.ls });
-      this.defineProperty(builderField, 'events', events);
+    this.defineProperty(builderField, ADD_EVENT_LISTENER, this.addFieldEvent.bind(this, builderField));
+    if (!isEmpty(actions)) builderField.addEventListener(actions);
+    delete builderField.field.actions;
+  }
+
+  private addFieldEvent(builderField: BuilderFieldExtensions, actions: Action | Action[]) {
+    const { events = {}, id } = builderField;
+    const addActions = this.toArray(actions).filter(({ type }) => !events[this.getEventType(type)]);
+    if (!isEmpty(addActions)) {
+      const addEvents = this.createActions(this.toArray(addActions), { builder: this.builder, id }, { ls: this.ls });
+      this.defineProperty(builderField, 'events', { ...events, ...addEvents });
+      builderField.instance.detectChanges();
     }
-    delete field.actions;
   }
 }
