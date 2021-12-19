@@ -25,7 +25,8 @@ interface Field {
 export interface Instance {
   current: any;
   destory: Subject<any>;
-  mounted: Subject<any>;
+  onMounted: (id: string) => void;
+  onDestory: (id: string) => void;
   detectChanges(): void;
 }
 

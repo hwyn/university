@@ -122,6 +122,10 @@ export class LifeCycleExtension extends BasicExtension {
     this.unDefineProperty(this.cache, [ORIGIN_CALCULATORS, ORIGIN_NON_SELF_CALCULATORS, NON_SELF_BUILSERS]);
     this.lifeActions = {};
     delete this.detectChanges;
+    const parentField = this.builder.parent?.getFieldById(this.builder.id);
+    if (parentField) {
+      parentField.instance?.destory.next(this.builder.id);
+    }
     return super.destory();
   }
 }
