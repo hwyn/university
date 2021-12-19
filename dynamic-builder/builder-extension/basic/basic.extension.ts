@@ -76,6 +76,7 @@ export abstract class BasicExtension {
   }
 
   protected pushCalculators(fieldConfig: BuilderFieldExtensions, calculator: Calculators | Calculators[]) {
+    fieldConfig.calculators = this.toArray(fieldConfig.calculators || []);
     const { calculators = [] } = fieldConfig;
     calculators.push(...this.toArray(calculator));
     fieldConfig.calculators = calculators;

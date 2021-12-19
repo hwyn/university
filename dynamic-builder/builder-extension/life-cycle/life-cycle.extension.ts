@@ -59,6 +59,7 @@ export class LifeCycleExtension extends BasicExtension {
   protected linkCalculator(calculator: OriginCalculators, nonSelfCalculator?: boolean) {
     const { type, fieldId } = calculator.dependent;
     const sourceField: BuilderFieldExtensions = this.getJsonFieldById(fieldId as string) || this.json;
+    sourceField.actions = this.toArray(sourceField.actions || []);
     const { actions = [], id: sourceId } = sourceField;
     const nonSource = fieldId !== sourceId;
     const nonAction = !actions.some((action) => action.type === type);
