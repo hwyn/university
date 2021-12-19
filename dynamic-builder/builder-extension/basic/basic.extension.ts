@@ -82,6 +82,19 @@ export abstract class BasicExtension {
     fieldConfig.calculators = calculators;
   }
 
+  protected pushAction(fieldConfig: BuilderFieldExtensions, actions: Action | Action[]) {
+    fieldConfig.actions = this.toArray(fieldConfig.actions || []);
+    const { actions: defaultAction } = fieldConfig;
+    this.toArray(actions).forEach((pushAction) => {
+      const findAction = defaultAction.find(({ type: defaultType }: Action) => pushAction.type === defaultType);
+      if (!findAction) {
+        defaultAction.push(pushAction);
+      } else if (typeof findAction.runObservable !== 'undefined') {
+        Object.assign(findAction, { ...pushAction });
+      }
+    });
+  }
+
   protected toArray<T = any>(obj: any): T[] {
     return isArray(obj) ? obj : [obj];
   }

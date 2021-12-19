@@ -52,8 +52,7 @@ export class InstanceExtension extends BasicExtension {
   }
 
   private addInstance([jsonField, builderField]: CallBackOptions) {
-    jsonField.actions = this.toArray(jsonField.actions || []);
-    jsonField.actions.push({ type: DESTORY, runObservable: true }, { type: MOUNTED });
+    this.pushAction(jsonField, [{ type: DESTORY, runObservable: true }, { type: MOUNTED }]);
     this.defineProperty(builderField, INSTANCE, InstanceExtension.createInstance());
   }
 
