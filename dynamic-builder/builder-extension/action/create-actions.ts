@@ -1,32 +1,25 @@
 import { LocatorStorage } from '@di';
 import { groupBy } from 'lodash';
-import { forkJoin } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { switchMap } from 'rxjs/operators';
 
 import { ACTION_INTERCEPT } from '../../token';
 import { transformObservable } from '../../utility';
-import { Action, ActionIntercept, ActionInterceptProps } from './type-api';
+import { Action as ActionIntercept } from './actions';
+import { Action, ActionInterceptProps } from './type-api';
 
-export interface CreateOptions {
-  ls: LocatorStorage;
-  interceptFn?: (...args: any[]) => any;
-  handlerCallBack?: (...args: any) => void;
-}
+export interface CreateOptions { ls: LocatorStorage; interceptFn?: (...args: any[]) => any; }
 
 function mergeHandler(actions: Action[], props: ActionInterceptProps, options: CreateOptions) {
-  const { ls, handlerCallBack } = options;
+  const { ls } = options;
   const actionIntercept = ls.getProvider<ActionIntercept>(ACTION_INTERCEPT);
-  const runObservable = actions.some(({ runObservable = false }) => runObservable);
   actions.length > 1 && console.warn(`${props.id} Repeat listen event: ${actions[0].type}`);
   return (event?: Event, ...arg: any[]) => {
     const { interceptFn = () => event } = options;
+    const runObservable = actions.some(({ runObservable = false }) => runObservable);
     const obs = transformObservable(interceptFn(props, event, ...arg)).pipe(
-      switchMap((value) => forkJoin(
-        actions.map((action) => actionIntercept.invoke(action, props, value, ...arg))
-      )),
-      map((result: any[]) => result.pop())
+      switchMap((value) => actionIntercept.invoke(actions, props, value, ...arg)),
     );
-    return runObservable ? obs : obs.subscribe(handlerCallBack);
+    return runObservable ? obs : obs.subscribe();
   };
 }
 

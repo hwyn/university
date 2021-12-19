@@ -1,8 +1,8 @@
 import { forkJoin, Observable, Subject } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { transformObservable } from 'university/dynamic-builder/utility';
 
 import { BuilderModel, Instance } from '../..//builder';
+import { transformObservable } from '../../utility';
 import { BasicExtension, CallBackOptions } from '../basic/basic.extension';
 import { CURRENT, DESTORY, INSTANCE, LOAD_ACTION, MOUNTED } from '../constant/calculator.constant';
 import { BuilderFieldExtensions } from '../type-api';

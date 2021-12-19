@@ -1,8 +1,8 @@
-import { BuilderFieldExtensions } from 'dynamic-builder';
 import { isEmpty } from 'lodash';
 
 import { BasicExtension, CallBackOptions } from '../basic/basic.extension';
 import { ADD_EVENT_LISTENER, LOAD_ACTION, LOAD_VIEW_MODEL } from '../constant/calculator.constant';
+import { BuilderFieldExtensions } from '../type-api';
 import { Action } from './type-api';
 
 export class ActionExtension extends BasicExtension {

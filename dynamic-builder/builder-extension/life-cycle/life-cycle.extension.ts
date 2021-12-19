@@ -1,8 +1,9 @@
 import { cloneDeep, flatMap, isEmpty } from 'lodash';
 import { Observable, of } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { filter, tap } from 'rxjs/operators';
 
 import { BuilderProps } from '../../builder';
+import { transformObservable } from '../../utility';
 import { ActionInterceptProps, createActions } from '../action';
 import { BasicExtension } from '../basic/basic.extension';
 import { CHANGE, DESTORY, LOAD, NON_SELF_BUILSERS, ORIGIN_CALCULATORS, ORIGIN_NON_SELF_CALCULATORS } from '../constant/calculator.constant';
@@ -121,12 +122,10 @@ export class LifeCycleExtension extends BasicExtension {
     }
     this.unDefineProperty(this.builder, ['calculators', 'nonSelfCalculators', this.getEventType(CHANGE)]);
     this.unDefineProperty(this.cache, [ORIGIN_CALCULATORS, ORIGIN_NON_SELF_CALCULATORS, NON_SELF_BUILSERS]);
-    this.lifeActions = {};
-    delete this.detectChanges;
+    this.unDefineProperty(this, ['detectChanges', 'lifeActions']);
     const parentField = this.builder.parent?.getFieldById(this.builder.id);
-    if (parentField) {
-      parentField.instance?.destory.next(this.builder.id);
-    }
-    return super.destory();
+    return transformObservable(super.destory()).pipe(
+      tap(() => parentField && parentField.instance?.destory.next(this.builder.id))
+    );
   }
 }

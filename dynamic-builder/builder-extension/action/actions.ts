@@ -10,6 +10,7 @@ import { serializeAction } from '../basic/basic.extension';
 import { BuilderModelExtensions, OriginCalculators } from '../type-api';
 import { ActionIntercept, ActionInterceptProps, BaseAction } from '.';
 import { Action as ActionProps, ActionContext } from './type-api';
+
 export class Action implements ActionIntercept {
   private actions: any[];
 
@@ -20,6 +21,11 @@ export class Action implements ActionIntercept {
     this.actions = flatMap(actions);
   }
 
+  private getAction(name: string) {
+    const [{ action = null } = {}] = this.actions.filter(({ name: actionName }) => actionName === name);
+    return action;
+  }
+
   private createEvent(event: any, otherEventParam: any[] = []): any[] {
     return [event, ...otherEventParam];
   }
@@ -27,14 +33,8 @@ export class Action implements ActionIntercept {
   private callCalculatorsInvokes(calculators: OriginCalculators[], builder: BuilderModelExtensions) {
     const calculatorsOb = of(...calculators);
     return (value: any) => calculatorsOb.pipe(
-      concatMap(({ targetId: id, action }) => this.invoke(action, { builder, id }, value)),
-      map(() => value)
+      concatMap(({ targetId: id, action }) => this.invoke(action, { builder, id }, value))
     );
-  }
-
-  private getAction(name: string) {
-    const [{ action = null } = {}] = this.actions.filter(({ name: actionName }) => actionName === name);
-    return action;
   }
 
   protected getActionContext({ builder, id }: ActionInterceptProps = {} as any): ActionContext {
@@ -53,28 +53,37 @@ export class Action implements ActionIntercept {
     const { builder, id } = props;
     const { calculators } = builder;
     const nonSelfBuilders: BuilderModelExtensions[] = builder.$$cache.nonSelfBuilders || [];
-    const nonSelfCalculatorsInvokes = nonSelfBuilders.map((nonBuild) =>
+    const calculatorsInvokes = nonSelfBuilders.map((nonBuild) =>
       this.invokeCallCalculators(nonBuild.nonSelfCalculators, actionProps, { builder: nonBuild, id })
     );
-    nonSelfCalculatorsInvokes.push(this.invokeCallCalculators(calculators || [], actionProps, props))
+    calculatorsInvokes.push(this.invokeCallCalculators(calculators || [], actionProps, props))
     return actionSub.pipe(
       switchMap((value) => forkJoin(
-        nonSelfCalculatorsInvokes.map((invokeCalculators: any) => invokeCalculators(value))
+        calculatorsInvokes.map((invokeCalculators: any) => invokeCalculators(value))
       ).pipe(map(() => value)))
     );
   }
 
-  // eslint-disable-next-line complexity
-  public invoke(action: ActionProps, props?: ActionInterceptProps, event: Event | any = null, ...otherEventParam: any[]): Observable<any> {
-    const _action = serializeAction(action);
-    const { type, name, handler, stop } = _action;
+  private invokeAction(action: ActionProps, props?: ActionInterceptProps, event: Event | any = null, ...otherEventParam: any[]) {
+    const { name, handler, stop } = action;
     if (stop && !isEmpty(event) && event?.stopPropagation) {
       event.stopPropagation();
     }
     const e = this.createEvent(event, otherEventParam);
-    const actionSub = name || handler ? this.executeAction(_action, this.getActionContext(props), e) : of(event);
+    return name || handler ? this.executeAction(action, this.getActionContext(props), e) : of(event);
+  }
 
-    return !!props && !!type && !isEmpty(props) ? this.invokeCalculators(_action, actionSub, props) : actionSub;
+  public invoke(
+    actions: ActionProps | ActionProps[], props?: ActionInterceptProps, event: Event | any = null, ...otherEventParam: any[]
+  ): Observable<any> {
+    const _actions = Array.isArray(actions) ? actions : [actions];
+    if (isEmpty(_actions)) { return of(event); }
+    const action = serializeAction(_actions.filter(({ type }) => !!type)[0]);
+    const actionsSub = forkJoin((_actions).map((action) => (
+      this.invokeAction(serializeAction(action), props, event, ...otherEventParam)
+    ))).pipe(map((result: any[]) => result.pop()));
+
+    return !!props && !!action && !isEmpty(props) ? this.invokeCalculators(action, actionsSub, props) : actionsSub;
   }
 
   // eslint-disable-next-line complexity
@@ -94,9 +103,7 @@ export class Action implements ActionIntercept {
     if (!executeHandler && builder) {
       while (builder) {
         executeHandler = builder.getExecuteHandler(name) || executeHandler;
-        if (builder === builder.root) {
-          break;
-        }
+        if (builder === builder.root) { break; }
         builder = builder.parent as BuilderModelExtensions;
       }
     }

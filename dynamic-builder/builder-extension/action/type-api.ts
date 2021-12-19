@@ -1,7 +1,7 @@
-import { BuilderModelExtensions } from 'dynamic-builder';
 import { Observable } from 'rxjs';
 
 import { BuilderField, BuilderModelImplements } from '../../builder';
+import { BuilderModelExtensions } from '../type-api';
 import { BaseAction } from './base.action';
 
 // eslint-disable-next-line max-len
