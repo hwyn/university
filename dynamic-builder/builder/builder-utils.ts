@@ -87,7 +87,6 @@ function destory(this: BuilderModelImplements | any): void {
         ))),
         switchMap(() => transformObservable(this.destory && this.destory.call(this)))
       ).subscribe(() => {
-        console.log('destory', this.id);
         cacheObj.ready = false;
         cacheObj.fields.splice(0);
         cacheObj.detectChanges.unsubscribe();
