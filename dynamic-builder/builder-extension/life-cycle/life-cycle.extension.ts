@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 import { cloneDeep, flatMap, isEmpty } from 'lodash';
 import { Observable, of } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -75,7 +74,7 @@ export class LifeCycleExtension extends BasicExtension {
 
   private linkOtherCalculator(calculator: OriginCalculators) {
     const { type, fieldId = '' } = calculator.dependent;
-    const otherFields = this.builder.root.getAllFieldById<BuilderFieldExtensions>(fieldId);
+    const otherFields = this.builder.root.getAllFieldById(fieldId);
     if (!isEmpty(otherFields)) {
       otherFields.forEach((otherField) => otherField.addEventListener({ type }));
     }

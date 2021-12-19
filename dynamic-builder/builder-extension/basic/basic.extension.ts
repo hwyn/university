@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { LocatorStorage } from '@di';
-import { cloneDeep, isArray, isString, merge } from 'lodash';
+import { cloneDeep, isString, merge } from 'lodash';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -87,16 +87,12 @@ export abstract class BasicExtension {
     const { actions: defaultAction } = fieldConfig;
     this.toArray(actions).forEach((pushAction) => {
       const findAction = defaultAction.find(({ type: defaultType }: Action) => pushAction.type === defaultType);
-      if (!findAction) {
-        defaultAction.push(pushAction);
-      } else if (typeof findAction.runObservable !== 'undefined') {
-        Object.assign(findAction, { ...pushAction });
-      }
+      !findAction ? defaultAction.push(pushAction) : Object.assign(findAction, { ...pushAction });
     });
   }
 
   protected toArray<T = any>(obj: any): T[] {
-    return isArray(obj) ? obj : [obj];
+    return Array.isArray(obj) ? obj : [obj];
   }
 
   protected defineProperty(object: any, prototypeName: string, value: any) {

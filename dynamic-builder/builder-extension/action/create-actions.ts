@@ -14,11 +14,12 @@ export interface CreateOptions {
 }
 
 function mergeHandler(actions: Action[], props: ActionInterceptProps, options: CreateOptions) {
-  const actionIntercept: ActionIntercept = options.ls.getProvider(ACTION_INTERCEPT);
+  const { ls, handlerCallBack } = options;
+  const actionIntercept = ls.getProvider<ActionIntercept>(ACTION_INTERCEPT);
+  const runObservable = actions.some(({ runObservable = false }) => runObservable);
   actions.length > 1 && console.warn(`${props.id} Repeat listen event: ${actions[0].type}`);
   return (event?: Event, ...arg: any[]) => {
-    const runObservable = actions.some(({ runObservable = false }) => runObservable);
-    const { interceptFn = () => event, handlerCallBack } = options;
+    const { interceptFn = () => event } = options;
     const obs = transformObservable(interceptFn(props, event, ...arg)).pipe(
       switchMap((value) => forkJoin(
         actions.map((action) => actionIntercept.invoke(action, props, value, ...arg))
