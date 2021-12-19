@@ -1,25 +1,23 @@
+import { BuilderModelExtensions } from 'dynamic-builder';
 import { Observable } from 'rxjs';
 
 import { BuilderField, BuilderModelImplements } from '../../builder';
-import { BuilderFieldExtensions } from '../type-api';
 import { BaseAction } from './base.action';
 
 // eslint-disable-next-line max-len
 export type TypeEvent = 'load' | 'dataSource' | 'calculator-datasource' | 'calculator' | 'click' | 'change' | 'focus' | 'blur' | 'keyUp' | 'keyDown' | string;
 
-export type EventHandler = (builderField: BuilderFieldExtensions, runObservable?: boolean) => any | Observable<any> | undefined;
-
 export type ExecuteHandler = (baseAction: BaseAction, ...otherEvent: any[]) => any;
 
 export interface ActionInterceptProps {
-  builder: BuilderModelImplements;
+  builder: BuilderModelExtensions;
   id: string;
 }
 
 export interface Action {
   type: TypeEvent;
   name?: string | undefined;
-  intercept?: string | undefined;
+  runObservable?: boolean;
   params?: any;
   stop?: boolean;
   handler?: ExecuteHandler;

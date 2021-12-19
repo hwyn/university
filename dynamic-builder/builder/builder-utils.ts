@@ -87,6 +87,7 @@ function destory(this: BuilderModelImplements | any): void {
         ))),
         switchMap(() => transformObservable(this.destory && this.destory.call(this)))
       ).subscribe(() => {
+        console.log('destory', this.id);
         cacheObj.ready = false;
         cacheObj.fields.splice(0);
         cacheObj.detectChanges.unsubscribe();
@@ -101,7 +102,7 @@ function destory(this: BuilderModelImplements | any): void {
   }
 }
 
-function extendsExtensionProviders(this: BuilderModelImplements, child: BuilderModelImplements) {
+function extendsProviders(this: BuilderModelImplements, child: BuilderModelImplements) {
   this.extensionProviders?.forEach((extensionProvider) => {
     const { needExtends, extension: parentExtension } = extensionProvider;
     if (needExtends && !child.extensionProviders?.some(({ extension }) => extension === parentExtension)) {
@@ -113,7 +114,7 @@ function extendsExtensionProviders(this: BuilderModelImplements, child: BuilderM
 function addChild(this: BuilderModelImplements, child: BuilderModelImplements): void {
   child.parent = this;
   this.children.push(child);
-  !isEmpty(this.extensionProviders) && extendsExtensionProviders.call(this, child);
+  !isEmpty(this.extensionProviders) && extendsProviders.call(this, child);
 }
 
 function removeChild(this: BuilderModelImplements, child: BuilderModelImplements): void {

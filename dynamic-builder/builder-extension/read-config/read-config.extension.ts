@@ -4,12 +4,11 @@ import { Observable, of } from "rxjs";
 import { map, switchMap, tap } from "rxjs/operators";
 
 import { BuilderField } from "../../builder/type-api";
-import { ActionInterceptProps, createActions } from "../action";
+import { ActionInterceptProps } from "../action";
 import { BasicExtension } from "../basic/basic.extension";
 
 export class ReadConfigExtension extends BasicExtension {
   protected loadConfigType = 'loadConfigAction';
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   protected extension(): void | Observable<any> {
     this.defineProperty(this.builder, 'id', this.props.id);
     this.builder.getExecuteHandler = this.createGetExecuteHandler();
@@ -45,7 +44,7 @@ export class ReadConfigExtension extends BasicExtension {
 
   private createLoadConfigAction(actionName: string) {
     const props = { builder: this.builder, id: this.builder.id } as unknown as ActionInterceptProps;
-    const actions = createActions([{ type: this.loadConfigType, name: actionName }], props, { runObservable: true, ls: this.ls });
+    const actions = this.createActions([{ type: this.loadConfigType, name: actionName, runObservable: true }], props, { ls: this.ls });
     return actions[this.getEventType(this.loadConfigType)](this.props as any);
   }
 
@@ -62,14 +61,14 @@ export class ReadConfigExtension extends BasicExtension {
 
   private createGetExecuteHandler() {
     const builder: any = this.builder;
-    const exisityGetExecuteHandler = this.builder.getExecuteHandler;
+    const getExecuteHandler = this.builder.getExecuteHandler;
     return (actionName: string) => {
       let executeHandler = builder[actionName];
-      if (typeof exisityGetExecuteHandler === 'function') {
-        executeHandler = exisityGetExecuteHandler.call(this.builder, actionName);
+      if (typeof getExecuteHandler === 'function') {
+        executeHandler = getExecuteHandler.call(this.builder, actionName);
       }
       executeHandler = executeHandler || builder[actionName];
-      return executeHandler && typeof executeHandler === 'function' ? executeHandler.bind(builder) : undefined;
+      return typeof executeHandler === 'function' ? executeHandler.bind(builder) : undefined;
     };
   }
 

@@ -90,6 +90,10 @@ export abstract class BasicExtension {
     Object.defineProperty(object, prototypeName, withValue(value));
   }
 
+  protected definePropertys(object: any, prototype: { [key: string]: any }) {
+    Object.keys(prototype).forEach((key: string) => this.defineProperty(object, key, prototype[key]));
+  }
+
   protected unDefineProperty(object: any, prototypeNames: string[]) {
     prototypeNames.forEach((prototypeName: string) => this.defineProperty(object, prototypeName, null));
   }

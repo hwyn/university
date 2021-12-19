@@ -9,25 +9,28 @@ import { Action, ActionIntercept, ActionInterceptProps } from './type-api';
 
 export interface CreateOptions {
   ls: LocatorStorage;
-  runObservable?: boolean;
   interceptFn?: (...args: any[]) => any;
   handlerCallBack?: (...args: any) => void;
 }
 
 function mergeHandler(actions: Action[], props: ActionInterceptProps, options: CreateOptions) {
   const actionIntercept: ActionIntercept = options.ls.getProvider(ACTION_INTERCEPT);
+  actions.length > 1 && console.warn(`${props.id} Repeat listen event: ${actions[0].type}`);
   return (event?: Event, ...arg: any[]) => {
-    const { interceptFn = () => event, handlerCallBack, runObservable = false } = options;
+    const runObservable = actions.some(({ runObservable = false }) => runObservable);
+    const { interceptFn = () => event, handlerCallBack } = options;
     const obs = transformObservable(interceptFn(props, event, ...arg)).pipe(
       switchMap((value) => forkJoin(
         actions.map((action) => actionIntercept.invoke(action, props, value, ...arg))
-      ).pipe(map((result: any[]) => result.pop()))));
+      )),
+      map((result: any[]) => result.pop())
+    );
     return runObservable ? obs : obs.subscribe(handlerCallBack);
   };
 }
 
 export function getEventType(type: string) {
-  return `on${type.slice(0, 1).toUpperCase()}${type.slice(1)}`;
+  return `on${type[0].toUpperCase()}${type.slice(1)}`;
 }
 
 export const createActions = (

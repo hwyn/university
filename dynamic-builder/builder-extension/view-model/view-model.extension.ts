@@ -3,7 +3,7 @@ import { BasicExtension } from '../basic/basic.extension';
 import { LOAD, LOAD_VIEW_MODEL, VIEW_MODEL } from '../constant/calculator.constant';
 
 export class ViewModelExtension extends BasicExtension {
-  protected extension()  {
+  protected extension() {
     this.pushCalculators(this.json, {
       action: this.createViewModelCalculator(),
       dependents: { type: LOAD, fieldId: this.builder.id }

@@ -7,7 +7,7 @@ import { Action } from './type-api';
 
 export class ActionExtension extends BasicExtension {
   protected extension() {
-    const eachCallback = this.createFieldAction.bind(this);
+    const eachCallback = this.create.bind(this);
     const handler = this.eachFields.bind(this, this.jsonFields, eachCallback);
     this.pushCalculators(this.json, {
       action: { type: LOAD_ACTION, handler },
@@ -15,7 +15,7 @@ export class ActionExtension extends BasicExtension {
     });
   }
 
-  private createFieldAction([jsonField, builderField]: CallBackOptions) {
+  private create([jsonField, builderField]: CallBackOptions) {
     const { actions = [] } = jsonField;
     this.defineProperty(builderField, ADD_EVENT_LISTENER, this.addFieldEvent.bind(this, builderField));
     if (!isEmpty(actions)) builderField.addEventListener(actions);

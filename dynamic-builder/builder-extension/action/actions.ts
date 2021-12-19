@@ -2,9 +2,8 @@
 import { Inject, LocatorStorage } from '@di';
 import { flatMap, isEmpty } from 'lodash';
 import { forkJoin, Observable, of } from 'rxjs';
-import { concatMap, filter, map, switchMap, toArray } from 'rxjs/operators';
+import { concatMap, map, switchMap } from 'rxjs/operators';
 
-import { BuilderModelImplements } from '../../builder';
 import { ACTIONS_CONFIG } from '../../token';
 import { transformObservable } from '../../utility';
 import { serializeAction } from '../basic/basic.extension';
@@ -25,11 +24,10 @@ export class Action implements ActionIntercept {
     return [event, ...otherEventParam];
   }
 
-  private callCalculatorsInvokes(calculators: any, builder: BuilderModelImplements) {
+  private callCalculatorsInvokes(calculators: OriginCalculators[], builder: BuilderModelExtensions) {
     const calculatorsOb = of(...calculators);
     return (value: any) => calculatorsOb.pipe(
-      concatMap(({ targetId, action: calculatorAction }: any) => this.invoke(calculatorAction, { builder, id: targetId }, value)),
-      toArray(),
+      concatMap(({ targetId: id, action }) => this.invoke(action, { builder, id }, value)),
       map(() => value)
     );
   }
@@ -45,7 +43,7 @@ export class Action implements ActionIntercept {
 
   private invokeCallCalculators(calculators: OriginCalculators[], { type }: ActionProps, props: ActionInterceptProps) {
     const { builder, id: currentId } = props;
-    const filterCalculators = (calculators || []).filter(
+    const filterCalculators = calculators.filter(
       ({ dependent: { fieldId, type: calculatorType } }) => fieldId === currentId && calculatorType === type
     );
     return !isEmpty(filterCalculators) ? this.callCalculatorsInvokes(filterCalculators, builder) : (value: any) => of(value);
@@ -53,12 +51,12 @@ export class Action implements ActionIntercept {
 
   private invokeCalculators(actionProps: ActionProps, actionSub: Observable<any>, props: ActionInterceptProps) {
     const { builder, id } = props;
-    const { calculators } = builder as BuilderModelExtensions;
+    const { calculators } = builder;
     const nonSelfBuilders: BuilderModelExtensions[] = builder.$$cache.nonSelfBuilders || [];
     const nonSelfCalculatorsInvokes = nonSelfBuilders.map((nonBuild) =>
       this.invokeCallCalculators(nonBuild.nonSelfCalculators, actionProps, { builder: nonBuild, id })
     );
-    nonSelfCalculatorsInvokes.push(this.invokeCallCalculators(calculators, actionProps, props))
+    nonSelfCalculatorsInvokes.push(this.invokeCallCalculators(calculators || [], actionProps, props))
     return actionSub.pipe(
       switchMap((value) => forkJoin(
         nonSelfCalculatorsInvokes.map((invokeCalculators: any) => invokeCalculators(value))
@@ -73,7 +71,6 @@ export class Action implements ActionIntercept {
     if (stop && !isEmpty(event) && event?.stopPropagation) {
       event.stopPropagation();
     }
-
     const e = this.createEvent(event, otherEventParam);
     const actionSub = name || handler ? this.executeAction(_action, this.getActionContext(props), e) : of(event);
 
@@ -92,9 +89,9 @@ export class Action implements ActionIntercept {
     const context = { ...actionContext, actionPropos, actionEvent };
     let action = new BaseAction(this.ls, context);
     let executeHandler = handler;
+    let builder = action.builder;
 
-    if (!executeHandler && action.builder) {
-      let builder = action.builder;
+    if (!executeHandler && builder) {
       while (builder) {
         executeHandler = builder.getExecuteHandler(name) || executeHandler;
         if (builder === builder.root) {

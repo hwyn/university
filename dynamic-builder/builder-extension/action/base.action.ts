@@ -6,24 +6,10 @@ import { BuilderFieldExtensions, BuilderModelExtensions, InstanceExtensions } fr
 import { Action, ActionIntercept } from './type-api';
 
 export class BaseAction<T = any> {
-  protected _actionPropos!: Action;
-  protected _builder!: BuilderModelExtensions;
-  protected _instance!: InstanceExtensions;
-  protected _builderField!: BuilderFieldExtensions;
   protected _actionIntercept!: ActionIntercept;
-  protected _actionResult!: T;
 
-  constructor(protected ls: LocatorStorage, context: any = {}) {
+  constructor(protected ls: LocatorStorage, private context: any = {}) {
     this._actionIntercept = this.ls.getProvider(ACTION_INTERCEPT);
-    this.invokeContext(context);
-  }
-
-  protected invokeContext(context: any = {}) {
-    this._actionPropos = context.actionPropos;
-    this._builder = context.builder;
-    this._builderField = context.builderField;
-    this._instance = this.builderField && this.builderField.instance;
-    this._actionResult = context.actionEvent;
   }
 
   public createAction(action: string | Action) {
@@ -31,7 +17,7 @@ export class BaseAction<T = any> {
   }
 
   get builderField(): BuilderFieldExtensions {
-    return this._builderField;
+    return this.context.builderField;
   }
 
   get actionIntercept(): ActionIntercept {
@@ -39,18 +25,18 @@ export class BaseAction<T = any> {
   }
 
   get builder(): BuilderModelExtensions {
-    return this._builder;
+    return this.context.builder;
   }
 
   get instance(): InstanceExtensions {
-    return this._instance;
+    return this.builderField && this.builderField.instance;
   }
 
   get actionPropos(): Action {
-    return this._actionPropos;
+    return this.context.actionPropos;
   }
 
   get actionEvent(): T {
-    return this._actionResult;
+    return this.context.actionEvent;
   }
 }

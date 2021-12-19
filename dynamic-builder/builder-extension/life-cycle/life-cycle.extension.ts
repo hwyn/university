@@ -29,7 +29,8 @@ export class LifeCycleExtension extends BasicExtension {
   protected createLife(): Observable<any> {
     const { actions = [] } = this.json;
     const props = { builder: this.builder, id: this.builder.id } as unknown as ActionInterceptProps;
-    this.lifeActions = createActions(actions, props, { runObservable: true, ls: this.ls });
+    actions.forEach((action: any) => action.runObservable = true);
+    this.lifeActions = createActions(actions, props, { ls: this.ls });
     this.defineProperty(this.builder, this.getEventType(CHANGE), this.onLifeChange.bind(this));
     return this.invokeLifeCycle(this.getEventType(LOAD), this.props);
   }
