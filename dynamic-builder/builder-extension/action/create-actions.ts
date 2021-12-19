@@ -10,14 +10,15 @@ import { Action, ActionInterceptProps } from './type-api';
 export interface CreateOptions { ls: LocatorStorage; interceptFn?: (...args: any[]) => any; }
 
 function mergeHandler(actions: Action[], props: ActionInterceptProps, options: CreateOptions) {
-  const { ls } = options;
-  const actionIntercept = ls.getProvider<ActionIntercept>(ACTION_INTERCEPT);
-  actions.length > 1 && console.warn(`${props.id} Repeat listen event: ${actions[0].type}`);
+  const actionIntercept = options.ls.getProvider<ActionIntercept>(ACTION_INTERCEPT);
+  const isMore = actions.length > 1;
+  const action = isMore ? actions : actions[0];
+  const runObservable = actions.some(({ runObservable }) => runObservable);
+  isMore && console.warn(`${props.id} Repeat listen event: ${actions[0].type}`);
   return (event?: Event, ...arg: any[]) => {
     const { interceptFn = () => event } = options;
-    const runObservable = actions.some(({ runObservable = false }) => runObservable);
     const obs = transformObservable(interceptFn(props, event, ...arg)).pipe(
-      switchMap((value) => actionIntercept.invoke(actions, props, value, ...arg)),
+      switchMap((value) => actionIntercept.invoke(action, props, value, ...arg))
     );
     return runObservable ? obs : obs.subscribe();
   };

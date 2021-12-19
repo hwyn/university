@@ -30,23 +30,23 @@ export class Action implements ActionIntercept {
     return [event, ...otherEventParam];
   }
 
-  private callCalculatorsInvokes(calculators: OriginCalculators[], builder: BuilderModelExtensions) {
+  protected getActionContext({ builder, id }: ActionInterceptProps = {} as any): ActionContext {
+    return isEmpty(builder) ? {} : { builder, builderField: builder.getFieldById(id) };
+  }
+
+  private call(calculators: OriginCalculators[], builder: BuilderModelExtensions) {
     const calculatorsOb = of(...calculators);
     return (value: any) => calculatorsOb.pipe(
       concatMap(({ targetId: id, action }) => this.invoke(action, { builder, id }, value))
     );
   }
 
-  protected getActionContext({ builder, id }: ActionInterceptProps = {} as any): ActionContext {
-    return isEmpty(builder) ? {} : { builder, builderField: builder.getFieldById(id) };
-  }
-
   private invokeCallCalculators(calculators: OriginCalculators[], { type }: ActionProps, props: ActionInterceptProps) {
-    const { builder, id: currentId } = props;
+    const { builder, id } = props;
     const filterCalculators = calculators.filter(
-      ({ dependent: { fieldId, type: calculatorType } }) => fieldId === currentId && calculatorType === type
+      ({ dependent: { fieldId, type: cType } }) => fieldId === id && cType === type
     );
-    return !isEmpty(filterCalculators) ? this.callCalculatorsInvokes(filterCalculators, builder) : (value: any) => of(value);
+    return !isEmpty(filterCalculators) ? this.call(filterCalculators, builder) : (value: any) => of(value);
   }
 
   private invokeCalculators(actionProps: ActionProps, actionSub: Observable<any>, props: ActionInterceptProps) {
@@ -76,21 +76,24 @@ export class Action implements ActionIntercept {
   public invoke(
     actions: ActionProps | ActionProps[], props?: ActionInterceptProps, event: Event | any = null, ...otherEventParam: any[]
   ): Observable<any> {
-    const _actions = Array.isArray(actions) ? actions : [actions];
-    if (isEmpty(_actions)) { return of(event); }
-    const action = serializeAction(_actions.filter(({ type }) => !!type)[0]);
-    const actionsSub = forkJoin((_actions).map((action) => (
-      this.invokeAction(serializeAction(action), props, event, ...otherEventParam)
-    ))).pipe(map((result: any[]) => result.pop()));
-
-    return !!props && !!action && !isEmpty(props) ? this.invokeCalculators(action, actionsSub, props) : actionsSub;
+    let actionsSub;
+    let action;
+    if (Array.isArray(actions)) {
+      action = serializeAction(actions.filter(({ type }) => !!type)[0]);
+      actionsSub = forkJoin((actions).map((a) => (
+        this.invokeAction(serializeAction(a), props, event, ...otherEventParam)
+      ))).pipe(map((result: any[]) => result.pop()));
+    } else {
+      action = serializeAction(actions);
+      actionsSub = this.invokeAction(action, props, event, ...otherEventParam);
+    }
+    const hasInvokeCalculators = !!props && action && action.type && !isEmpty(props);
+    return hasInvokeCalculators ? this.invokeCalculators(action, actionsSub, props) : actionsSub;
   }
 
   // eslint-disable-next-line complexity
   public executeAction(
-    actionPropos: ActionProps,
-    actionContext?: ActionContext,
-    event: any[] = this.createEvent(void (0))
+    actionPropos: ActionProps, actionContext?: ActionContext, event: any[] = this.createEvent(void (0))
   ): Observable<any> {
     const [actionEvent, ...otherEvent] = event;
     const { name = ``, handler } = serializeAction(actionPropos);
