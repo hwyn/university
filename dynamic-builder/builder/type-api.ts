@@ -49,19 +49,20 @@ export interface BuilderJsonField {
   [key: string]: any;
 }
 
-export type extensionProviders = { extension: any, needExtends?: boolean };
+export type privateExtension = { extension: any, needExtends?: boolean };
 
 export interface BuilderProps extends BuilderElement {
   id?: string;
   className?: string;
   builder?: BuilderModelImplements;
   BuilderModel?: Type<BuilderModelImplements>;
-  extensionProviders?: extensionProviders[];
+  privateExtension?: privateExtension[];
   events?: { [key: string]: (params?: any) => Observable<any> };
   children?: any;
   jsonName?: string;
   jsonNameAction?: string;
   configAction?: string;
+  style?: {[key: string]: string};
   config?: BuilderJsonField[] | {
     grid?: Grid;
     fields: BuilderJsonField[];
@@ -81,7 +82,7 @@ export interface BuilderModelImplements {
   readonly grid?: Grid;
   readonly Element: any;
   readonly ls: LocatorStorage;
-  readonly extensionProviders?: extensionProviders[];
+  readonly privateExtension?: privateExtension[];
   getFieldByTypes<T = BuilderField>(id: string): T[];
   getAllFieldByTypes<T = BuilderField>(id: string): T[];
   getFieldById<T = BuilderField>(id: string | undefined): T;

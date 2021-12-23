@@ -4,7 +4,7 @@ import { Observable, of } from "rxjs";
 import { map, switchMap, tap } from "rxjs/operators";
 
 import { BuilderField } from "../../builder/type-api";
-import { ActionInterceptProps } from "../action";
+import { Action, ActionInterceptProps } from "../action";
 import { BasicExtension } from "../basic/basic.extension";
 
 export class ReadConfigExtension extends BasicExtension {
@@ -21,14 +21,17 @@ export class ReadConfigExtension extends BasicExtension {
     );
   }
 
+  // eslint-disable-next-line complexity
   private getConfigJson(): Observable<any> {
     const { id, jsonName = ``, jsonNameAction = ``, config, configAction = '' } = this.props;
     const isJsonName = !!jsonName || !!jsonNameAction;
     const isJsConfig = !isEmpty(config) || Array.isArray(config) || !!configAction;
+    let configObs;
+
     if (!isJsonName && !isJsConfig) {
       throw new Error(`Builder configuration is incorrect: ${id}`);
     }
-    let configObs;
+
     if (isJsonName) {
       const getJsonName = jsonNameAction ? this.createLoadConfigAction(jsonNameAction) : of(jsonName);
       configObs = getJsonName.pipe(switchMap((configName: string) => this.ls.getProvider(JSON_CONFIG).getJsonConfig(configName)));
@@ -42,20 +45,28 @@ export class ReadConfigExtension extends BasicExtension {
     })));
   }
 
-  private createLoadConfigAction(actionName: string) {
+  private createLoadConfigAction(actionName: string | any) {
+    const configAction: Action = typeof actionName === 'function' ?
+      { handler: actionName } : typeof actionName === 'string' ?
+        this.serializeAction(actionName) : actionName;
     const props = { builder: this.builder, id: this.builder.id } as unknown as ActionInterceptProps;
-    const actions = this.createActions([{ type: this.loadConfigType, name: actionName, runObservable: true }], props, { ls: this.ls });
+    const actions = this.createActions([{ ...configAction, type: this.loadConfigType, runObservable: true }], props, { ls: this.ls });
     return actions[this.getEventType(this.loadConfigType)](this.props as any);
   }
 
   private checkFieldRepeat(fields: BuilderField[], jsonId: string | undefined) {
     const filedIds = uniq(fields.map(({ id }) => id) || []);
+    const { instance } = this.props;
     if (filedIds.includes(<string>jsonId)) {
       throw new Error(`The same ID as jsonID exists in the configuration file: ${jsonId}`);
     }
 
     if (!isEmpty(filedIds) && filedIds.length !== fields.length) {
       throw new Error(`The same ID exists in the configuration file: ${jsonId}`);
+    }
+
+    if (this.builder.parent && !instance) {
+      console.warn(`Builder needs to set the instance property: ${this.builder.id}`);
     }
   }
 

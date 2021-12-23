@@ -16,7 +16,7 @@ export function init(this: BuilderModelImplements) {
     onDestory: withValue(this.$$cache.destory.bind(this)),
     loadForBuild: withValue((props: BuilderProps) => {
       delete (this as any).loadForBuild;
-      Object.defineProperty(this, 'extensionProviders', withValue(props.extensionProviders || []));
+      Object.defineProperty(this, 'privateExtension', withValue(props.privateExtension || []));
       props.builder && addChild.call(props.builder, this);
       loadForBuild.call(this, props).subscribe(() => this.detectChanges());
       return this;
@@ -26,8 +26,8 @@ export function init(this: BuilderModelImplements) {
 
 function loadForBuild(this: BuilderModelImplements | any, props: BuilderProps): Observable<object> {
   const LoadConfig = this.ls.getProvider(LOAD_BUILDER_CONFIG);
-  const extensionProviders = this.extensionProviders.map(({ extension }: any) => extension);
-  const Extensions: any[] = [...this.ls.getProvider(BUILDER_EXTENSION), ...extensionProviders];
+  const privateExtension = this.privateExtension.map(({ extension }: any) => extension);
+  const Extensions: any[] = [...this.ls.getProvider(BUILDER_EXTENSION), ...privateExtension];
   return new LoadConfig(this, props, this.$$cache).init().pipe(
     switchMap((loadExample: any) => {
       Object.defineProperty(this, '$$cache', withValue(getCacheObj.call(this, props)));
@@ -35,7 +35,7 @@ function loadForBuild(this: BuilderModelImplements | any, props: BuilderProps): 
       return forkJoin(beforeInits).pipe(map((result: any[]) => [loadExample, ...result]));
     }),
     switchMap((examples: any[]) => forkJoin(examples.map((example) => example.afterInit()))),
-    tap((beforeDestorys) => this.$$cache.beforeDestorys = beforeDestorys || []),
+    tap((beforeDestorys) => this.$$cache.beforeDestorys = beforeDestorys),
     tap(() => {
       this.$$cache.ready = true;
       this.$$cache.destoryed && destory.apply(this);
@@ -79,9 +79,7 @@ function destory(this: BuilderModelImplements | any): void {
   cacheObj.destoryed = true;
   if (ready && !destoryed) {
     try {
-      forkJoin([...beforeDestorys].map(
-        (beforeDestory) => beforeDestory && beforeDestory()
-      )).pipe(
+      forkJoin(beforeDestorys.map((beforeDestory: any) => beforeDestory && beforeDestory())).pipe(
         switchMap((extensionDestorys: any[]) => forkJoin(extensionDestorys.map(
           (extensionDestory) => extensionDestory && extensionDestory()
         ))),
@@ -92,7 +90,7 @@ function destory(this: BuilderModelImplements | any): void {
         cacheObj.detectChanges.unsubscribe();
         cacheObj.beforeDestorys.splice(0);
         this.children.splice(0);
-        this.extensionProviders?.splice(0);
+        this.privateExtension?.splice(0);
         this.parent && removeChild.call(this.parent, this);
       });
     } catch (e) {
@@ -102,10 +100,10 @@ function destory(this: BuilderModelImplements | any): void {
 }
 
 function extendsProviders(this: BuilderModelImplements, child: BuilderModelImplements) {
-  this.extensionProviders?.forEach((extensionProvider) => {
+  this.privateExtension?.forEach((extensionProvider) => {
     const { needExtends, extension: parentExtension } = extensionProvider;
-    if (needExtends && !child.extensionProviders?.some(({ extension }) => extension === parentExtension)) {
-      child.extensionProviders?.push(extensionProvider);
+    if (needExtends && !child.privateExtension?.some(({ extension }) => extension === parentExtension)) {
+      child.privateExtension?.push(extensionProvider);
     }
   });
 }
@@ -113,7 +111,7 @@ function extendsProviders(this: BuilderModelImplements, child: BuilderModelImple
 function addChild(this: BuilderModelImplements, child: BuilderModelImplements): void {
   child.parent = this;
   this.children.push(child);
-  !isEmpty(this.extensionProviders) && extendsProviders.call(this, child);
+  !isEmpty(this.privateExtension) && extendsProviders.call(this, child);
 }
 
 function removeChild(this: BuilderModelImplements, child: BuilderModelImplements): void {

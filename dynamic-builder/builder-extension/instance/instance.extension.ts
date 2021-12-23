@@ -47,6 +47,9 @@ export class InstanceExtension extends BasicExtension {
       const hasMounted = !!current && _current !== current;
       _current = current;
       if (hasMounted) { instance.onMounted(id); }
+      if (current instanceof BuilderModel && !current.id) {
+        console.error(`Builder needs to set the ID property: ${id}`);
+      }
     };
     return { get, set };
   }
