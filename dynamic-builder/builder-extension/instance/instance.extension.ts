@@ -1,4 +1,5 @@
-import { forkJoin, Observable, Subject } from 'rxjs';
+import { isEmpty } from 'lodash';
+import { forkJoin, Observable, of, Subject } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import { BuilderModel, Instance } from '../..//builder';
@@ -71,7 +72,7 @@ export class InstanceExtension extends BasicExtension {
   }
 
   protected beforeDestory() {
-    return forkJoin(this.buildFieldList.map(({ id, instance }) => new Observable((subscribe) => {
+    return isEmpty(this.buildFieldList) ? of(null) : forkJoin(this.buildFieldList.map(({ id, instance }) => new Observable((subscribe) => {
       instance.destory.subscribe(() => {
         subscribe.next(id);
         subscribe.complete();

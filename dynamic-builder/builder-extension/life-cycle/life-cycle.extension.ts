@@ -1,6 +1,6 @@
 import { cloneDeep, flatMap, isEmpty } from 'lodash';
 import { Observable, of } from 'rxjs';
-import { filter, tap } from 'rxjs/operators';
+import { filter, switchMap, tap } from 'rxjs/operators';
 
 import { BuilderProps } from '../../builder';
 import { transformObservable } from '../../utility';
@@ -113,7 +113,9 @@ export class LifeCycleExtension extends BasicExtension {
   }
 
   protected beforeDestory() {
-    return this.invokeLifeCycle(this.getEventType(DESTORY));
+    return this.invokeLifeCycle(this.getEventType(DESTORY)).pipe(
+      switchMap(() => transformObservable(super.beforeDestory()))
+    );
   }
 
   protected destory() {

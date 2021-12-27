@@ -42,8 +42,8 @@ export class FormExtension extends BasicExtension {
 
   private createChangeHandler(builderField: BuilderFieldExtensions) {
     return ({ actionEvent }: BaseAction) => {
-      const { target = {} } = actionEvent;
-      builderField.control?.patchValue(target.value || actionEvent);
+      const value = this.isDomEvent(actionEvent) ? actionEvent.target.value : actionEvent;
+      builderField.control?.patchValue(value);
       builderField.instance?.detectChanges();
     };
   }
@@ -56,6 +56,10 @@ export class FormExtension extends BasicExtension {
   private getChangeType(jsonField: any) {
     const { dataBinding: { changeType = this.defaultChangeType } } = jsonField;
     return changeType;
+  }
+
+  private isDomEvent(actionResult: any) {
+    return actionResult && actionResult.target && !!actionResult.target.nodeType;
   }
 
   public destory() {
