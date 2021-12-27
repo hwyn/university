@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { LocatorStorage } from '@di';
-import { cloneDeep, isString, merge } from 'lodash';
+import { cloneDeep, isFunction, isString, merge } from 'lodash';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -13,8 +13,8 @@ import { BuilderFieldExtensions, BuilderModelExtensions, Calculators, Calculator
 export type CallBackOptions = [any, BuilderFieldExtensions];
 type CallBack = (options: CallBackOptions) => any;
 
-export const serializeAction = (action: string | Action): Action => {
-  return isString(action) ? { name: action } as unknown as Action : action;
+export const serializeAction = (action: ((...args: any[]) => any) | string | Action): Action => {
+  return (isString(action) ? { name: action } : isFunction(action) ? { handler: action } : action) as unknown as Action;
 };
 
 export abstract class BasicExtension {
@@ -64,7 +64,8 @@ export abstract class BasicExtension {
     actionType: string,
     defaultDependents: CalculatorsDependent | CalculatorsDependent[]
   ) {
-    const calculatorConfig = isString(jsonCalculator) ? { action: { name: jsonCalculator } } : cloneDeep(jsonCalculator);
+    const needSerialize = isString(jsonCalculator) || isFunction(jsonCalculator);
+    const calculatorConfig = needSerialize ? { action: this.serializeAction(jsonCalculator) } : cloneDeep(jsonCalculator);
     const { action, dependents = defaultDependents } = calculatorConfig;
     calculatorConfig.action = merge({ type: actionType }, this.serializeAction(action));
     calculatorConfig.dependents = dependents;
@@ -107,7 +108,7 @@ export abstract class BasicExtension {
     prototypeNames.forEach((prototypeName: string) => this.defineProperty(object, prototypeName, null));
   }
 
-  protected serializeAction(action: string | Action) {
+  protected serializeAction(action: ((...args: any[]) => any) | string | Action) {
     return serializeAction(action);
   }
 
