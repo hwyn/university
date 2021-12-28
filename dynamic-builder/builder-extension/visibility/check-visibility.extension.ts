@@ -2,12 +2,14 @@ import { isEmpty, isUndefined } from 'lodash';
 
 import { BaseAction } from '../action';
 import { BasicExtension, CallBackOptions } from '../basic/basic.extension';
-import { CHANGE, CHECK_VISIBILITY, LOAD_ACTION } from '../constant/calculator.constant';
+import { CHANGE, CHECK_VISIBILITY, LOAD, LOAD_ACTION } from '../constant/calculator.constant';
 import { BuilderFieldExtensions, BuilderModelExtensions, Calculators, OriginCalculators } from '../type-api';
 
 export class CheckVisibilityExtension extends BasicExtension {
   private visibilityTypeName = CHECK_VISIBILITY;
   private builderFields!: BuilderFieldExtensions[];
+  private defaultDependents = [CHANGE, LOAD].map((type) => ({ type, fieldId: this.builder.id }));
+
   protected extension() {
     this.builderFields = this.mapFields(
       this.jsonFields.filter(({ checkVisibility }) => !isUndefined(checkVisibility)),
@@ -17,7 +19,7 @@ export class CheckVisibilityExtension extends BasicExtension {
     if (!isEmpty(this.builderFields)) {
       this.pushCalculators(this.json, [{
         action: this.bindCalculatorAction(this.checkVisibility.bind(this, {})),
-        dependents: { type: CHANGE, fieldId: this.builder.id }
+        dependents: this.defaultDependents
       }, {
         action: this.bindCalculatorAction(this.removeOnEvent.bind(this)),
         dependents: { type: LOAD_ACTION, fieldId: this.builder.id }
@@ -41,8 +43,7 @@ export class CheckVisibilityExtension extends BasicExtension {
 
   private serializeCheckVisibilityConfig(jsonField: any): Calculators {
     const { checkVisibility: jsonCheckVisibility } = jsonField;
-    const defaultDependents = { type: CHANGE, fieldId: this.builder.id };
-    return this.serializeCalculatorConfig(jsonCheckVisibility, this.visibilityTypeName, defaultDependents);
+    return this.serializeCalculatorConfig(jsonCheckVisibility, this.visibilityTypeName, this.defaultDependents);
   }
 
   private checkVisibilityAfter({ actionEvent, builderField, builder }: BaseAction): void {

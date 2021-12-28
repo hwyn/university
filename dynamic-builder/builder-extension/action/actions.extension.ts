@@ -35,7 +35,7 @@ export class ActionExtension extends BasicExtension {
   }
 
   destory() {
-    this.fields.forEach((field) => this.unDefineProperty(field, ['events', 'ADD_EVENT_LISTENER']));
+    this.fields.forEach((field) => this.unDefineProperty(field, ['events', ADD_EVENT_LISTENER]));
     super.destory();
   }
 }
