@@ -91,6 +91,7 @@ export class LifeCycleExtension extends BasicExtension {
           this.calculators.push({ targetId, action: this.serializeAction(action), dependent });
         });
       });
+      delete this.getBuilderFieldById(targetId)?.field.calculators;
     });
   }
 

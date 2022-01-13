@@ -35,9 +35,9 @@ function loadForBuild(this: BuilderModelImplements | any, props: BuilderProps): 
       return forkJoin(beforeInits).pipe(map((result: any[]) => [loadExample, ...result]));
     }),
     switchMap((examples: any[]) => forkJoin(examples.map((example) => example.afterInit()))),
-    tap((beforeDestorys) => this.$$cache.beforeDestorys = beforeDestorys),
-    tap(() => {
+    tap((beforeDestorys) => {
       this.$$cache.ready = true;
+      this.$$cache.beforeDestorys = beforeDestorys;
       this.$$cache.destoryed && destory.apply(this);
     })
   );
@@ -67,9 +67,8 @@ function getCacheObj(this: BuilderModelImplements, props: any): any {
 
 function createField(this: BuilderModelImplements, field: any): BuilderField {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { id, type, calculators, element: e, ...other } = field;
-  const element = e || this.ls.getProvider(BuilderEngine).getUiComponent(type);
-
+  const { id, type, ...other } = field;
+  const element = field.element || this.ls.getProvider(BuilderEngine).getUiComponent(type);
   return { id, type, element, field: other };
 }
 

@@ -1,9 +1,9 @@
 import { JSON_CONFIG } from "@di";
-import { cloneDeep, isEmpty, uniq } from "lodash";
-import { Observable, of } from "rxjs";
+import { BuilderField } from "dynamic-builder";
+import { cloneDeep, isEmpty, isString, uniq } from "lodash";
+import { forkJoin, Observable, of } from "rxjs";
 import { map, switchMap, tap } from "rxjs/operators";
 
-import { BuilderField } from "../../builder/type-api";
 import { Action, ActionInterceptProps } from "../action";
 import { BasicExtension } from "../basic/basic.extension";
 
@@ -12,18 +12,50 @@ export class ReadConfigExtension extends BasicExtension {
   protected extension(): void | Observable<any> {
     this.defineProperty(this.builder, 'id', this.props.id);
     this.builder.getExecuteHandler = this.createGetExecuteHandler();
-    return this.getConfigJson().pipe(
-      tap((json) => {
+    return this.getConfigJson(this.props).pipe(
+      switchMap((jsonConfig: any) => this.extendsConfig(jsonConfig)),
+      switchMap((json) => {
         json.id = this.props.id;
         this.props.config = json;
-        this.checkFieldRepeat(json.fields, json.id);
+        this.checkFieldRepeat(json);
+        return this.preloaded(json);
+      })
+    );
+  }
+
+  private extendsConfig(jsonConfig: any) {
+    const { extends: extendsConfig } = jsonConfig;
+    const extendsProps = isString(extendsConfig) ? { jsonName: extendsConfig } : extendsConfig;
+
+    return !extendsProps ? of(jsonConfig) : this.getConfigJson(extendsProps).pipe(
+      map((extendsConfig: any) => {
+        jsonConfig.extends = extendsConfig;
+        return jsonConfig;
+      })
+    );
+  }
+
+  private preloaded(json: any) {
+    const builderFields = json.fields.filter(this.eligiblePreloaded.bind(this));
+    return isEmpty(builderFields) ?
+      of(json) :
+      forkJoin(builderFields.map((jsonField: any) => this.preloadedBuildField(jsonField))).pipe(map(() => json));
+  }
+
+  private preloadedBuildField(jsonField: any) {
+    return this.getConfigJson(jsonField).pipe(
+      switchMap((jsonConfig) => this.preloaded(jsonConfig)),
+      tap((jsonConfig) => {
+        jsonConfig.preloaded = true;
+        jsonField.config = jsonConfig;
+        delete jsonField.jsonName;
       })
     );
   }
 
   // eslint-disable-next-line complexity
-  private getConfigJson(): Observable<any> {
-    const { id, jsonName = ``, jsonNameAction = ``, config, configAction = '' } = this.props;
+  private getConfigJson(props: any): Observable<any> {
+    const { id, jsonName = ``, jsonNameAction = ``, config, configAction = '' } = props;
     const isJsonName = !!jsonName || !!jsonNameAction;
     const isJsConfig = !isEmpty(config) || Array.isArray(config) || !!configAction;
     let configObs;
@@ -40,7 +72,8 @@ export class ReadConfigExtension extends BasicExtension {
     }
 
     return configObs.pipe(map((_config: any[] = []) => cloneDeep({
-      ...{ id, fields: [] },
+      ...id ? { id } : {},
+      ...{ fields: [] },
       ...(Array.isArray(_config) ? { fields: _config } : _config)
     })));
   }
@@ -54,7 +87,8 @@ export class ReadConfigExtension extends BasicExtension {
     return actions[this.getEventType(this.loadConfigType)](this.props as any);
   }
 
-  private checkFieldRepeat(fields: BuilderField[], jsonId: string | undefined) {
+  private checkFieldRepeat(jsonConfig: { id: string, fields: BuilderField[] }) {
+    const { id: jsonId, fields } = jsonConfig;
     const filedIds = uniq(fields.map(({ id }) => id) || []);
     const { instance } = this.props;
     if (filedIds.includes(<string>jsonId)) {
@@ -68,6 +102,10 @@ export class ReadConfigExtension extends BasicExtension {
     if (this.builder.parent && !instance) {
       console.warn(`Builder needs to set the instance property: ${this.builder.id}`);
     }
+  }
+
+  private eligiblePreloaded({ jsonName, config }: any) {
+    return !!jsonName || (!isEmpty(config) && !config.preloaded);
   }
 
   private createGetExecuteHandler() {
