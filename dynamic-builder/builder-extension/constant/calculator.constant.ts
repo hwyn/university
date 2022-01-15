@@ -3,6 +3,7 @@ export const CHANGE = 'change';
 export const DESTORY = 'destory';
 export const MOUNTED = 'mounted';
 export const LOAD_ACTION = 'loadAction';
+export const LOAD_CONFIG_ACTION = 'loadConfigType';
 export const LOAD_VIEW_MODEL = 'loadViewModel';
 export const DATD_SOURCE = 'dataSource';
 export const CHECK_VISIBILITY = 'checkVisibility';
