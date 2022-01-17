@@ -100,7 +100,8 @@ export class ReadConfigExtension extends BasicExtension {
   }
 
   private eligiblePreloaded(props: any) {
-    const { jsonName, jsonNameAction, configAction, preloaded = true, config, config: { isPreloaded = false } = {} } = props;
+    const { jsonName, jsonNameAction, configAction, preloaded = true, config } = props;
+    const { isPreloaded = false } = config || {};
     return preloaded && !isPreloaded && (!!jsonName || !!configAction || !!jsonNameAction || !!config);
   }
 
