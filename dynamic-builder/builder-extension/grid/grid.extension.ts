@@ -15,7 +15,7 @@ const defaultGrid: Grid = {
 
 export class GridExtension extends BasicExtension {
   private layoutBuildFields!: BuilderFieldExtensions[];
-  
+
   protected extension() {
     this.pushCalculators(this.json, {
       action: this.bindCalculatorAction(this.createLoadGrid.bind(this)),

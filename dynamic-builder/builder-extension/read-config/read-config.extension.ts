@@ -13,7 +13,7 @@ export class ReadConfigExtension extends BasicExtension {
     this.defineProperty(this.builder, 'id', this.props.id);
     this.builder.getExecuteHandler = this.createGetExecuteHandler();
     return this.getConfigJson(this.props).pipe(
-      tap((jsonConfig) => this.props.config = jsonConfig)
+      map((jsonConfig) => this.props.config = cloneDeep(jsonConfig))
     );
   }
 
@@ -32,8 +32,10 @@ export class ReadConfigExtension extends BasicExtension {
 
   private preloaded(jsonConfig: any): Observable<any> {
     const builderFields = jsonConfig.fields.filter(this.eligiblePreloaded.bind(this));
-    const jsonMap = builderFields.map(this.preloadedBuildField.bind(this));
-    return isEmpty(jsonMap) ? of(jsonConfig) : forkJoin(jsonMap).pipe(map(() => jsonConfig));
+    if (jsonConfig.isPreloaded || !builderFields.length) {
+      return of(jsonConfig);
+    }
+    return forkJoin(builderFields.map(this.preloadedBuildField.bind(this))).pipe(map(() => jsonConfig));
   }
 
   private preloadedBuildField(jsonField: any) {
@@ -46,10 +48,18 @@ export class ReadConfigExtension extends BasicExtension {
   }
 
   private getConfigJson(props: any): Observable<any> {
+    return this.getConfigObservable(props).pipe(
+      switchMap((jsonConfig) => this.extendsConfig(jsonConfig)),
+      tap((jsonConfig: any) => this.checkFieldRepeat(jsonConfig)),
+      switchMap((jsonConfig) => this.preloaded(jsonConfig))
+    );
+  }
+
+  private getConfigObservable(props: any) {
     const { id, jsonName = ``, jsonNameAction = ``, configAction = '', config } = props;
     const isJsonName = !!jsonName || !!jsonNameAction;
     const isJsConfig = !isEmpty(config) || Array.isArray(config) || !!configAction;
-    let configObs;
+    let configOb;
 
     if (!isJsonName && !isJsConfig) {
       throw new Error(`Builder configuration is incorrect: ${id}`);
@@ -58,20 +68,17 @@ export class ReadConfigExtension extends BasicExtension {
     if (isJsonName) {
       const jsonConfig = this.ls.getProvider(JSON_CONFIG);
       const getJsonName = jsonNameAction ? this.createLoadConfigAction(jsonNameAction, props) : of(jsonName);
-      configObs = getJsonName.pipe(switchMap((configName: string) => jsonConfig.getJsonConfig(configName)));
+      configOb = getJsonName.pipe(switchMap((configName: string) => jsonConfig.getJsonConfig(configName)));
     } else {
-      configObs = configAction ? this.createLoadConfigAction(configAction, props) : of(config);
+      configOb = configAction ? this.createLoadConfigAction(configAction, props) : of(config);
     }
 
-    return configObs.pipe(
-      map((_config: any[] = []) => cloneDeep({
-        ...{ fields: [] },
-        ...(Array.isArray(_config) ? { fields: _config } : _config),
-        ...id ? { id } : {},
-      })),
-      tap((jsonConfig: any) => this.checkFieldRepeat(jsonConfig)),
-      switchMap((jsonConfig) => this.extendsConfig(jsonConfig)),
-      switchMap((jsonConfig) => this.preloaded(jsonConfig))
+    return configOb.pipe(
+      map((_config: any[] = []) => Object.assign(
+        { fields: [] },
+        Array.isArray(_config) ? { fields: _config } : _config,
+        id ? { id: id } : {}
+      )),
     );
   }
 
