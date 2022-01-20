@@ -1,11 +1,11 @@
 /* eslint-disable max-lines-per-function */
 import { Inject, LocatorStorage } from '@di';
 import { flatMap, isEmpty } from 'lodash';
-import { forkJoin, Observable, of } from 'rxjs';
-import { concatMap, map, switchMap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { ACTIONS_CONFIG } from '../../token';
-import { transformObservable } from '../../utility';
+import { observableMap, toForkJoin, transformObservable } from '../../utility';
 import { serializeAction } from '../basic/basic.extension';
 import { BuilderModelExtensions, OriginCalculators } from '../type-api';
 import { ActionIntercept, ActionInterceptProps, BaseAction } from '.';
@@ -35,10 +35,7 @@ export class Action implements ActionIntercept {
   }
 
   private call(calculators: OriginCalculators[], builder: BuilderModelExtensions) {
-    const calculatorsOb = of(...calculators);
-    return (value: any) => calculatorsOb.pipe(
-      concatMap(({ targetId: id, action }) => this.invoke(action, { builder, id }, value))
-    );
+    return (value: any) => toForkJoin(calculators.map(({ targetId: id, action }) => this.invoke(action, { builder, id }, value)));
   }
 
   private invokeCallCalculators(calculators: OriginCalculators[], { type }: ActionProps, props: ActionInterceptProps) {
@@ -58,7 +55,7 @@ export class Action implements ActionIntercept {
     );
     calculatorsInvokes.push(this.invokeCallCalculators(calculators || [], actionProps, props))
     return actionSub.pipe(
-      switchMap((value) => forkJoin(
+      observableMap((value) => toForkJoin(
         calculatorsInvokes.map((invokeCalculators: any) => invokeCalculators(value))
       ).pipe(map(() => value)))
     );
@@ -80,7 +77,7 @@ export class Action implements ActionIntercept {
     let action;
     if (Array.isArray(actions)) {
       action = serializeAction(actions.filter(({ type }) => !!type)[0]);
-      actionsSub = forkJoin((actions).map((a) => (
+      actionsSub = toForkJoin((actions).map((a) => (
         this.invokeAction(serializeAction(a), props, event, ...otherEventParam)
       ))).pipe(map((result: any[]) => result.pop()));
     } else {

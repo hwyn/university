@@ -1,9 +1,10 @@
 import { JSON_CONFIG } from '@di';
 import { cloneDeep, isEmpty, isFunction, isString, uniq } from 'lodash';
-import { forkJoin, Observable, of } from 'rxjs';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { map, tap } from 'rxjs/operators';
 
 import { BuilderField } from '../../builder';
+import { observableMap, toForkJoin } from '../../utility';
 import { ActionInterceptProps } from "../action";
 import { BasicExtension } from "../basic/basic.extension";
 import { LOAD_CONFIG_ACTION } from '../constant/calculator.constant';
@@ -35,7 +36,7 @@ export class ReadConfigExtension extends BasicExtension {
     if (jsonConfig.isPreloaded || !builderFields.length) {
       return of(jsonConfig);
     }
-    return forkJoin(builderFields.map(this.preloadedBuildField.bind(this))).pipe(map(() => jsonConfig));
+    return toForkJoin(builderFields.map(this.preloadedBuildField.bind(this))).pipe(map(() => jsonConfig));
   }
 
   private preloadedBuildField(jsonField: any) {
@@ -49,9 +50,9 @@ export class ReadConfigExtension extends BasicExtension {
 
   private getConfigJson(props: any): Observable<any> {
     return this.getConfigObservable(props).pipe(
-      switchMap((jsonConfig) => this.extendsConfig(jsonConfig)),
+      observableMap((jsonConfig) => this.extendsConfig(jsonConfig)),
       tap((jsonConfig: any) => this.checkFieldRepeat(jsonConfig)),
-      switchMap((jsonConfig) => this.preloaded(jsonConfig))
+      observableMap((jsonConfig) => this.preloaded(jsonConfig))
     );
   }
 
@@ -68,7 +69,7 @@ export class ReadConfigExtension extends BasicExtension {
     if (isJsonName) {
       const jsonConfig = this.ls.getProvider(JSON_CONFIG);
       const getJsonName = jsonNameAction ? this.createLoadConfigAction(jsonNameAction, props) : of(jsonName);
-      configOb = getJsonName.pipe(switchMap((configName: string) => jsonConfig.getJsonConfig(configName)));
+      configOb = getJsonName.pipe(observableMap((configName: string) => jsonConfig.getJsonConfig(configName)));
     } else {
       configOb = configAction ? this.createLoadConfigAction(configAction, props) : of(config);
     }

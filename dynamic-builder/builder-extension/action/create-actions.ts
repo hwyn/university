@@ -1,9 +1,8 @@
 import { LocatorStorage } from '@di';
 import { groupBy } from 'lodash';
-import { switchMap } from 'rxjs/operators';
 
 import { ACTION_INTERCEPT } from '../../token';
-import { transformObservable } from '../../utility';
+import { observableMap, transformObservable } from '../../utility';
 import { Action as ActionIntercept } from './actions';
 import { Action, ActionInterceptProps } from './type-api';
 
@@ -18,7 +17,7 @@ function mergeHandler(actions: Action[], props: ActionInterceptProps, options: C
   return (event?: Event, ...arg: any[]) => {
     const { interceptFn = () => event } = options;
     const obs = transformObservable(interceptFn(props, event, ...arg)).pipe(
-      switchMap((value) => actionIntercept.invoke(action, props, value, ...arg))
+      observableMap((value) => actionIntercept.invoke(action, props, value, ...arg))
     );
     return runObservable ? obs : obs.subscribe();
   };

@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable no-use-before-define */
 import { isEmpty } from 'lodash';
-import { forkJoin, Observable, Subject, } from 'rxjs';
-import { map, switchMap, tap } from 'rxjs/operators';
+import {Observable, Subject, } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 import { BUILDER_EXTENSION, LOAD_BUILDER_CONFIG } from '../token';
-import { transformObservable, withValue } from '../utility';
+import { observableMap, toForkJoin, transformObservable, withValue } from '../utility';
 import { BuilderEngine } from './builder-engine.service';
 import { BuilderField, BuilderModelImplements, BuilderProps } from './type-api';
 
@@ -29,12 +29,12 @@ function loadForBuild(this: BuilderModelImplements | any, props: BuilderProps): 
   const privateExtension = this.privateExtension.map(({ extension }: any) => extension);
   const Extensions: any[] = [...this.ls.getProvider(BUILDER_EXTENSION), ...privateExtension];
   return new LoadConfig(this, props, this.$$cache).init().pipe(
-    switchMap((loadExample: any) => {
+    observableMap((loadExample: any) => {
       Object.defineProperty(this, '$$cache', withValue(getCacheObj.call(this, props)));
       const beforeInits = Extensions.map((Extension) => new Extension(this, props, this.$$cache, props.config).init());
-      return forkJoin(beforeInits).pipe(map((result: any[]) => [loadExample, ...result]));
+      return toForkJoin([loadExample, ...beforeInits]);
     }),
-    switchMap((examples: any[]) => forkJoin(examples.map((example) => example.afterInit()))),
+    observableMap((examples: any[]) => toForkJoin(examples.map((example) => example.afterInit()))),
     tap((beforeDestorys) => {
       this.$$cache.ready = true;
       this.$$cache.beforeDestorys = beforeDestorys;
@@ -78,11 +78,11 @@ function destory(this: BuilderModelImplements | any): void {
   cacheObj.destoryed = true;
   if (ready && !destoryed) {
     try {
-      forkJoin(beforeDestorys.map((beforeDestory: any) => beforeDestory && beforeDestory())).pipe(
-        switchMap((extensionDestorys: any[]) => forkJoin(extensionDestorys.map(
+      toForkJoin(beforeDestorys.map((beforeDestory: any) => beforeDestory && beforeDestory())).pipe(
+        observableMap((extensionDestorys: any[]) => toForkJoin(extensionDestorys.map(
           (extensionDestory) => extensionDestory && extensionDestory()
         ))),
-        switchMap(() => transformObservable(this.destory && this.destory.call(this)))
+        observableMap(() => transformObservable(this.destory && this.destory.call(this)))
       ).subscribe(() => {
         cacheObj.ready = false;
         cacheObj.fields.splice(0);

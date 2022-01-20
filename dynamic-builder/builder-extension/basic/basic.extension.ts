@@ -2,10 +2,9 @@
 import { LocatorStorage } from '@di';
 import { cloneDeep, isFunction, isString, merge } from 'lodash';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 
 import { BuilderProps, CacheObj } from '../../builder';
-import { transformObservable, withValue } from '../../utility';
+import { transformObj, withValue } from '../../utility';
 import { Action, ActionInterceptProps, BaseAction } from '../action';
 import { createActions, CreateOptions, getEventType } from '../action/create-actions';
 import { BuilderFieldExtensions, BuilderModelExtensions, Calculators, CalculatorsDependent } from '../type-api';
@@ -37,15 +36,11 @@ export abstract class BasicExtension {
   protected beforeDestory(): void | Observable<any> { }
 
   public init(): Observable<BasicExtension> {
-    return transformObservable(this.extension()).pipe(map(() => this));
+    return transformObj(this.extension(), this);
   }
 
   public afterInit(): Observable<() => void> {
-    return transformObservable(this.afterExtension()).pipe(
-      map(() => () => transformObservable(this.beforeDestory()).pipe(
-        map(() => () => transformObservable(this.destory()))
-      ))
-    );
+    return transformObj(this.afterExtension(), () => transformObj(this.beforeDestory(), () => this.destory()));
   }
 
   protected eachFields(jsonFields: any[], callBack: CallBack) {

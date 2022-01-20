@@ -1,9 +1,8 @@
 import { isEmpty } from 'lodash';
-import { forkJoin, Observable, of, Subject } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { Observable, of, Subject } from 'rxjs';
 
 import { BuilderModel, Instance } from '../..//builder';
-import { transformObservable } from '../../utility';
+import { observableMap, toForkJoin, transformObservable } from '../../utility';
 import { BasicExtension, CallBackOptions } from '../basic/basic.extension';
 import { CURRENT, DESTORY, INSTANCE, LOAD_ACTION, MOUNTED } from '../constant/calculator.constant';
 import { BuilderFieldExtensions } from '../type-api';
@@ -72,12 +71,14 @@ export class InstanceExtension extends BasicExtension {
   }
 
   protected beforeDestory() {
-    return isEmpty(this.buildFieldList) ? of(null) : forkJoin(this.buildFieldList.map(({ id, instance }) => new Observable((subscribe) => {
-      instance.destory.subscribe(() => {
-        subscribe.next(id);
-        subscribe.complete();
-      });
-    }))).pipe(switchMap(() => transformObservable(super.beforeDestory())));
+    if (!isEmpty(this.buildFieldList)) {
+      return toForkJoin(this.buildFieldList.map(({ id, instance }) => new Observable((subscribe) => {
+        instance.destory.subscribe(() => {
+          subscribe.next(id);
+          subscribe.complete();
+        });
+      }))).pipe(observableMap(() => transformObservable(super.beforeDestory())));
+    }
   }
 
   public destory() {

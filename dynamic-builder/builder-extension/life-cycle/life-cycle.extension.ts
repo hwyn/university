@@ -1,9 +1,9 @@
 import { cloneDeep, flatMap, isEmpty } from 'lodash';
 import { Observable, of } from 'rxjs';
-import { filter, switchMap, tap } from 'rxjs/operators';
+import { filter, tap } from 'rxjs/operators';
 
 import { BuilderProps } from '../../builder';
-import { transformObservable } from '../../utility';
+import { observableMap, transformObservable } from '../../utility';
 import { ActionInterceptProps, createActions } from '../action';
 import { BasicExtension } from '../basic/basic.extension';
 import { CHANGE, DESTORY, LOAD, NON_SELF_BUILSERS, ORIGIN_CALCULATORS, ORIGIN_NON_SELF_CALCULATORS } from '../constant/calculator.constant';
@@ -115,7 +115,7 @@ export class LifeCycleExtension extends BasicExtension {
 
   protected beforeDestory() {
     return this.invokeLifeCycle(this.getEventType(DESTORY)).pipe(
-      switchMap(() => transformObservable(super.beforeDestory()))
+      observableMap(() => transformObservable(super.beforeDestory()))
     );
   }
 
