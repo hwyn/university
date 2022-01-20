@@ -1,15 +1,15 @@
 /* eslint-disable max-lines-per-function */
 import { Inject, LocatorStorage } from '@di';
 import { flatMap, isEmpty } from 'lodash';
-import { Observable, of } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { ACTIONS_CONFIG } from '../../token';
-import { observableMap, toForkJoin, transformObservable } from '../../utility';
+import { observableMap, transformObservable } from '../../utility';
 import { serializeAction } from '../basic/basic.extension';
 import { BuilderModelExtensions, OriginCalculators } from '../type-api';
-import { ActionIntercept, ActionInterceptProps, BaseAction } from '.';
-import { Action as ActionProps, ActionContext } from './type-api';
+import { BaseAction } from './base.action';
+import { Action as ActionProps, ActionContext, ActionIntercept, ActionInterceptProps } from './type-api';
 
 export class Action implements ActionIntercept {
   private actions: any[];
@@ -35,7 +35,7 @@ export class Action implements ActionIntercept {
   }
 
   private call(calculators: OriginCalculators[], builder: BuilderModelExtensions) {
-    return (value: any) => toForkJoin(calculators.map(({ targetId: id, action }) => this.invoke(action, { builder, id }, value)));
+    return (value: any) => forkJoin(calculators.map(({ targetId: id, action }) => this.invoke(action, { builder, id }, value)));
   }
 
   private invokeCallCalculators(calculators: OriginCalculators[], { type }: ActionProps, props: ActionInterceptProps) {
@@ -55,7 +55,7 @@ export class Action implements ActionIntercept {
     );
     calculatorsInvokes.push(this.invokeCallCalculators(calculators || [], actionProps, props))
     return actionSub.pipe(
-      observableMap((value) => toForkJoin(
+      observableMap((value) => forkJoin(
         calculatorsInvokes.map((invokeCalculators: any) => invokeCalculators(value))
       ).pipe(map(() => value)))
     );
@@ -77,7 +77,7 @@ export class Action implements ActionIntercept {
     let action;
     if (Array.isArray(actions)) {
       action = serializeAction(actions.filter(({ type }) => !!type)[0]);
-      actionsSub = toForkJoin((actions).map((a) => (
+      actionsSub = forkJoin((actions).map((a) => (
         this.invokeAction(serializeAction(a), props, event, ...otherEventParam)
       ))).pipe(map((result: any[]) => result.pop()));
     } else {

@@ -14,7 +14,7 @@ export class ReadConfigExtension extends BasicExtension {
     this.defineProperty(this.builder, 'id', this.props.id);
     this.builder.getExecuteHandler = this.createGetExecuteHandler();
     return this.getConfigJson(this.props).pipe(
-      map((jsonConfig) => this.props.config = cloneDeep(jsonConfig))
+      map((jsonConfig) => this.props.config = jsonConfig)
     );
   }
 
@@ -43,7 +43,7 @@ export class ReadConfigExtension extends BasicExtension {
     return this.getConfigJson(jsonField).pipe(
       tap((jsonConfig) => {
         jsonConfig.isPreloaded = true;
-        jsonField.config = jsonConfig;
+        jsonField.config = cloneDeep(jsonConfig);
       })
     );
   }
