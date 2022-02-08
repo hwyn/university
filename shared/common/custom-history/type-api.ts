@@ -1,12 +1,9 @@
-import { ReactNode } from 'react';
-
-export type RouteItem = [ReactNode, object];
+export type RouteItem = { path: string, component: any, props: { [key: string]: any } };
 
 export interface RouteInfo {
   path: string | null;
   list: RouteItem[];
+  query: { [key: string]: any };
+  params: { [key: string]: any };
 }
 
-export interface UseRouter extends RouteInfo {
-  props?: any;
-}

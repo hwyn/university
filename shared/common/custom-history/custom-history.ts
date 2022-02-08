@@ -5,7 +5,7 @@ import { parse } from 'querystring';
 import { Subject } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 
-import { HISTORY, ROUTER_CONFIG,ROUTER_INTERCEPT } from '../../token';
+import { HISTORY, ROUTER_CONFIG, ROUTER_INTERCEPT } from '../../token';
 import { AbstractRouterIntercept } from './router-intercept.abstract';
 import { serializeRouter } from './serialize-router';
 import { RouteInfo } from './type-api';
@@ -23,23 +23,39 @@ export class CustomHistory {
     this.history.listen(this.resolve.bind(this));
   }
 
-  private parse() {
-    const { location: { pathname, search } } = this.history;
-    const query = parse(search.replace(/^\?/, ''));
-    const parsePath = `/${pathname}`.replace('//', '/');
-    return [parsePath, query];
-  }
-
-  async resolve() {
+  public async resolve() {
     const [pathname, query] = this.parse();
-    const [{list = [], ...route} = {}] = this.routerList.filter(({ path }: any) => path === pathname);
-    const interceptData = this.intercept ? await this.intercept.resolve({ route, pathname, query }) : {};
-    // tslint:disable-next-line:no-object-literal-type-assertion
-    this._routeInfo = { list, ...route, path: pathname, props: { pathname, query, ...interceptData }} as RouteInfo;
-    this.activeRoute.next(cloneDeep(this._routeInfo));
+    const { params, list = [], ...route } = this.getRouterByPath(pathname);
+    this.intercept ? await this.intercept.resolve({ pathname, query, params, list, ...route }) : {};
+    this._routeInfo = { path: pathname, query, params, list };
+    this.activeRoute.next(this._routeInfo);
   }
 
-  public get currentRouteInfo() {
-    return this._routeInfo || { path: null, list: [] };
+  public get currentRouteInfo(): RouteInfo {
+    return this._routeInfo || { path: null, params: {}, query: {}, list: [] };
+  }
+
+  private parse(): [string, any] {
+    const { location: { pathname, search } } = this.history;
+    return [`/${pathname}`.replace('//', '/'), parse(search.replace(/^\?/, ''))];
+  }
+
+  private getRouterByPath(pathname: string) {
+    let params: any = {};
+    const pathList = pathname.split('/');
+    const router = this.routerList.find(({ path }: RouteInfo) => {
+      params = {};
+      return !(path?.split('/') || []).some((itemPath: string, index: number) => {
+        if (itemPath === '*' || itemPath === pathList[index]) {
+          return false;
+        }
+        if (/^:[^:]*/.test(itemPath)) {
+          params[itemPath.replace(/^:([^:]*)/, '$1')] = pathList[index];
+          return false;
+        }
+        return true;
+      });
+    });
+    return { ...cloneDeep(router), params };
   }
 }

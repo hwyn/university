@@ -11,22 +11,23 @@ export const serializeRouter = (router: any, parentRouter?: any): RouteInfo[] =>
     return serializeRouter({ path: ``, children: router, list: [] });
   }
 
-  const { path = ``, component: Children, props = {}, children = [] } = router;
-  const { path: parentPath = ``, list: ParentList = [] } = parentRouter || {};
+  const { children = [], ...routeInfo } = router;
+  const { path = ``, component: Children, } = routeInfo;
+  const { path: parentPath = ``, list: parentList = [] } = parentRouter || {};
 
   const routePath = `${parentPath}/${path}`.replace(/[/]{1,}/ig, '/');
-  const ComponentList = [[Children, { ...props, key: routePath }], ...ParentList];
+  const ComponentList = [routeInfo, ...parentList];
 
   if (!isEmpty(children)) {
     return children.reduce((list: any[], r: any) => [
       ...list,
-      ...serializeRouter(r, { path: routePath, list: [...ComponentList] })
+      ...serializeRouter(r, { path: routePath, list: ComponentList })
     ], []);
   }
 
   return !Children ? [] : [{
     path: routePath,
-    list: ComponentList.filter(([item]) => !!item)
-  }];
+    list: ComponentList.filter((item) => !!item.component)
+  }] as any[];
 };
 
