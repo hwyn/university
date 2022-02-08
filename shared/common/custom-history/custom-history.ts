@@ -25,9 +25,11 @@ export class CustomHistory {
 
   public async resolve() {
     const [pathname, query] = this.parse();
-    const { params, list = [], ...route } = this.getRouterByPath(pathname);
-    this.intercept ? await this.intercept.resolve({ pathname, query, params, list, ...route }) : {};
+    const { params, list = [] } = this.getRouterByPath(pathname);
     this._routeInfo = { path: pathname, query, params, list };
+    if (this.intercept) {
+      await this.intercept.resolve(this._routeInfo)
+    }
     this.activeRoute.next(this._routeInfo);
   }
 
