@@ -5,7 +5,7 @@ import { forkJoin, Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { ACTIONS_CONFIG } from '../../token';
-import { observableMap, transformObservable } from '../../utility';
+import { observableTap, transformObservable } from '../../utility';
 import { serializeAction } from '../basic/basic.extension';
 import { BuilderModelExtensions, OriginCalculators } from '../type-api';
 import { BaseAction } from './base.action';
@@ -55,9 +55,9 @@ export class Action implements ActionIntercept {
     );
     calculatorsInvokes.push(this.invokeCallCalculators(calculators || [], actionProps, props))
     return actionSub.pipe(
-      observableMap((value) => forkJoin(
+      observableTap((value) => forkJoin(
         calculatorsInvokes.map((invokeCalculators: any) => invokeCalculators(value))
-      ).pipe(map(() => value)))
+      ))
     );
   }
 

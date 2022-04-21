@@ -63,12 +63,11 @@ export class LifeCycleExtension extends BasicExtension {
     sourceField.actions = this.toArray(sourceField.actions || []);
     const { actions = [], id: sourceId } = sourceField;
     const nonSource = fieldId !== sourceId;
-    const nonAction = !actions.some((action) => action.type === type);
     if (nonSource && !nonSelfCalculator) {
       this.nonSelfCalculators.push(calculator);
       this.linkOtherCalculator(calculator);
     }
-    if (!nonSource && nonAction) {
+    if (!nonSource && !actions.some((action) => action.type === type)) {
       sourceField.actions = [{ type }, ...actions];
     }
   }
@@ -83,7 +82,7 @@ export class LifeCycleExtension extends BasicExtension {
 
   private createCalculators() {
     const fields = [...this.jsonFields, this.json];
-    const fieldsCalculators = cloneDeep(fields).filter(({ calculators }) => !isEmpty(calculators));
+    const fieldsCalculators = cloneDeep(fields.filter(({ calculators }) => !isEmpty(calculators)));
     this.calculators = [];
     fieldsCalculators.forEach(({ id: targetId, calculators = [] }) => {
       this.toArray(calculators).forEach(({ action, dependents }) => {

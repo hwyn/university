@@ -1,5 +1,5 @@
 import { isEmpty } from 'lodash';
-import { Observable, of, Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 
 import { BuilderModel, Instance } from '../..//builder';
 import { observableMap, toForkJoin, transformObservable } from '../../utility';
@@ -67,7 +67,7 @@ export class InstanceExtension extends BasicExtension {
       !currentIsBuildModel && instance.destory.next(actionEvent);
     }
 
-    return (...args: any) => onDestory(...args).subscribe(destoryHandler)
+    return (...args: any) => onDestory(...args).subscribe(destoryHandler);
   }
 
   protected beforeDestory() {

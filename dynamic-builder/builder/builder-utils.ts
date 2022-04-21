@@ -91,6 +91,8 @@ function destory(this: BuilderModelImplements | any): void {
         this.children.splice(0);
         this.privateExtension?.splice(0);
         this.parent && removeChild.call(this.parent, this);
+      }, (e) => {
+        console.error(e);
       });
     } catch (e) {
       console.error(e);

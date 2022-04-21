@@ -11,12 +11,11 @@ export class CheckVisibilityExtension extends BasicExtension {
   private defaultDependents = [CHANGE, LOAD].map((type) => ({ type, fieldId: this.builder.id }));
 
   protected extension() {
-    this.builderFields = this.mapFields(
-      this.jsonFields.filter(({ checkVisibility }) => !isUndefined(checkVisibility)),
-      this.addFieldCalculators.bind(this)
-    );
+    const visibliityList = this.jsonFields.filter(({ checkVisibility }) => !isUndefined(checkVisibility));
 
-    if (!isEmpty(this.builderFields)) {
+    if (!isEmpty(visibliityList)) {
+      this.builderFields = this.mapFields(visibliityList, this.addFieldCalculators.bind(this));
+
       this.pushCalculators(this.json, [{
         action: this.bindCalculatorAction(this.checkVisibility.bind(this, {})),
         dependents: this.defaultDependents
