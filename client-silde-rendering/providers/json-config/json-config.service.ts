@@ -7,13 +7,9 @@ import { Observable } from 'rxjs';
 
 @Injectable()
 export class JsonConfigService extends SharedJsonConfigService {
-  constructor(
-    protected http: HttpClient,
-    protected ls: LocatorStorage,
-    protected appConfig: AppContextService,
-  ) {
+  protected cacheConfig = this.ls.getProvider(RESOURCE, 'file-static');
+  constructor(protected http: HttpClient, protected ls: LocatorStorage, protected appConfig: AppContextService) {
     super(ls);
-    this.cacheConfig = this.ls.getProvider(RESOURCE, 'file-static');
   }
 
   protected getServerFetchData(url: string): Observable<object> {
