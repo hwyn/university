@@ -1,11 +1,15 @@
 import { getProvider, Injector, Provider, StaticInjector } from '@di';
-import { FETCH, HISTORY, IS_MICRO, JSON_CONFIG, MICRO_MANAGER } from '@shared/token';
+import { APP_CONTEXT,AppContextService } from '@shared/providers/app-context';
+import { JsonConfigService } from '@shared/providers/json-config';
+import { HISTORY, IS_MICRO, MICRO_MANAGER } from '@shared/token';
 import { Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
 import { MicroManage } from '../../micro';
 import { PROXY_HOST, READ_FILE_STATIC, REGISTRY_MICRO_MIDDER, REQUEST, SSR_MICRO_PATH } from '../../token';
-import { JsonConfigService } from '../json-config';
+import { AppContextService as ServerAppContextService, FETCH } from '../app-context';
+import { JsonConfigService as ServerJsonConfigService } from '../json-config';
+
 
 type Render = (...args: any[]) => Promise<{ html: string, styles: string }>;
 type MicroMiddleware = () => Observable<any>;
@@ -33,6 +37,7 @@ export class Platform {
       { provide: PROXY_HOST, useValue: proxyHost },
       { provide: SSR_MICRO_PATH, useValue: microSSRPath },
       { provide: FETCH, useValue: this.proxyFetch(fetch) },
+      { provide: APP_CONTEXT, useValue: { fetch } },
       { provide: READ_FILE_STATIC, useValue: this.proxyReadStaticFile(readStaticFile) },
       { provide: HISTORY, useValue: { location: this.getLocation(request, isMicro), listen: () => () => void (0) } }
     ]);
@@ -50,8 +55,9 @@ export class Platform {
     const _providers: Provider[] = [
       ...this.providers,
       { provide: MICRO_MANAGER, useClass: MicroManage },
-      { provide: JSON_CONFIG, useClass: JsonConfigService },
       { provide: REGISTRY_MICRO_MIDDER, useValue: this.registryMicroMiddleware.bind(this) },
+      { provide: JsonConfigService, useClass: ServerJsonConfigService },
+      { provide: AppContextService, useClass: ServerAppContextService },
       ...providers
     ];
     _providers.forEach((provider) => injector.set(provider.provide, provider));

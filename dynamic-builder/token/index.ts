@@ -9,3 +9,4 @@ export const LOAD_BUILDER_CONFIG = InjectorToken.get('LOAD_BUILDER_CONFIG');
 export const FACTORY_BUILDER = InjectorToken.get('FACTORY_BUILDER');
 export const BIND_FORM_CONTROL = InjectorToken.get('BIND_FORM_CONTROL');
 export const BIND_BUILDER_ELEMENT = InjectorToken.get('BIND_BUILDER_ELEMENT');
+export const GET_JSON_CONFIG = InjectorToken.get('GET_JSON_CONFIG');

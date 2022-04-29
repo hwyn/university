@@ -3,9 +3,7 @@ import { cloneDeep } from 'lodash';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 
-import { AbstractJsonConfig } from './json-config.abstract';
-
-export abstract class AbstractJsonConfigService implements AbstractJsonConfig {
+export abstract class JsonConfigService {
   protected cacheConfig: Map<string, Observable<object>> = new Map();
 
   constructor(protected ls: LocatorStorage) { }

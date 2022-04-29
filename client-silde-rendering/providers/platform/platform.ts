@@ -1,15 +1,16 @@
 import { getProvider, Injector, Provider, StaticInjector } from '@di';
-import { FETCH, IS_MICRO, MICRO_MANAGER } from '@shared/token';
+import { AppContextService } from '@shared/providers/app-context';
+import { JsonConfigService } from '@shared/providers/json-config';
+import { IS_MICRO, MICRO_MANAGER } from '@shared/token';
 import { cloneDeep } from 'lodash';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { CONTAINER, RENDER_SSR, RESOURCE, STYLE_CONTAINER } from '../../token';
+import { AppContextService as ClientAppContextService } from '../app-context';
+import { JsonConfigService as ClientJsonConfigService } from '../json-config';
 
 export type Render = (...args: any[]) => Promise<(container: HTMLElement) => void>;
-
-declare const microStore: any;
-declare const fetchCacheData: any;
 
 export class Platform {
   private rootInjector: Injector = getProvider(Injector as any);
@@ -38,18 +39,15 @@ export class Platform {
       ...this.providers,
       { provide: RENDER_SSR, useValue: true },
       { provide: IS_MICRO, useValue: this.isMicro },
-      { provide: FETCH, useFactory: this.proxyFetch },
       { provide: STYLE_CONTAINER, useValue: document.head },
       { provide: RESOURCE, useFactory: this.factoryResourceCache.bind(this) },
+      { provide: JsonConfigService, useClass: ClientJsonConfigService },
+      { provide: AppContextService, useClass: ClientAppContextService },
       ...providers
     ];
     _providers.forEach((provider) => injector.set(provider.provide, provider));
 
     return injector;
-  }
-
-  private proxyFetch() {
-    return (input: RequestInfo, init?: RequestInit) => fetch.apply(window, [input, init]);
   }
 
   private factoryResourceCache(type?: string) {

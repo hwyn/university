@@ -70,9 +70,10 @@ export class MicroStore implements MicroStoreInterface {
   private async loadScriptContext() {
     const { script, javascript } = this.staticAssets;
     return Promise.all(script.map((source: string, index) => {
-      const hasSourceMap = /[\S]+\.[\S]+\.js$/.test(javascript[index]);
+      const hasSourceMap = !/[\S]+\.[\S]+\.js$/.test(javascript[index]);
+      const sourceCode = this.formatSourceCode(source);
       // eslint-disable-next-line no-new-func
-      return hasSourceMap ? Promise.resolve(new Function('microStore', 'fetchCacheData', source)) : this.loadBlobScript(source);
+      return hasSourceMap ? this.loadBlobScript(sourceCode) : Promise.resolve(new Function('microStore', 'fetchCacheData', sourceCode));
     })).then((execFunctions: any[]) => this._renderMicro = this.execJavascript(execFunctions));
   }
 
@@ -84,5 +85,9 @@ export class MicroStore implements MicroStoreInterface {
       document.body.appendChild(script);
       script.onload = () => resolve((window as any)[funName]);
     });
+  }
+
+  protected formatSourceCode(source: string) {
+    return `${source}\n`;
   }
 }

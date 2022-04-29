@@ -33,7 +33,7 @@ export class FormExtension extends BasicExtension {
     const { viewModel } = this.builder;
     const { dataBinding: { path, default: defaultValue } } = jsonField;
     const value = get(viewModel, path, defaultValue);
-    this.defineProperty(builderField, CONTROL, this.ls.getProvider(BIND_FORM_CONTROL, value));
+    this.defineProperty(builderField, CONTROL, this.ls.getProvider(BIND_FORM_CONTROL, value, { builder: this.builder, builderField }));
     builderField.control.changeValues.subscribe((_value: any) => set(viewModel, path, _value));
 
     delete builderField.field.dataBinding;

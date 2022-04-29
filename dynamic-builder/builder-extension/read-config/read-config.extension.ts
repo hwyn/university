@@ -1,9 +1,9 @@
-import { JSON_CONFIG } from '@di';
 import { cloneDeep, isEmpty, isFunction, isString, uniq } from 'lodash';
 import { Observable, of } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 
 import { BuilderField } from '../../builder';
+import { GET_JSON_CONFIG } from '../../token';
 import { observableMap, observableTap, toForkJoin } from '../../utility';
 import { ActionInterceptProps } from "../action";
 import { BasicExtension } from "../basic/basic.extension";
@@ -63,9 +63,8 @@ export class ReadConfigExtension extends BasicExtension {
     }
 
     if (isJsonName) {
-      const jsonConfig = this.ls.getProvider(JSON_CONFIG);
       const getJsonName = jsonNameAction ? this.createLoadConfigAction(jsonNameAction, props) : of(jsonName);
-      configOb = getJsonName.pipe(observableMap((configName: string) => jsonConfig.getJsonConfig(configName)));
+      configOb = getJsonName.pipe(observableMap((configName: string) => this.ls.getProvider(GET_JSON_CONFIG, configName)));
     } else {
       configOb = configAction ? this.createLoadConfigAction(configAction, props) : of(config);
     }
@@ -106,7 +105,7 @@ export class ReadConfigExtension extends BasicExtension {
   private eligiblePreloaded(props: any) {
     const { preloaded = true, config: { isPreloaded = false } = {} } = props;
     const eligibleAttr = ['jsonName', 'configAction', 'jsonNameAction', 'config'];
-    return preloaded && !isPreloaded && eligibleAttr.some((key) => !!key);
+    return preloaded && !isPreloaded && eligibleAttr.some((key) => !!props[key]);
   }
 
   private createGetExecuteHandler() {
