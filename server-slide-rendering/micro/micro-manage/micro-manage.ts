@@ -4,13 +4,14 @@ import { createMicroElementTemplate, MicroManageInterface, templateZip } from '@
 import { AppContextService } from '@shared/providers/app-context';
 import { HISTORY } from '@shared/token';
 import { cloneDeep, isEmpty } from 'lodash';
-import { forkJoin, Observable, of } from 'rxjs';
+import { forkJoin, Observable, of, Subject } from 'rxjs';
 import { catchError, map, shareReplay, switchMap } from 'rxjs/operators';
 
 import { AppContextService as ServerAppContextService } from '../../providers/app-context';
 
 @Injectable()
 export class MicroManage implements MicroManageInterface {
+  declare sharedData: any;
   private proxy: string;
   private microCache: Map<string, Observable<any>> = new Map();
   private microStaticCache: Map<string, Observable<any>> = new Map();
@@ -20,6 +21,7 @@ export class MicroManage implements MicroManageInterface {
     this.appContext = this.ls.getProvider(AppContextService);
     this.proxy = this.appContext.getContext().proxyHost;
   }
+  loaderStyleSubject?: Subject<HTMLStyleElement> | undefined;
 
   bootstrapMicro(microName: string): Observable<any> {
     let subject = this.microCache.get(microName) as Observable<any>;

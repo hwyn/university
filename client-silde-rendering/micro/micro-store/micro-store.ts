@@ -32,8 +32,8 @@ export class MicroStore implements MicroStoreInterface {
 
   private async execMounted() {
     const [container, options] = <[HTMLElement, any]>this.execMountedList.shift();
-    this.mountendAppendLoadStyleNode(container);
     const unRender = await this._renderMicro(this.parseRenderOptions(container, options));
+    this.mountendAppendLoadStyleNode(container);
     this.mountedList.push({ unRender, container });
     if (this.execMountedList.length !== 0) {
       await this.execMounted();

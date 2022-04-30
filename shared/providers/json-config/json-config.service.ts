@@ -1,4 +1,4 @@
-import { LocatorStorage } from '@di';
+import { Inject, LocatorStorage } from '@di';
 import { cloneDeep } from 'lodash';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
@@ -10,7 +10,7 @@ export abstract class JsonConfigService {
   protected cacheConfig: Map<string, Observable<object>>;
   protected abstract getServerFetchData(url: string): Observable<object>;
 
-  constructor(protected ls: LocatorStorage) { 
+  constructor(@Inject(LocatorStorage) protected ls: LocatorStorage) { 
     this.appContext = this.ls.getProvider(AppContextService);
     this.cacheConfig = this.appContext.getResourceCache('file-static');
   }

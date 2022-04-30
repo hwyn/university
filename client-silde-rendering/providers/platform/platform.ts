@@ -2,7 +2,6 @@ import { getProvider, Injector, Provider, StaticInjector } from '@di';
 import { APP_CONTEXT, AppContextService } from '@shared/providers/app-context';
 import { JsonConfigService } from '@shared/providers/json-config';
 
-import { CONTAINER, STYLE_CONTAINER } from '../../token';
 import { AppContextService as ClientAppContextService } from '../app-context';
 import { JsonConfigService as ClientJsonConfigService } from '../json-config';
 
@@ -13,7 +12,7 @@ export class Platform {
 
   constructor(private providers: Provider[]) { }
 
-  bootstrapRender(render: Render) {
+  public bootstrapRender(render: Render) {
     if (!this.isMicro) {
       return this.importMicro(this.beforeBootstrapRender()).then(render);
     }
@@ -23,22 +22,22 @@ export class Platform {
   private async proxyRender(render: Render, options: any) {
     const { microManage, head, body, ..._options } = options;
     const microConfig = {
+      container: body,
+      styleContainer: head,
       useMicroManage: () => microManage
     };
-    const injector = this.beforeBootstrapRender(microConfig, [
-      { provide: CONTAINER, useValue: body },
-      { provide: STYLE_CONTAINER, useValue: head }
-    ]);
+    const injector = this.beforeBootstrapRender(microConfig);
     const unRender = await render(injector, _options);
     return (_container: HTMLElement) => { unRender(_container); injector.clear(); }
   }
 
   private beforeBootstrapRender(context: object = {}, providers: Provider[] = []) {
     const injector = new StaticInjector(this.rootInjector, { isScope: 'self' });
-    const appContext = { fetch, renderSSR: true, resource: this.resource, isMicro: this.isMicro, ...context };
+    const container = document.getElementById('app');
+    const styleContainer = document.head;
+    const appContext = { fetch, container, styleContainer, renderSSR: true, resource: this.resource, isMicro: this.isMicro, ...context };
     const _providers: Provider[] = [
       ...this.providers,
-      { provide: STYLE_CONTAINER, useValue: document.head },
       { provide: APP_CONTEXT, useValue: appContext },
       { provide: JsonConfigService, useClass: ClientJsonConfigService },
       { provide: AppContextService, useClass: ClientAppContextService },

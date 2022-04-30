@@ -21,7 +21,7 @@ export class Platform {
     this.rootInjector = getProvider(Injector as any);
   }
 
-  bootstrapRender(render: Render): void {
+  public bootstrapRender(render: Render): void {
     exports.render = this.proxyRender.bind(this, render);
   }
 

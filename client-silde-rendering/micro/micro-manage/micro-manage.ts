@@ -1,17 +1,18 @@
-import { Injectable } from '@di';
+import { Injectable, LocatorStorage } from '@di';
 import { MicroManageInterface } from '@shared/micro';
 import { Observable, Subject } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 
 import { LoadAssets, StaticAssets } from '../load-assets/load-assets';
 import { MicroStore } from '../micro-store/micro-store';
+import { SharedData } from '../shared-data/share-data';
 
 @Injectable()
 export class MicroManage implements MicroManageInterface {
   public loaderStyleSubject = new Subject<HTMLStyleElement>();
   private microCache: Map<string, Observable<MicroStore>> = new Map();
 
-  constructor(private la: LoadAssets) {
+  constructor(private ls: LocatorStorage, private la: LoadAssets) {
     document.querySelector = this.querySelectorProxy();
   }
 
@@ -33,5 +34,9 @@ export class MicroManage implements MicroManageInterface {
     const _querySelector = document.querySelector.bind(document);
     Object.defineProperty(loaderStyleHead, 'appendChild', { value: this.loaderStyleSubject.next.bind(this.loaderStyleSubject) });
     return (selectors: string) => /^styleLoaderInsert:[^:]+::shadow$/g.test(selectors) ? loaderStyleHead : _querySelector(selectors);
+  }
+
+  public get sharedData() {
+    return this.ls.getService(SharedData);
   }
 }
