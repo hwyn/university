@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import { SSRRender } from "./ssr-render";
 import { SSROptions } from "./type-api";
 
-export abstract class Control {
+export abstract class SSRControl {
   private ssrVm: SSRRender;
   constructor(entryFile: string, options: SSROptions) {
     this.ssrVm = new SSRRender(entryFile, options);

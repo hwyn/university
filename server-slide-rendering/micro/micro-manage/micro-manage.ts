@@ -1,31 +1,31 @@
-import { Inject, Injectable, LocatorStorage } from '@di';
+import { Injectable, LocatorStorage } from '@di';
 import { HttpClient } from '@shared/common/http';
-import { createMicroElementTemplate, MicroManageInterface, MicroStoreInterface, templateZip } from '@shared/micro';
+import { createMicroElementTemplate, MicroManageInterface, templateZip } from '@shared/micro';
+import { AppContextService } from '@shared/providers/app-context';
 import { HISTORY } from '@shared/token';
 import { cloneDeep, isEmpty } from 'lodash';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map, shareReplay, switchMap } from 'rxjs/operators';
 
-import { PROXY_HOST, REGISTRY_MICRO_MIDDER, SSR_MICRO_PATH } from '../../token';
+import { AppContextService as ServerAppContextService } from '../../providers/app-context';
 
 @Injectable()
 export class MicroManage implements MicroManageInterface {
+  private proxy: string;
   private microCache: Map<string, Observable<any>> = new Map();
   private microStaticCache: Map<string, Observable<any>> = new Map();
-  private proxy: string;
+  private appContext: ServerAppContextService;
 
-  constructor(
-    private http: HttpClient,
-    private ls: LocatorStorage,
-    @Inject(REGISTRY_MICRO_MIDDER) private registryParseHtmlMidde: any
-  ) {
-    this.proxy = this.ls.getProvider(PROXY_HOST);
+  constructor(private http: HttpClient, private ls: LocatorStorage) {
+    this.appContext = this.ls.getProvider(AppContextService);
+    this.proxy = this.appContext.getContext().proxyHost;
   }
 
-  bootstrapMicro(microName: string): Observable<MicroStoreInterface> {
-    let subject = this.microCache.get(microName);
+  bootstrapMicro(microName: string): Observable<any> {
+    let subject = this.microCache.get(microName) as Observable<any>;
+    const context = this.appContext.getContext();
     if (!subject) {
-      const proxyMicroUrl = this.ls.getProvider<any>(SSR_MICRO_PATH);
+      const proxyMicroUrl = context.microSSRPath;
       const { location: { pathname } } = this.ls.getProvider(HISTORY);
       const microPath = `/${proxyMicroUrl(microName, `/micro-ssr/${pathname}`)}`.replace(/[/]+/g, '/');
       subject = this.http.get(`${this.proxy}${microPath}`).pipe(
@@ -36,11 +36,11 @@ export class MicroManage implements MicroManageInterface {
       );
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       subject.subscribe(() => { }, () => { });
-      this.registryParseHtmlMidde(() => subject);
+      this.appContext.registryMicroMidder(() => subject);
       this.microCache.set(microName, subject);
     }
 
-    return of(null as any);
+    return of(null);
   }
 
   private reeadLinkToStyles(microName: string, microResult: any) {
@@ -62,13 +62,14 @@ export class MicroManage implements MicroManageInterface {
   private createMicroTag(microName: string, microResult: any) {
     const { html, styles, linkToStyles, microTags = [] } = microResult;
     const template = createMicroElementTemplate(microName, { initHtml: html, initStyle: styles, linkToStyles });
-    microTags.push(templateZip(`<script id="create-${microName}-tag">{template}
-        (function() {
-          const script = document.getElementById('create-${microName}-tag');
-          script.parentNode.removeChild(script)
-        })();
-      </script>
-    `, { template }));
+    microTags.push(
+      templateZip(
+        `<script id="create-${microName}-tag">{template}
+          (function() {
+            const script = document.getElementById('create-${microName}-tag');
+            script.parentNode.removeChild(script)
+          })();
+        </script>`, { template }));
     return { ...microResult, html: '', links: [], styles: '', microTags };
   }
 }

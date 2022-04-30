@@ -1,12 +1,11 @@
 import { getProvider, Injector, Provider, StaticInjector } from '@di';
-import { APP_CONTEXT,AppContextService } from '@shared/providers/app-context';
+import { APP_CONTEXT, AppContextService } from '@shared/providers/app-context';
 import { JsonConfigService } from '@shared/providers/json-config';
-import { HISTORY, IS_MICRO, MICRO_MANAGER } from '@shared/token';
+import { HISTORY } from '@shared/token';
 import { Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
 import { MicroManage } from '../../micro';
-import { PROXY_HOST, READ_FILE_STATIC, REGISTRY_MICRO_MIDDER, REQUEST, SSR_MICRO_PATH } from '../../token';
 import { AppContextService as ServerAppContextService } from '../app-context';
 import { JsonConfigService as ServerJsonConfigService } from '../json-config';
 
@@ -16,9 +15,7 @@ type MicroMiddleware = () => Observable<any>;
 
 export class Platform {
   private rootInjector: Injector;
-  private microMiddlewareList: MicroMiddleware[] = [];
-  private staticFileSourceList: { [key: string]: any } = {};
-  private currentPageFileSourceList: { [key: string]: any } = {};
+  private resource: { [key: string]: any } = {};
 
   constructor(private providers: Provider[] = []) {
     this.rootInjector = getProvider(Injector as any);
@@ -31,57 +28,29 @@ export class Platform {
   private async proxyRender(render: Render, global: any, isMicro = false) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { fetch, request, location, readAssets, readStaticFile, proxyHost, microSSRPath, ..._global } = global;
-    const injector = this.beforeBootstrapRender([
-      { provide: REQUEST, useValue: request },
-      { provide: IS_MICRO, useValue: isMicro },
-      { provide: PROXY_HOST, useValue: proxyHost },
-      { provide: SSR_MICRO_PATH, useValue: microSSRPath },
-      { provide: APP_CONTEXT, useValue: { fetch } },
-      { provide: READ_FILE_STATIC, useValue: this.proxyReadStaticFile(readStaticFile) },
+    const microConfig = { fetch, isMicro, request, proxyHost, microSSRPath, readStaticFile, renderSSR: true, resource: this.resource };
+    const injector = this.beforeBootstrapRender(microConfig, [
       { provide: HISTORY, useValue: { location: this.getLocation(request, isMicro), listen: () => () => void (0) } }
     ]);
-    this.microMiddlewareList = [];
-    this.currentPageFileSourceList = {};
     const { js = [], links = [] } = readAssets();
     const { html, styles } = await render(injector, { request, ..._global });
-    const execlResult = await this.execlMicroMiddleware({ html, styles, js, links, microTags: [], microFetchData: [] });
+    const execlResult = await this.execlMicroMiddleware(injector, { html, styles, js, links, microTags: [], microFetchData: [] });
     injector.clear();
-    return { ...execlResult, fetchData: this.getStaticFileData() };
+    return execlResult;
   }
 
-  private beforeBootstrapRender(providers: Provider[] = []): Injector {
+  private beforeBootstrapRender(context: object, providers: Provider[] = []): Injector {
     const injector = new StaticInjector(this.rootInjector, { isScope: 'self' });
+    const appContext = { useMicroManage: () => injector.get(MicroManage), ...context };
     const _providers: Provider[] = [
       ...this.providers,
-      { provide: MICRO_MANAGER, useClass: MicroManage },
-      { provide: REGISTRY_MICRO_MIDDER, useValue: this.registryMicroMiddleware.bind(this) },
+      { provide: APP_CONTEXT, useValue: appContext },
       { provide: JsonConfigService, useClass: ServerJsonConfigService },
       { provide: AppContextService, useClass: ServerAppContextService },
       ...providers
     ];
     _providers.forEach((provider) => injector.set(provider.provide, provider));
     return injector;
-  }
-
-  private getStaticFileData() {
-    return JSON.stringify(this.currentPageFileSourceList);
-  }
-
-  private proxyFetch(fetch: any) {
-    return (...args: any[]) => fetch(...args);
-  }
-
-  private proxyReadStaticFile(readStaticFile: (url: string) => string) {
-    return (url: string) => {
-      let fileCache = this.staticFileSourceList[url];
-      if (!fileCache) {
-        const fileSource = readStaticFile(url) || '{}';
-        fileCache = { type: 'file-static', source: JSON.parse(fileSource) };
-        this.staticFileSourceList[url] = fileCache;
-      }
-      this.currentPageFileSourceList[url] = fileCache;
-      return of(fileCache.source);
-    };
   }
 
   private mergeMicroToSSR(middleware: MicroMiddleware) {
@@ -96,14 +65,14 @@ export class Platform {
       })));
   }
 
-  private execlMicroMiddleware(options: any): Promise<any> {
-    return this.microMiddlewareList.reduce((input, middleware) => (
+  private async execlMicroMiddleware(injector: Injector, options: any): Promise<any> {
+    const appContext = injector.get(AppContextService) as ServerAppContextService;
+    const fetchData = appContext.getAllFileSource();
+    return appContext.getpageMicroMiddleware().reduce((input, middleware) => (
       input.pipe(switchMap(this.mergeMicroToSSR(middleware)))
-    ), of(options)).toPromise();
-  }
-
-  private registryMicroMiddleware(middleware: MicroMiddleware) {
-    this.microMiddlewareList.push(middleware);
+    ), of(options))
+      .toPromise()
+      .then((execlResult) => ({ ...execlResult, fetchData }));
   }
 
   private getLocation(request: any, isMicro?: boolean) {
