@@ -7,7 +7,7 @@ import { map, switchMap } from 'rxjs/operators';
 
 import { MicroManage } from '../../micro';
 import { PROXY_HOST, READ_FILE_STATIC, REGISTRY_MICRO_MIDDER, REQUEST, SSR_MICRO_PATH } from '../../token';
-import { AppContextService as ServerAppContextService, FETCH } from '../app-context';
+import { AppContextService as ServerAppContextService } from '../app-context';
 import { JsonConfigService as ServerJsonConfigService } from '../json-config';
 
 
@@ -36,7 +36,6 @@ export class Platform {
       { provide: IS_MICRO, useValue: isMicro },
       { provide: PROXY_HOST, useValue: proxyHost },
       { provide: SSR_MICRO_PATH, useValue: microSSRPath },
-      { provide: FETCH, useValue: this.proxyFetch(fetch) },
       { provide: APP_CONTEXT, useValue: { fetch } },
       { provide: READ_FILE_STATIC, useValue: this.proxyReadStaticFile(readStaticFile) },
       { provide: HISTORY, useValue: { location: this.getLocation(request, isMicro), listen: () => () => void (0) } }
