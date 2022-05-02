@@ -16,12 +16,12 @@ export class MicroManage implements MicroManageInterface {
   private microCache: Map<string, Observable<any>> = new Map();
   private microStaticCache: Map<string, Observable<any>> = new Map();
   private appContext: ServerAppContextService;
+  declare loaderStyleSubject?: Subject<HTMLStyleElement> | undefined;
 
   constructor(private http: HttpClient, private ls: LocatorStorage) {
     this.appContext = this.ls.getProvider(AppContextService);
     this.proxy = this.appContext.getContext().proxyHost;
   }
-  loaderStyleSubject?: Subject<HTMLStyleElement> | undefined;
 
   bootstrapMicro(microName: string): Observable<any> {
     let subject = this.microCache.get(microName) as Observable<any>;
@@ -36,8 +36,7 @@ export class MicroManage implements MicroManageInterface {
         map((microResult) => ({ microResult: this.createMicroTag(microName, microResult), microName })),
         shareReplay(1)
       );
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      subject.subscribe(() => { }, () => { });
+      subject.subscribe(() => void (0), () => void (0));
       this.appContext.registryMicroMidder(() => subject);
       this.microCache.set(microName, subject);
     }
