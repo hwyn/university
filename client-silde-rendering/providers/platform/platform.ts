@@ -21,11 +21,7 @@ export class Platform {
 
   private async proxyRender(render: Render, options: any) {
     const { microManage, head, body, ..._options } = options;
-    const microConfig = {
-      container: body,
-      styleContainer: head,
-      useMicroManage: () => microManage
-    };
+    const microConfig = { container: body, styleContainer: head, useMicroManage: () => microManage };
     const injector = this.beforeBootstrapRender(microConfig);
     const unRender = await render(injector, _options);
     return (_container: HTMLElement) => { unRender(_container); injector.clear(); }

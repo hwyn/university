@@ -39,7 +39,7 @@ export class BuilderModel implements BuilderModelImplements {
   }
 
   public detectChanges() {
-    if (!this.$$cache.destory) {
+    if (!this.$$cache.destoryed) {
       this.$$cache.detectChanges.next(undefined);
     }
   }
