@@ -1,27 +1,18 @@
 import { LocatorStorage } from '@di';
 
 import { ACTION_INTERCEPT } from '../../token';
-import { serializeAction } from '../basic/basic.extension';
 import { BuilderFieldExtensions, BuilderModelExtensions, InstanceExtensions } from '../type-api';
 import { Action, ActionIntercept } from './type-api';
 
 export class BaseAction<T = any> {
-  protected _actionIntercept!: ActionIntercept;
-
-  constructor(protected ls: LocatorStorage, private context: any = {}) {
-    this._actionIntercept = this.ls.getProvider(ACTION_INTERCEPT);
-  }
-
-  public createAction(action: string | Action) {
-    return serializeAction(action);
-  }
+  constructor(protected ls: LocatorStorage, private context: any = {}) { }
 
   get builderField(): BuilderFieldExtensions {
     return this.context.builderField;
   }
 
   get actionIntercept(): ActionIntercept {
-    return this._actionIntercept;
+    return this.ls.getProvider(ACTION_INTERCEPT);
   }
 
   get builder(): BuilderModelExtensions {

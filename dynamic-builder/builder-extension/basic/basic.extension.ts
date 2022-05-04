@@ -32,8 +32,8 @@ export abstract class BasicExtension {
 
   protected abstract extension(): void | Observable<any>;
   protected afterExtension() { }
-  protected destory(): void | Observable<any> { }
   protected beforeDestory(): void | Observable<any> { }
+  protected destory(): void | Observable<any> { }
 
   public init(): Observable<BasicExtension> {
     return transformObj(this.extension(), this);

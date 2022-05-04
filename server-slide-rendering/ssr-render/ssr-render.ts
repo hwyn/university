@@ -98,7 +98,8 @@ export class SSRRender {
     const m: any = { exports: {}, require: createRequire(this.entryFile) };
     const wrapper = NativeModule.wrap(fs.readFileSync(this.entryFile, 'utf-8'));
     const script = new vm.Script(wrapper, { filename: 'server-entry.js', displayErrors: true });
-    const context = vm.createContext({ Buffer, process, console, setTimeout, setInterval, ...this.vmContext });
+    const vmContext = { Buffer, process, console, setTimeout, setInterval, clearInterval, clearTimeout, ...this.vmContext };
+    const context = vm.createContext(vmContext);
     const compiledWrapper = script.runInContext(context);
     compiledWrapper(m.exports, m.require, m);
     this._compiledRender = m.exports.render;

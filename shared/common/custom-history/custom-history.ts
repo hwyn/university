@@ -1,63 +1,63 @@
 import { Inject, Injectable, LocatorStorage } from '@di';
-import { BrowserHistory } from 'history';
-import { cloneDeep } from 'lodash';
+import { BrowserHistory, Location, parsePath } from 'history';
 import { parse } from 'querystring';
 import { Subject } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 
 import { HISTORY, ROUTER_CONFIG, ROUTER_INTERCEPT } from '../../token';
+import { Router } from './router';
 import { AbstractRouterIntercept } from './router-intercept.abstract';
-import { serializeRouter } from './serialize-router';
 import { RouteInfo } from './type-api';
 
 @Injectable()
-export class CustomHistory {
+export class SharedHistory {
+  private router: Router;
   private history: BrowserHistory;
-  private routerList: RouteInfo[] = [];
   private _routeInfo?: RouteInfo;
   public activeRoute = new Subject<RouteInfo>().pipe(shareReplay(1)) as Subject<RouteInfo>;
 
   constructor(private ls: LocatorStorage, @Inject(ROUTER_INTERCEPT) private intercept: AbstractRouterIntercept) {
     this.history = this.ls.getProvider<BrowserHistory>(HISTORY);
-    this.routerList = serializeRouter(this.ls.getProvider(ROUTER_CONFIG));
-    this.history.listen(this.resolve.bind(this));
+    this.router = new Router(ls, this.ls.getProvider(ROUTER_CONFIG));
+    this.history.listen(this.listener.bind(this));
+  }
+
+  public navigateTo(url: string) {
+    const location = parsePath(url) as Location;
+    this.resolveIntercept(location).then((status) => status && this.history.push(url));
   }
 
   public async resolve() {
-    const [pathname, query] = this.parse();
-    const { params, list = [] } = this.getRouterByPath(pathname);
-    this._routeInfo = { path: pathname, query, params, list };
-    if (this.intercept) {
-      await this.intercept.resolve(this._routeInfo)
-    }
-    this.activeRoute.next(this._routeInfo);
+    const { location } = this.history;
+    const status = await this.resolveIntercept(location);
+    status && this.listener();
   }
 
   public get currentRouteInfo(): RouteInfo {
     return this._routeInfo || { path: null, params: {}, query: {}, list: [] };
   }
 
-  private parse(): [string, any] {
-    const { location: { pathname, search } } = this.history;
-    return [`/${pathname}`.replace('//', '/'), parse(search.replace(/^\?/, ''))];
+  private async listener() {
+    if (this.intercept) {
+      await this.intercept.resolve(this.currentRouteInfo);
+    }
+    await this.router.loadTesolve(this.currentRouteInfo).toPromise();
+    this.activeRoute.next(this._routeInfo);
   }
 
-  private getRouterByPath(pathname: string) {
-    let params: any = {};
-    const pathList = pathname.split('/');
-    const router = this.routerList.find(({ path }: RouteInfo) => {
-      params = {};
-      return !(path?.split('/') || []).some((itemPath: string, index: number) => {
-        if (itemPath === '*' || itemPath === pathList[index]) {
-          return false;
-        }
-        if (/^:[^:]*/.test(itemPath)) {
-          params[itemPath.replace(/^:([^:]*)/, '$1')] = pathList[index];
-          return false;
-        }
-        return true;
-      });
-    });
-    return { ...cloneDeep(router), params };
+  private async resolveIntercept(location: Location): Promise<boolean> {
+    const [pathname, query] = this.parse(location);
+    const { params, list = [] } = await this.router.getRouterByPath(pathname);
+    this._routeInfo = { path: pathname, query, params, list };
+    const status = await this.router.canActivate(this.currentRouteInfo).toPromise();
+    if (!status) {
+      this._routeInfo.list = [];
+    }
+    return status;
+  }
+
+  private parse(location: Location): [string, any] {
+    const { pathname, search = '' } = location;
+    return [`/${pathname}`.replace('//', '/'), parse(search.replace(/^\?/, ''))];
   }
 }

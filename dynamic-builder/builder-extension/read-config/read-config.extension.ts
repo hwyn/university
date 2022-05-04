@@ -112,7 +112,7 @@ export class ReadConfigExtension extends BasicExtension {
     const builder: any = this.builder;
     const getExecuteHandler = this.builder.getExecuteHandler;
     return (actionName: string) => {
-      let executeHandler = builder[actionName];
+      let executeHandler;
       if (isFunction(getExecuteHandler)) {
         executeHandler = getExecuteHandler.call(this.builder, actionName);
       }

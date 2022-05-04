@@ -84,8 +84,8 @@ export class Action implements ActionIntercept {
       action = serializeAction(actions);
       actionsSub = this.invokeAction(action, props, event, ...otherEventParam);
     }
-    const hasInvokeCalculators = !!props && action && action.type && !isEmpty(props);
-    return hasInvokeCalculators ? this.invokeCalculators(action, actionsSub, props) : actionsSub;
+    const hasInvokeCalculators = !isEmpty(props) && action && action.type;
+    return hasInvokeCalculators ? this.invokeCalculators(action, actionsSub, props as ActionInterceptProps) : actionsSub;
   }
 
   // eslint-disable-next-line complexity
