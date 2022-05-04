@@ -1,6 +1,8 @@
 import { isEmpty } from 'lodash';
 
-import { RouteInfo } from './type-api';
+import { RouteInfo, RouteItem } from './type-api';
+
+const filterRoute = ({ component, loadModule }: RouteItem) => !!component || !!loadModule;
 
 export const serializeRouter = (router: any, parentRouter?: any): RouteInfo[] => {
   if (isEmpty(router)) {
@@ -12,7 +14,7 @@ export const serializeRouter = (router: any, parentRouter?: any): RouteInfo[] =>
   }
 
   const { children = [], ...routeInfo } = router;
-  const { path = ``, component: Children, } = routeInfo;
+  const { path = `` } = routeInfo;
   const { path: parentPath = ``, list: parentList = [] } = parentRouter || {};
 
   const routePath = `${parentPath}/${path}`.replace(/[/]{1,}/ig, '/');
@@ -25,9 +27,9 @@ export const serializeRouter = (router: any, parentRouter?: any): RouteInfo[] =>
     ], []);
   }
 
-  return !Children ? [] : [{
+  return !filterRoute(routeInfo) ? [] : [{
     path: routePath,
-    list: ComponentList.filter((item) => !!item.component)
+    list: ComponentList.filter(filterRoute)
   }] as any[];
 };
 

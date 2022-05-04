@@ -1,5 +1,5 @@
 import { LocatorStorage } from '@di';
-import { cloneDeep, isBoolean } from 'lodash';
+import { cloneDeepWith, isBoolean, isFunction } from 'lodash';
 import { forkJoin, from, isObservable, Observable, of } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 
@@ -28,7 +28,20 @@ export class Router {
         return true;
       });
     });
-    return cloneDeep({ ...router, params });
+    return cloneDeepWith({ ...router, params }, (value) => isFunction(value) ? value : undefined);
+  }
+
+  public async loadModule(routeInfo: RouteInfo) {
+    const { list = [] } = routeInfo;
+    const promiseAll: Promise<any>[] = [];
+    list.forEach((routeItem) => {
+      const { loadModule } = routeItem;
+      if (loadModule) {
+        const promise = loadModule().then((result) => Object.assign(routeItem, result));
+        promiseAll.push(promise);
+      }
+    });
+    await Promise.all(promiseAll);
   }
 
   public canActivate(routeInfo: RouteInfo): Observable<boolean> {

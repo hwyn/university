@@ -4,6 +4,7 @@ export type RouteItem = {
   // eslint-disable-next-line no-use-before-define
   canActivate?: CanActivate[],
   resolve?: { [key: string]: any },
+  loadModule?: () => Promise<any>;
   path: string, component: any,
   props: { [key: string]: any }
 };
@@ -26,3 +27,4 @@ export declare interface Resolve<T> {
 export declare type ResolveData = {
   [name: string]: any;
 };
+
