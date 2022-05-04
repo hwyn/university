@@ -5,6 +5,7 @@ export type RouteItem = {
   canActivate?: CanActivate[],
   resolve?: { [key: string]: any },
   loadModule?: () => Promise<any>;
+  key?: string;
   path: string, component: any,
   props: { [key: string]: any }
 };

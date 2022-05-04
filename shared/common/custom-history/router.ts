@@ -6,6 +6,8 @@ import { mergeMap } from 'rxjs/operators';
 import { serializeRouter } from './serialize-router';
 import { CanActivate, Resolve, RouteInfo, RouteItem } from './type-api';
 
+const getRex = () => /^:([^:]+)/g;
+
 export class Router {
   private routerList: RouteInfo[] = [];
   constructor(private ls: LocatorStorage, routerConfig: any) {
@@ -21,14 +23,15 @@ export class Router {
         if (itemPath === '*' || itemPath === pathList[index]) {
           return false;
         }
-        if (/^:[^:]*/.test(itemPath)) {
-          params[itemPath.replace(/^:([^:]*)/, '$1')] = pathList[index];
+        if (getRex().test(itemPath)) {
+          params[itemPath.replace(getRex(), '$1')] = pathList[index];
           return false;
         }
         return true;
       });
     });
-    return cloneDeepWith({ ...router, params }, (value) => isFunction(value) ? value : undefined);
+    const routeInfo = cloneDeepWith({ ...router, params }, (value) => isFunction(value) ? value : undefined);
+    return this.pathKey(pathname, routeInfo);
   }
 
   public async loadModule(routeInfo: RouteInfo) {
@@ -80,6 +83,16 @@ export class Router {
       props[key] = result;
     });
     return list.length ? forkJoin(list) : of([]);
+  }
+
+  private pathKey(pathname: string, routeInfo: RouteInfo) {
+    const { params, list = [] } = routeInfo;
+    list.forEach((routeItem: any) => {
+      const { path } = routeItem;
+      const hasRex = path.indexOf('*') !== -1;
+      routeItem.key = hasRex ? pathname : path.replace(getRex(), (a: string, b: string) => params[b]);
+    });
+    return routeInfo;
   }
 
   private getExecList(routeInfo: RouteInfo, handler: (routeItem: RouteItem) => [RouteItem, any][]) {
