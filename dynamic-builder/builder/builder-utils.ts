@@ -67,9 +67,9 @@ function getCacheObj(this: BuilderModelImplements, props: any): any {
 
 function createField(this: BuilderModelImplements, field: any): BuilderField {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { id, type, ...other } = field;
+  const { id, type, visibility, ...other } = field;
   const element = field.element || this.ls.getProvider(BuilderEngine).getUiComponent(type);
-  return { id, type, element, field: other };
+  return { id, type, element, visibility, field: other };
 }
 
 function destory(this: BuilderModelImplements | any): void {

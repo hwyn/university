@@ -4,6 +4,7 @@ import { Observable, Subject } from 'rxjs';
 
 import { Grid } from '../builder-extension';
 import { Action } from '../builder-extension/action';
+import { Visibility } from './consts';
 
 export interface CacheObj {
   [x: string]: any;
@@ -19,7 +20,6 @@ export interface CacheObj {
 }
 interface Field {
   [key: string]: any;
-  visibility?: boolean;
 }
 
 export interface Instance {
@@ -40,6 +40,7 @@ export interface BuilderField extends Field {
   type: string;
   element: any;
   field: Field;
+  visibility?: Visibility;
 }
 
 export interface BuilderJsonField {
@@ -87,5 +88,6 @@ export interface BuilderModelImplements {
   getAllFieldByTypes<T = BuilderField>(id: string): T[];
   getFieldById<T = BuilderField>(id: string | undefined): T;
   getAllFieldById<T = BuilderField>(id: string): T[];
+  showField(visibility: Visibility | undefined): boolean;
   detectChanges(): void;
 }

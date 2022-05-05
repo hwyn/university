@@ -1,13 +1,17 @@
-import { Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 
 import { BuilderModel } from '../../builder/builder-model';
 import { BuilderFieldExtensions } from '../type-api';
 
-export interface FormControl {
-  readonly value: any;
-  readonly valid: boolean | undefined;
-  changeValues: Subject<any>;
-  patchValue(value: any): void;
+
+declare type updateOn = 'change' | 'blur' | 'submit';
+
+export declare interface FormControl<T = any> {
+  readonly value: T;
+  readonly changeValues: Subject<any>;
+  readonly updateOn: updateOn;
+  patchValue(value: T): void;
+  updateValueAndValidity(): void;
   destory(fieldId?: string): void;
 }
 
@@ -16,6 +20,26 @@ export interface FormOptions {
   builderField: BuilderFieldExtensions;
 }
 
-export interface FormControlOptions {
-  value?: any;
+export type FormControlStatus = "VALID" | "INVALID" | "PENDING" | "DISABLED";
+
+export type ValidationErrors = {
+  [key: string]: any
+};
+
+export declare interface ValidatorFn {
+  (control: FormControl): FormControl | null;
+}
+
+export declare interface AsyncValidatorFn {
+  (control: FormControl): Promise<FormControl | null> | Observable<FormControl | null>;
+}
+
+export declare interface ControlOptions {
+  validators?: ValidatorFn | ValidatorFn[] | null;
+  asyncValidators?: AsyncValidatorFn | AsyncValidatorFn[] | null;
+  updateOn?: updateOn;
+}
+
+export declare interface ValidatorService {
+  getValidators(options: FormOptions): ControlOptions;
 }

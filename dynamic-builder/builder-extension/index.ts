@@ -1,14 +1,14 @@
-import { InjectorToken, LocatorStorage, registryProvider, Type } from '@di';
+import { Injectable, InjectorToken, LocatorStorage, registryProvider, Type } from '@di';
 import { Observable } from 'rxjs';
 
 // eslint-disable-next-line max-len
-import { ACTION_INTERCEPT, BIND_BUILDER_ELEMENT, BIND_FORM_CONTROL, BUILDER_EXTENSION, GET_JSON_CONFIG, LOAD_BUILDER_CONFIG } from '../token';
+import { ACTION_INTERCEPT, BIND_BUILDER_ELEMENT, BIND_FORM_CONTROL, BUILDER_EXTENSION, GET_JSON_CONFIG, LOAD_BUILDER_CONFIG, VALIDATOR_SERVICE } from '../token';
 import { Action } from './action/actions';
 import { ActionExtension } from './action/actions.extension';
 import { BasicExtension, serializeAction } from './basic/basic.extension';
 import { DataSourceExtension } from './datasource/datasource.extension';
 import { FormExtension } from './form/form.extension';
-import { FormOptions } from './form/type-api';
+import { ControlOptions, FormOptions, ValidatorService } from './form/type-api';
 import { GridExtension } from './grid/grid.extension';
 import { InstanceExtension } from './instance/instance.extension';
 import { LifeCycleExtension } from './life-cycle/life-cycle.extension';
@@ -27,8 +27,10 @@ export const forwardGetJsonConfig = (getJsonConfig: (configName: string, ls: Loc
   registryFactory(GET_JSON_CONFIG, getJsonConfig);
 };
 
-export const forwardFormControl = (factoryFormControl: (value: any, options: FormOptions, ls?: LocatorStorage) => any) => {
-  registryFactory(BIND_FORM_CONTROL, factoryFormControl);
+export const forwardFormControl = (factoryFormControl: (value: any, options: ControlOptions, ls: LocatorStorage) => any) => {
+  registryFactory(BIND_FORM_CONTROL, (value: any, options: FormOptions, ls: LocatorStorage) => {
+    return factoryFormControl(value, ls.getProvider<ValidatorService>(VALIDATOR_SERVICE)?.getValidators(options), ls);
+  });
 };
 
 export const forwardBuilderLayout = (createElement: (grid: Grid, ls?: LocatorStorage) => any) => {
@@ -38,6 +40,8 @@ export const forwardBuilderLayout = (createElement: (grid: Grid, ls?: LocatorSto
 export const registryExtension = (extensions: Type<BasicExtension>[]) => {
   registryProvider(extensions.map((extension) => ({ provide: BUILDER_EXTENSION, multi: true, useValue: extension })));
 };
+
+export const InjectableValidator = () => Injectable(VALIDATOR_SERVICE);
 
 registryProvider([
   { provide: ACTION_INTERCEPT, useClass: Action },

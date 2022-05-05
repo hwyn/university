@@ -2,6 +2,7 @@ import { LocatorStorage } from '@di';
 import { flatMap, isEmpty, uniq } from 'lodash';
 
 import { init } from './builder-utils';
+import { Visibility } from './consts';
 import { BuilderField, BuilderModelImplements, CacheObj } from './type-api';
 
 export class BuilderModel implements BuilderModelImplements {
@@ -54,6 +55,10 @@ export class BuilderModel implements BuilderModelImplements {
 
   public get fields(): BuilderField[] {
     const { fields = [] } = this.$$cache;
-    return fields.filter(({ field }) => !field.visibility);
+    return fields.filter(({ visibility }) => this.showField(visibility));
+  }
+
+  public showField(visibility: Visibility | undefined): boolean {
+    return visibility === undefined || visibility !== Visibility.none;
   }
 }
