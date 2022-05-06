@@ -2,7 +2,7 @@ import { LocatorStorage } from '@di';
 
 import { ACTION_INTERCEPT } from '../../token';
 import { BuilderFieldExtensions, BuilderModelExtensions, InstanceExtensions } from '../type-api';
-import { Action, ActionIntercept } from './type-api';
+import { Action, ActionIntercept, TypeEvent } from './type-api';
 
 export class BaseAction<T = any> {
   constructor(protected ls: LocatorStorage, private context: any = {}) { }
@@ -25,6 +25,10 @@ export class BaseAction<T = any> {
 
   get actionPropos(): Action {
     return this.context.actionPropos;
+  }
+
+  get callLink(): [{ fieldId: string, type: TypeEvent }] {
+    return this.context.actionPropos.callLink;
   }
 
   get actionEvent(): T {

@@ -11,6 +11,8 @@ import { BuilderModelExtensions, OriginCalculators } from '../type-api';
 import { BaseAction } from './base.action';
 import { Action as ActionProps, ActionContext, ActionIntercept, ActionInterceptProps } from './type-api';
 
+type ActionLinkProps = ActionProps & { callLink?: any[] };
+
 export class Action implements ActionIntercept {
   private actions: any[];
 
@@ -34,16 +36,19 @@ export class Action implements ActionIntercept {
     return isEmpty(builder) ? {} : { builder, builderField: builder.getFieldById(id) };
   }
 
-  private call(calculators: OriginCalculators[], builder: BuilderModelExtensions) {
-    return (value: any) => forkJoin(calculators.map(({ targetId: id, action }) => this.invoke(action, { builder, id }, value)));
+  private call(calculators: OriginCalculators[], builder: BuilderModelExtensions, callLink: any[] = []) {
+    return (value: any) => forkJoin(calculators.map(({ targetId: id, action }) => {
+      return this.invoke({ ...action, callLink } as ActionProps, { builder, id }, value)
+    }));
   }
 
-  private invokeCallCalculators(calculators: OriginCalculators[], { type }: ActionProps, props: ActionInterceptProps) {
+  private invokeCallCalculators(calculators: OriginCalculators[], { type, callLink }: ActionLinkProps, props: ActionInterceptProps) {
     const { builder, id } = props;
+    const link = [...callLink || [], { fieldId: id, type: type }];
     const filterCalculators = calculators.filter(
       ({ dependent: { fieldId, type: cType } }) => fieldId === id && cType === type
     );
-    return !isEmpty(filterCalculators) ? this.call(filterCalculators, builder) : (value: any) => of(value);
+    return !isEmpty(filterCalculators) ? this.call(filterCalculators, builder, link) : (value: any) => of(value);
   }
 
   private invokeCalculators(actionProps: ActionProps, actionSub: Observable<any>, props: ActionInterceptProps) {
