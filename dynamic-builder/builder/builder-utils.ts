@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable no-use-before-define */
 import { isEmpty } from 'lodash';
-import {Observable, Subject, } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 import { BUILDER_EXTENSION, LOAD_BUILDER_CONFIG } from '../token';
@@ -69,7 +69,9 @@ function createField(this: BuilderModelImplements, field: any): BuilderField {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { id, type, visibility, ...other } = field;
   const element = field.element || this.ls.getProvider(BuilderEngine).getUiComponent(type);
-  return { id, type, element, visibility, field: other };
+  const _field: any = { id, type, element, visibility, field: other };
+  Object.keys(_field).forEach((key) => _field[key] === undefined && delete _field[key]);
+  return _field;
 }
 
 function destory(this: BuilderModelImplements | any): void {

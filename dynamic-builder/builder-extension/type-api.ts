@@ -1,5 +1,6 @@
 import { BuilderField, BuilderModelImplements, Instance } from '../builder';
 import { Action, BuilderFieldAction, ExecuteHandler, TypeEvent } from './action';
+import { BuilderFormField } from './form/type-api';
 
 type Column = boolean | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 'auto' | 11 | 12 | undefined;
 
@@ -65,7 +66,7 @@ export interface BuilderFieldList extends BuilderField {
 }
 
 export interface BuilderFieldExtensions
-  extends BuilderFieldAction, BuilderFieldList, BuilderField {
+  extends BuilderFormField, BuilderFieldAction, BuilderFieldList, BuilderField {
   instance: InstanceExtensions;
   calculators: Calculators[];
   layout: Layout;

@@ -2,16 +2,16 @@ import { isEmpty, isUndefined } from 'lodash';
 
 import { BaseAction } from '../action';
 import { BasicExtension, CallBackOptions } from '../basic/basic.extension';
-import { CHANGE, CHECK_VISIBILITY, LOAD_ACTION } from '../constant/calculator.constant';
+import { CHANGE, CHECK_VISIBILITY, LOAD, LOAD_ACTION } from '../constant/calculator.constant';
 import { BuilderFieldExtensions, BuilderModelExtensions, Calculators, OriginCalculators } from '../type-api';
 
 export class CheckVisibilityExtension extends BasicExtension {
   private visibilityTypeName = CHECK_VISIBILITY;
   private builderFields!: BuilderFieldExtensions[];
-  private defaultDependents = [CHANGE].map((type) => ({ type, fieldId: this.builder.id }));
+  private defaultDependents = [LOAD, CHANGE].map((type) => ({ type, fieldId: this.builder.id }));
 
   protected extension() {
-    const visibliityList = this.jsonFields.filter(({ visibility, checkVisibility }) => !isUndefined(checkVisibility || visibility));
+    const visibliityList = this.jsonFields.filter(this.checkNeedOrDefaultVisibility.bind(this));
     if (!isEmpty(visibliityList)) {
       this.builderFields = this.mapFields(visibliityList, this.addFieldCalculators.bind(this));
 
@@ -40,12 +40,12 @@ export class CheckVisibilityExtension extends BasicExtension {
   }
 
   private serializeCheckVisibilityConfig(jsonField: any): Calculators {
-    const { visibility, checkVisibility: jsonCheckVisibility = () => visibility } = jsonField;
+    const { checkVisibility: jsonCheckVisibility } = jsonField;
     return this.serializeCalculatorConfig(jsonCheckVisibility, this.visibilityTypeName, this.defaultDependents);
   }
 
   private checkVisibilityAfter({ actionEvent, builderField, builder }: BaseAction): void {
-    if (builderField.visibility !== actionEvent) {
+    if (actionEvent && builderField.visibility !== actionEvent) {
       builderField.visibility = actionEvent;
       builder.detectChanges();
     }
@@ -73,5 +73,19 @@ export class CheckVisibilityExtension extends BasicExtension {
     return originCalculators.filter(({ targetId, action: { type }, dependent: { type: dType } }) => {
       return type === this.visibilityTypeName || dType === this.visibilityTypeName || !hiddenList.includes(targetId);
     });
+  }
+
+  private checkNeedOrDefaultVisibility(jsonField: any) {
+    const { visibility, checkVisibility } = jsonField;
+    const isCheck = !isUndefined(checkVisibility || visibility) || this.getParentVisibility();
+    if (isCheck && !checkVisibility) {
+      jsonField.checkVisibility = () => visibility || this.getParentVisibility();
+    }
+    return isCheck;
+  }
+
+  private getParentVisibility() {
+    const { id, parent } = this.builder;
+    return parent && parent.getFieldById(id).visibility;
   }
 }

@@ -8,11 +8,19 @@ declare type updateOn = 'change' | 'blur' | 'submit';
 
 export declare interface FormControl<T = any> {
   readonly value: T;
+  readonly disabled: boolean;
+  readonly enabled: boolean;
   readonly changeValues: Subject<any>;
   readonly updateOn: updateOn;
   patchValue(value: T): void;
   updateValueAndValidity(): void;
   destory(fieldId?: string): void;
+  disable(): void;
+  enable(): void;
+}
+
+export declare interface BuilderFormField {
+  control?: FormControl;
 }
 
 export interface FormOptions {

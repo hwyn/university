@@ -72,8 +72,12 @@ export class FormExtension extends BasicExtension {
     };
   }
 
-  private changeVisibility(builderField: BuilderFieldExtensions, visibility: any = Visibility.visible) {
-    // console.log(builderField, visibility);
+  private changeVisibility({ control }: BuilderFieldExtensions, visibility: Visibility = Visibility.visible) {
+    if (control) {
+      const { none, disabled, hidden, readonly } = Visibility;
+      const isDisabled = [none, hidden, disabled, readonly].includes(visibility);
+      isDisabled ? control.disable() : control.enable();
+    }
   }
 
   private excuteChangeEvent(jsonField: any, value: any) {
