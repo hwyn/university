@@ -4,7 +4,7 @@ import { Visibility } from '../../builder';
 import { BIND_FORM_CONTROL } from '../../token';
 import { BaseAction } from '../action';
 import { BasicExtension, CallBackOptions } from '../basic/basic.extension';
-import { CHANGE, CHECK_VISIBILITY, CONTROL, LOAD_ACTION } from '../constant/calculator.constant';
+import { CHANGE, CHECK_VISIBILITY, CONTROL, LOAD_ACTION, NOTIFY_VIEW_MODEL_CHANGE } from '../constant/calculator.constant';
 import { BuilderFieldExtensions } from '../type-api';
 
 export class FormExtension extends BasicExtension {
@@ -25,15 +25,18 @@ export class FormExtension extends BasicExtension {
       action: this.bindCalculatorAction(this.addControl.bind(this, jsonField, builderField)),
       dependents: { type: LOAD_ACTION, fieldId: this.builder.id }
     }, {
-      action: this.bindCalculatorAction(this.createChange()),
+      action: this.bindCalculatorAction(this.createChange.bind(this)),
       dependents: { type: changeType, fieldId: id }
+    }, {
+      action: this.bindCalculatorAction(this.createNotifyChange.bind(this, jsonField)),
+      dependents: { type: NOTIFY_VIEW_MODEL_CHANGE, fieldId: this.builder.id }
     },
     ...checkVisibility ? [{
-      action: this.bindCalculatorAction(this.createVisibility()),
+      action: this.bindCalculatorAction(this.createVisibility.bind(this)),
       dependents: { type: CHECK_VISIBILITY, fieldId: id }
     }] : [],
     ...validators ? [{
-      action: this.bindCalculatorAction(this.createValidaity()),
+      action: this.bindCalculatorAction(this.createValidaity.bind(this)),
       dependents: { type: updateOn || changeType, fieldId: id }
     }] : []]);
   }
@@ -52,24 +55,18 @@ export class FormExtension extends BasicExtension {
     this.changeVisibility(builderField, builderField.visibility);
   }
 
-  private createChange() {
-    return ({ builderField, actionEvent }: BaseAction) => {
-      const value = this.isDomEvent(actionEvent) ? actionEvent.target.value : actionEvent;
-      builderField.control?.patchValue(value);
-      builderField.instance?.detectChanges();
-    };
+  private createChange({ builderField, actionEvent }: BaseAction) {
+    const value = this.isDomEvent(actionEvent) ? actionEvent.target.value : actionEvent;
+    builderField.control?.patchValue(value);
+    builderField.instance?.detectChanges();
   }
 
-  private createValidaity() {
-    return ({ builderField: { control }, builder: { ready } }: BaseAction) => {
-      ready && control?.updateValueAndValidity();
-    };
+  private createValidaity({ builderField: { control }, builder: { ready } }: BaseAction) {
+    ready && control?.updateValueAndValidity();
   }
 
-  private createVisibility() {
-    return ({ builderField, builder: { ready }, actionEvent }: BaseAction) => {
-      ready && this.changeVisibility(builderField, actionEvent);
-    };
+  private createVisibility({ builderField, builder: { ready }, actionEvent }: BaseAction) {
+    ready && this.changeVisibility(builderField, actionEvent);
   }
 
   private changeVisibility({ control }: BuilderFieldExtensions, visibility: Visibility = Visibility.visible) {
@@ -83,6 +80,11 @@ export class FormExtension extends BasicExtension {
   private excuteChangeEvent(jsonField: any, value: any) {
     const { events = {} } = this.getBuilderFieldById(jsonField.id);
     return events[this.getEventType(this.getChangeType(jsonField))](value);
+  }
+
+  private createNotifyChange(jsonField: any, { builder }: BaseAction) {
+    const { dataBinding: { path } } = jsonField;
+    this.excuteChangeEvent(jsonField, get(builder.viewModel, path));
   }
 
   private getChangeType(jsonField: any) {

@@ -6,6 +6,7 @@ import { Visibility } from './consts';
 import { BuilderField, BuilderModelImplements, CacheObj } from './type-api';
 
 export class BuilderModel implements BuilderModelImplements {
+  [x: string]: any;
   public id: string | undefined;
   public parent: BuilderModelImplements | null = null;
   public children: BuilderModelImplements[] = [];

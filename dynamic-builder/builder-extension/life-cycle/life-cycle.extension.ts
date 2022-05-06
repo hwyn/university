@@ -4,7 +4,7 @@ import { filter, tap } from 'rxjs/operators';
 
 import { BuilderProps } from '../../builder';
 import { observableMap, transformObservable } from '../../utility';
-import { ActionInterceptProps, createActions } from '../action';
+import { Action, ActionInterceptProps } from '../action';
 import { BasicExtension } from '../basic/basic.extension';
 import { CHANGE, DESTORY, LOAD, NON_SELF_BUILSERS, ORIGIN_CALCULATORS, ORIGIN_NON_SELF_CALCULATORS } from '../constant/calculator.constant';
 import { BuilderFieldExtensions, BuilderModelExtensions, OriginCalculators } from '../type-api';
@@ -28,9 +28,10 @@ export class LifeCycleExtension extends BasicExtension {
 
   protected createLife(): Observable<any> {
     const { actions = [] } = this.json;
+    const lifeActionsType = actions.filter(({ type }: Action) => [LOAD, CHANGE].includes(type));
     const props = { builder: this.builder, id: this.builder.id } as unknown as ActionInterceptProps;
-    actions.forEach((action: any) => action.runObservable = true);
-    this.lifeActions = createActions(actions, props, { ls: this.ls });
+    lifeActionsType.forEach((action: any) => action.runObservable = true);
+    this.lifeActions = this.createActions(lifeActionsType, props, { ls: this.ls });
     this.defineProperty(this.builder, this.getEventType(CHANGE), this.onLifeChange.bind(this));
     return this.invokeLifeCycle(this.getEventType(LOAD), this.props);
   }
@@ -41,9 +42,9 @@ export class LifeCycleExtension extends BasicExtension {
     this.hasChange = false;
   }
 
-  protected invokeLifeCycle(type: string, event?: any): Observable<any> {
+  protected invokeLifeCycle(type: string, event?: any, otherEvent?: any): Observable<any> {
     const lifeActions = this.lifeActions;
-    return lifeActions[type] ? lifeActions[type](event) : of(event);
+    return lifeActions[type] ? lifeActions[type](event, otherEvent) : of(event);
   }
 
   protected serializeCalculators() {
