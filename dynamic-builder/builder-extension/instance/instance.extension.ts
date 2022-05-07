@@ -1,7 +1,8 @@
 import { isEmpty } from 'lodash';
 import { Observable, Subject } from 'rxjs';
 
-import { BuilderModel, Instance } from '../..//builder';
+import { Instance } from '../../builder';
+import { BuilderModel } from '../../builder/builder-model';
 import { observableMap, toForkJoin, transformObservable } from '../../utility';
 import { BasicExtension, CallBackOptions } from '../basic/basic.extension';
 import { CURRENT, DESTORY, INSTANCE, LOAD_ACTION, MOUNTED } from '../constant/calculator.constant';

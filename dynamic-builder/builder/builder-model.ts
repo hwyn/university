@@ -5,11 +5,13 @@ import { init } from './builder-utils';
 import { Visibility } from './consts';
 import { BuilderField, BuilderModelImplements, CacheObj } from './type-api';
 
-export class BuilderModel implements BuilderModelImplements {
-  [x: string]: any;
+export class BuilderModel<
+  S extends BuilderModelImplements = BuilderModelImplements,
+  M extends BuilderField = BuilderField
+  > implements BuilderModelImplements {
   public id: string | undefined;
-  public parent: BuilderModelImplements | null = null;
-  public children: BuilderModelImplements[] = [];
+  public parent: S | null = null;
+  public children: S[] = [];
   public $$cache: CacheObj = {} as unknown as CacheObj;
   public Element!: any;
 
@@ -17,24 +19,24 @@ export class BuilderModel implements BuilderModelImplements {
     init.call(this);
   }
 
-  public getFieldByTypes<T = BuilderField>(type: string): T[] {
+  public getFieldByTypes<T = M>(type: string): T[] {
     const { fields = [] } = this.$$cache;
     return fields.filter(({ type: fieldType }) => fieldType === type) as any[];
   }
 
-  public getAllFieldByTypes<T = BuilderField>(type: string): T[] {
+  public getAllFieldByTypes<T = M>(type: string): T[] {
     const fields = this.getFieldByTypes<T>(type);
     this.children.forEach((child) => fields.push(...child.getAllFieldByTypes<T>(type)));
     return fields;
   }
 
-  public getFieldById<T = BuilderField>(id: string): T {
+  public getFieldById<T = M>(id: string): T {
     const hasSelf = id === this.id && !!this.parent;
     const { fields = [] } = this.$$cache;
     return hasSelf ? this.parent?.getFieldById(id) : fields.find(({ id: fieldId }) => fieldId === id) as any;
   }
 
-  public getAllFieldById<T = BuilderField>(id: string): T[] {
+  public getAllFieldById<T = M>(id: string): T[] {
     const fields: T[] = flatMap(this.children.map((child) => child.getAllFieldById(id)));
     fields.push(this.getFieldById(id));
     return uniq(fields.filter((field) => !isEmpty(field)));
@@ -50,13 +52,13 @@ export class BuilderModel implements BuilderModelImplements {
     return this.$$cache.ready;
   }
 
-  public get root(): BuilderModelImplements {
-    return this.parent ? this.parent.root : this;
+  public get root(): S {
+    return (this.parent ? this.parent.root : this) as S;
   }
 
-  public get fields(): BuilderField[] {
+  public get fields(): M[] {
     const { fields = [] } = this.$$cache;
-    return fields.filter(({ visibility }) => this.showField(visibility));
+    return fields.filter(({ visibility }) => this.showField(visibility)) as M[];
   }
 
   public showField(visibility: Visibility | undefined): boolean {

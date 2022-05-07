@@ -65,6 +65,8 @@ export * from './action/create-actions';
 export * from './basic/basic.extension';
 export * from './constant/calculator.constant';
 export * from './form/type-api';
+export { BuilderExtensionsModel as BuilderModel } from './model/builder-extension-model';
 export * from './type-api';
+export * from './view-model/base.view';
 
 export { serializeAction };

@@ -71,23 +71,27 @@ export interface BuilderProps extends BuilderElement {
   };
 }
 
+export declare interface Model<S, M> {
+  parent: S | null;
+  readonly root: S;
+  readonly children: S[];
+  readonly fields: M[];
+  getFieldByTypes<T = M>(id: string): T[];
+  getAllFieldByTypes<T = M>(id: string): T[];
+  getFieldById<T = M>(id: string | undefined): T;
+  getAllFieldById<T = M>(id: string): T[];
+}
 
-export interface BuilderModelImplements {
-  parent: BuilderModelImplements | null;
+export declare interface BuilderModelInterface {
   readonly $$cache: CacheObj;
-  readonly root: BuilderModelImplements;
   readonly id: string | undefined;
   readonly ready: boolean | undefined;
-  readonly children: BuilderModelImplements[];
-  readonly fields: BuilderField[];
   readonly grid?: Grid;
   readonly Element: any;
   readonly ls: LocatorStorage;
   readonly privateExtension?: privateExtension[];
-  getFieldByTypes<T = BuilderField>(id: string): T[];
-  getAllFieldByTypes<T = BuilderField>(id: string): T[];
-  getFieldById<T = BuilderField>(id: string | undefined): T;
-  getAllFieldById<T = BuilderField>(id: string): T[];
   showField(visibility: Visibility | undefined): boolean;
   detectChanges(): void;
 }
+
+export interface BuilderModelImplements extends BuilderModelInterface, Model<BuilderModelImplements, BuilderField> { }

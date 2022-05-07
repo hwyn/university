@@ -28,7 +28,7 @@ export class BaseAction<T = any> {
   }
 
   get callLink(): [{ fieldId: string, type: TypeEvent }] {
-    return this.context.actionPropos.callLink;
+    return this.context.actionPropos.callLink || [];
   }
 
   get actionEvent(): T {

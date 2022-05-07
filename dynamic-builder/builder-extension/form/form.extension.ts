@@ -1,4 +1,4 @@
-import { get, isEmpty, set } from 'lodash';
+import { isEmpty } from 'lodash';
 
 import { Visibility } from '../../builder';
 import { BIND_FORM_CONTROL } from '../../token';
@@ -42,13 +42,12 @@ export class FormExtension extends BasicExtension {
   }
 
   private addControl(jsonField: any, builderField: BuilderFieldExtensions) {
-    const { viewModel } = this.builder;
-    const { dataBinding: { path, default: defaultValue } } = jsonField;
-    const value = get(viewModel, path, defaultValue);
+    const { dataBinding } = jsonField;
+    const value = this.getValueToModel(dataBinding, builderField);
     const control = this.ls.getProvider(BIND_FORM_CONTROL, value, { builder: this.builder, builderField });
 
     this.defineProperty(builderField, CONTROL, control);
-    control.changeValues.subscribe((_value: any) => set(viewModel, path, _value));
+    control.changeValues.subscribe((_value: any) => this.setValueToModel(dataBinding, _value, builderField));
 
     delete builderField.field.dataBinding;
     this.excuteChangeEvent(jsonField, value);
@@ -82,14 +81,24 @@ export class FormExtension extends BasicExtension {
     return events[this.getEventType(this.getChangeType(jsonField))](value);
   }
 
-  private createNotifyChange(jsonField: any, { builder }: BaseAction) {
-    const { dataBinding: { path } } = jsonField;
-    this.excuteChangeEvent(jsonField, get(builder.viewModel, path));
+  private createNotifyChange(jsonField: any, { actionEvent, builderField }: BaseAction) {
+    if (!actionEvent || actionEvent === builderField) {
+      const { dataBinding } = jsonField;
+      this.excuteChangeEvent(jsonField, this.getValueToModel(dataBinding, builderField));
+    }
   }
 
   private getChangeType(jsonField: any) {
     const { dataBinding: { changeType = this.defaultChangeType } } = jsonField;
     return changeType;
+  }
+
+  private getValueToModel<T = any>(dataBinding: any, builderField: BuilderFieldExtensions): T {
+    return this.cache.viewModel.getBindValue(dataBinding, builderField);
+  }
+
+  private setValueToModel(dataBinding: any, value: any, builderField: BuilderFieldExtensions): void {
+    this.cache.viewModel.setBindValue(dataBinding, value, builderField);
   }
 
   private isDomEvent(actionResult: any) {

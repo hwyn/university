@@ -4,7 +4,7 @@ import { cloneDeep, isFunction, isString, merge } from 'lodash';
 import { Observable } from 'rxjs';
 
 import { BuilderProps, CacheObj } from '../../builder';
-import { transformObj, withValue } from '../../utility';
+import { transformObj, withGetOrSet, withValue } from '../../utility';
 import { Action, ActionInterceptProps, BaseAction } from '../action';
 import { createActions, CreateOptions, getEventType } from '../action/create-actions';
 import { BuilderFieldExtensions, BuilderModelExtensions, Calculators, CalculatorsDependent } from '../type-api';
@@ -97,6 +97,10 @@ export abstract class BasicExtension {
 
   protected definePropertys(object: any, prototype: { [key: string]: any }) {
     Object.keys(prototype).forEach((key: string) => this.defineProperty(object, key, prototype[key]));
+  }
+
+  protected definePropertyGet(object: any, prototypeName: string, get: () => any) {
+    Object.defineProperty(object, prototypeName, withGetOrSet(get));
   }
 
   protected unDefineProperty(object: any, prototypeNames: string[]) {

@@ -14,6 +14,5 @@ export const forwardUiElement = (name: string, Element: any) => (
 
 registryProvider({ provide: FACTORY_BUILDER, useFactory: factoryBuilder, deps: [LocatorStorage] });
 
-export * from './builder-model';
 export * from './consts';
 export * from './type-api';

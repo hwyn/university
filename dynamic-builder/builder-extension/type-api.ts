@@ -1,6 +1,7 @@
-import { BuilderField, BuilderModelImplements, Instance } from '../builder';
+import { BuilderField, BuilderModelInterface, Instance, Model } from '../builder';
 import { Action, BuilderFieldAction, ExecuteHandler, TypeEvent } from './action';
 import { BuilderFormField } from './form/type-api';
+import { BuilderViewModel } from './view-model/type-api';
 
 type Column = boolean | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 'auto' | 11 | 12 | undefined;
 
@@ -77,18 +78,11 @@ export interface BuilderFieldExtensions
   };
 }
 
-export interface BuilderModelExtensions extends BuilderModelImplements {
-  readonly viewModel?: any;
+export interface BuilderModelExtensions
+  extends BuilderModelInterface, BuilderViewModel, Model<BuilderModelExtensions, BuilderFieldExtensions> {
   readonly grid: Grid;
-  readonly root: BuilderModelExtensions;
-  readonly fields: BuilderFieldExtensions[];
-  readonly children: BuilderModelExtensions[];
-  getExecuteHandler: (actionName: string) => undefined | ExecuteHandler;
-  getFieldById<T = BuilderFieldExtensions>(id: string | undefined): T;
-  getAllFieldById<T = BuilderFieldExtensions>(id: string): T[];
-  notifyViewModelChanges(): void;
-  parent: BuilderModelExtensions | null;
   calculators: OriginCalculators[];
   nonSelfCalculators: OriginCalculators[];
+  getExecuteHandler: (actionName: string) => undefined | ExecuteHandler;
 }
 
