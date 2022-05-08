@@ -10,8 +10,8 @@ const getRex = () => /^:([^:]+)/g;
 
 export class Router {
   private routerList: RouteInfo[] = [];
-  constructor(private ls: LocatorStorage, routerConfig: any) {
-    this.routerList = serializeRouter([routerConfig]);
+  constructor(private ls: LocatorStorage, private routerConfig: any) {
+    this.refreshRouterList();
   }
 
   public async getRouterByPath(pathname: string) {
@@ -34,17 +34,18 @@ export class Router {
     return this.pathKey(pathname, routeInfo);
   }
 
-  public async loadModule(routeInfo: RouteInfo) {
+  public async loadModule(routeInfo: RouteInfo): Promise<boolean> {
     const { list = [] } = routeInfo;
     const promiseAll: Promise<any>[] = [];
     list.forEach((routeItem) => {
       const { loadModule } = routeItem;
       if (loadModule) {
-        const promise = loadModule().then((result) => Object.assign(routeItem, result));
-        promiseAll.push(promise);
+        promiseAll.push(loadModule().then((result) => {
+          Object.assign(routeInfo, { needRefresh: this.addRouteConfig(routeItem, result) });
+        }));
       }
     });
-    await Promise.all(promiseAll);
+    return await Promise.all(promiseAll).then(() => (routeInfo as any).needRefresh);
   }
 
   public canActivate(routeInfo: RouteInfo): Observable<boolean> {
@@ -97,6 +98,27 @@ export class Router {
 
   private getExecList(routeInfo: RouteInfo, handler: (routeItem: RouteItem) => [RouteItem, any][]) {
     const { list = [] } = routeInfo;
-    return list.reverse().reduce((arr: any[], routeItem: RouteItem) => arr.concat(handler(routeItem)), []);
+    return [...list].reverse().reduce((arr: any[], routeItem: RouteItem) => arr.concat(handler(routeItem)), []);
+  }
+
+  private addRouteConfig(routeItem: RouteItem, result: any) {
+    const { children = [] } = result;
+    const routeConfig = this.getRouteItemByPath(this.routerConfig, routeItem.path);
+    const needRefresh = children.length;
+    delete routeItem.loadModule;
+    delete routeConfig.loadModule;
+    Object.assign(routeConfig, result);
+    needRefresh ? this.refreshRouterList() : Object.assign(routeItem, result);
+    return needRefresh;
+  }
+
+  private getRouteItemByPath(routerConfig: any[], path: string): any {
+    return routerConfig.find(({ path: _path, children }: any) => _path === path || children && this.getRouteItemByPath(children, path));
+  }
+
+  private refreshRouterList() {
+    const routerConfig = this.routerConfig;
+    this.routerConfig = Array.isArray(routerConfig) ? routerConfig : [routerConfig];
+    this.routerList = serializeRouter(this.routerConfig);
   }
 }

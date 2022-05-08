@@ -77,6 +77,6 @@ export class Platform {
 
   private getLocation(request: any, isMicro?: boolean) {
     const { pathname = '' } = request.params;
-    return { pathname: isMicro ? `/${pathname}` : request.path, search: '?' };
+    return { pathname: isMicro ? `${pathname}` : request.path, search: '?' };
   }
 }

@@ -26,10 +26,7 @@ export const serializeRouter = (router: any, parentRouter?: any): RouteInfo[] =>
       ...serializeRouter(r, { path: routePath, list: ComponentList })
     ], []);
   }
-
-  return !filterRoute(routeInfo) ? [] : [{
-    path: routePath,
-    list: ComponentList.filter(filterRoute)
-  }] as any[];
+  const list = ComponentList.filter(filterRoute);
+  return !list.length ? [] : [{ path: routePath, list }] as any[];
 };
 

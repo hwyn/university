@@ -50,7 +50,11 @@ export class SharedHistory {
     const { params, list = [] } = await this.router.getRouterByPath(pathname);
     this._routeInfo = { path: pathname, query, params, list };
     const status = await this.router.canActivate(this.currentRouteInfo).toPromise();
-    status ? await this.router.loadModule(this.currentRouteInfo) : this._routeInfo.list = [];
+    if (!status) {
+      this._routeInfo.list = [];
+    } else if (await this.router.loadModule(this.currentRouteInfo)) {
+      return await this.resolveIntercept(location);
+    }
     return status;
   }
 

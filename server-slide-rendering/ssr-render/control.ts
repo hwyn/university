@@ -11,8 +11,9 @@ export abstract class SSRControl {
   }
 
   @Get('/micro-ssr')
-  @Get('/micro-ssr/:pathname')
+  @Get('/micro-ssr/*')
   async renderMicro(request: Request, response: Response): Promise<void> {
+    request.params.pathname = request.path.replace(/\/micro-ssr/g, '');
     await this.ssrVm.renderMicro(request, response);
   }
 
