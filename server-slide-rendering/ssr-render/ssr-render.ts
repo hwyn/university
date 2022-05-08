@@ -55,15 +55,16 @@ export class SSRRender {
   }
 
   private readHtmlTemplate() {
-    let template = `<!-- inner-style --><!-- inner-html -->`;
+    const rex = this.innerHeadFlag;
+    let template = `${rex}${this.innerHtmlFlag}`;
     if (this.index && fs.existsSync(this.index)) {
       template = fs.readFileSync(this.index, 'utf-8');
+      template.replace(rex, '').replace('</head>', `${rex}</head>`);
     }
 
     if (this.isDevelopment) {
       const { js } = this.readAssets();
       const hotResource = js.map((src: string) => `<script defer src="${src}"></script>`).join('');
-      const rex = `<!-- inner-style -->`;
       template = template.replace(rex, `${hotResource}${rex}`);
     }
     return template;
@@ -78,13 +79,17 @@ export class SSRRender {
     return filePath && fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf-8') : '';
   }
 
-  private readAssets() {
+  private readAssetsSync() {
     let assetsResult = '{}';
     if (this.manifestFile && fs.existsSync(this.manifestFile)) {
       assetsResult = fs.readFileSync(this.manifestFile, 'utf-8');
     }
 
-    const entrypoints = JSON.parse(assetsResult);
+    return JSON.parse(assetsResult);
+  }
+
+  private readAssets() {
+    const entrypoints = this.readAssetsSync();
     const staticAssets: any = { js: [], links: [], linksToStyle: [] };
     Object.keys(entrypoints).forEach((key: string) => {
       const { js = [], css = [] } = entrypoints[key] as { js: string[], css: string[] };
@@ -95,10 +100,11 @@ export class SSRRender {
   }
 
   private factoryVmScript() {
+    const Reflect = global.Reflect;
     const m: any = { exports: {}, require: createRequire(this.entryFile) };
     const wrapper = NativeModule.wrap(fs.readFileSync(this.entryFile, 'utf-8'));
     const script = new vm.Script(wrapper, { filename: 'server-entry.js', displayErrors: true });
-    const vmContext = { Buffer, process, console, setTimeout, setInterval, clearInterval, clearTimeout, ...this.vmContext };
+    const vmContext = { Reflect, Buffer, process, console, setTimeout, setInterval, clearInterval, clearTimeout, ...this.vmContext };
     const context = vm.createContext(vmContext);
     const compiledWrapper = script.runInContext(context);
     compiledWrapper(m.exports, m.require, m);
@@ -132,9 +138,18 @@ export class SSRRender {
     const { html, styles, fetchData, microTags = [], microFetchData = [] } = await this._render(request);
     const _fetchData = this.createScriptTemplate('fetch-static', `var fetchCacheData = ${fetchData};`);
     const microData = this.createScriptTemplate('micro-fetch-static', `var microFetchData = ${JSON.stringify(microFetchData)};`);
+    const chunkLinks = (this.readAssetsSync()['chunk']?.css || []).map((href: string) => `<link rel="stylesheet" href="${href}">`).join('');
     const _html = this.readHtmlTemplate()
-      .replace('<!-- inner-html -->', html)
-      .replace('<!-- inner-style -->', `${styles}${_fetchData}${microData}${microTags.join('')}`);
+      .replace(this.innerHtmlFlag, html)
+      .replace(this.innerHeadFlag, `${chunkLinks}${styles}${_fetchData}${microData}${microTags.join('')}`);
     response.send(_html);
+  }
+
+  private get innerHeadFlag() {
+    return '<!-- inner-style -->';
+  }
+
+  private get innerHtmlFlag() {
+    return '<!-- inner-html -->';
   }
 }

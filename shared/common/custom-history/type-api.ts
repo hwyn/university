@@ -21,7 +21,7 @@ export declare interface CanActivate {
   canActivate(routeInfo: RouteInfo, routeItem: RouteItem): Observable<boolean> | Promise<boolean> | boolean;
 }
 
-export declare interface Resolve<T> {
+export declare interface Resolve<T = any> {
   resolve(routeInfo: RouteInfo, routeItem: RouteItem): Observable<T> | Promise<T> | T;
 }
 

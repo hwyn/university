@@ -2,6 +2,7 @@ import { AppContextService as SharedAppContextService } from '@shared/providers/
 import { Observable, of } from 'rxjs';
 
 type MicroMiddleware = () => Observable<any>;
+
 export class AppContextService extends SharedAppContextService {
   private pageFileSource: { [key: string]: any } = {};
   private microMiddlewareList: MicroMiddleware[] = [];

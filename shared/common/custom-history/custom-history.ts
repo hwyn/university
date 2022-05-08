@@ -30,7 +30,7 @@ export class SharedHistory {
   public async resolve() {
     const { location } = this.history;
     const status = await this.resolveIntercept(location);
-    status && this.listener();
+    status && await this.listener();
   }
 
   public get currentRouteInfo(): RouteInfo {
@@ -41,7 +41,7 @@ export class SharedHistory {
     if (this.intercept) {
       await this.intercept.resolve(this.currentRouteInfo);
     }
-    await this.router.loadTesolve(this.currentRouteInfo).toPromise();
+    await this.router.loadResolve(this.currentRouteInfo).toPromise();
     this.activeRoute.next(this._routeInfo);
   }
 

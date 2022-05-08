@@ -1,7 +1,7 @@
 import { LocatorStorage } from '@di';
 import { cloneDeepWith, isBoolean, isFunction } from 'lodash';
 import { forkJoin, from, isObservable, Observable, of } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
+import { mergeMap, tap } from 'rxjs/operators';
 
 import { serializeRouter } from './serialize-router';
 import { CanActivate, Resolve, RouteInfo, RouteItem } from './type-api';
@@ -63,7 +63,7 @@ export class Router {
     ), of(true));
   }
 
-  public loadTesolve(routeInfo: RouteInfo): Observable<any> {
+  public loadResolve(routeInfo: RouteInfo): Observable<any> {
     const execList: [RouteItem, any][] = this.getExecList(routeInfo, (routeItem) => {
       const { resolve = {} } = routeItem;
       return Object.keys(resolve).map((key: string) => [routeItem, [key, resolve[key]]]);
@@ -71,13 +71,13 @@ export class Router {
     const list: Observable<any>[] = [];
     execList.forEach(([routeItem, [key, result]]) => {
       const { props = {} } = routeItem;
-      const server = this.ls.getProvider<Resolve<any>>(result);
+      const server = this.ls.getProvider<Resolve>(result);
       routeItem.props = props;
       if (server && server.resolve) {
         result = server.resolve(routeInfo, routeItem);
 
         if (result && (result.then || isObservable(result))) {
-          return list.push(from(result).pipe((r: any) => props[key] = r));
+          return list.push(from(result).pipe(tap((r: any) => props[key] = r)));
         }
       }
       props[key] = result;
