@@ -1,6 +1,7 @@
 import { Injectable } from '@fm/di';
-import { AppContextService, Fetch } from '@fm/shared/providers/app-context';
 import { from, Observable } from 'rxjs';
+
+import { AppContextService, Fetch } from '../../providers/app-context';
 
 function factoryRequest<T>(fetch: Fetch, method: string, parseData: (res: Response) => Promise<T>) {
   return (url: string | RequestInfo, params?: RequestInit): Observable<T> => from(fetch(url, { method, ...params }).then(parseData));

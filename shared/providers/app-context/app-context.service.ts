@@ -1,9 +1,10 @@
 import { Inject, InjectorToken, LocatorStorage } from '@fm/di';
-import { MicroManageInterface } from '@fm/shared/micro/types';
-import { ENVIRONMENT } from '@fm/shared/token';
 import { cloneDeep } from 'lodash';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
+
+import { MicroManageInterface } from '../../micro/types';
+import { ENVIRONMENT } from '../../token';
 
 export type Fetch = (input: RequestInfo, init?: RequestInit) => Promise<Response>;
 
