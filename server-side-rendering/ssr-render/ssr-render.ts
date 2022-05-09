@@ -101,14 +101,14 @@ export class SSRRender {
 
   private factoryVmScript() {
     const Reflect = global.Reflect;
+    const registryRender = (render: any) => this._compiledRender = render;
     const m: any = { exports: {}, require: createRequire(this.entryFile) };
     const wrapper = NativeModule.wrap(fs.readFileSync(this.entryFile, 'utf-8'));
     const script = new vm.Script(wrapper, { filename: 'server-entry.js', displayErrors: true });
-    const vmContext = { Reflect, Buffer, process, console, setTimeout, setInterval, clearInterval, clearTimeout, ...this.vmContext };
+    const vmContext = { Reflect, Buffer, process, console, setTimeout, setInterval, clearInterval, clearTimeout, registryRender, ...this.vmContext };
     const context = vm.createContext(vmContext);
     const compiledWrapper = script.runInContext(context);
     compiledWrapper(m.exports, m.require, m);
-    this._compiledRender = m.exports.render;
   }
 
   private async _render(request: Request, isMicro?: boolean) {
