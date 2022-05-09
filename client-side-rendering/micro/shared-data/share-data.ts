@@ -1,5 +1,5 @@
-import { Injectable } from '@di';
-import { SharedDataInterface } from '@shared/micro/types';
+import { Injectable } from '@fm/di';
+import { SharedDataInterface } from '@fm/shared/micro/types';
 
 @Injectable()
 export class SharedData implements SharedDataInterface {

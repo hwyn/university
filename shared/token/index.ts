@@ -1,4 +1,4 @@
-import { InjectorToken } from '@di';
+import { InjectorToken } from '@fm/di';
 
 export const ENVIRONMENT = InjectorToken.get('ENVIRONMENT');
 

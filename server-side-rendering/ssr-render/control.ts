@@ -1,4 +1,4 @@
-import { Get } from "@server/decorator/injectable-router";
+import { Get } from "@fm/server/decorator/injectable-router";
 import { Request, Response } from 'express';
 
 import { SSRRender } from "./ssr-render";

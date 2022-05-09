@@ -1,7 +1,7 @@
-import { Inject, Injectable } from '@di';
-import { HttpClient } from '@shared/common/http';
-import { createMicroElementTemplate } from '@shared/micro';
-import { MICRO_OPTIONS } from '@shared/token';
+import { Inject, Injectable } from '@fm/di';
+import { HttpClient } from '@fm/shared/common/http';
+import { createMicroElementTemplate } from '@fm/shared/micro';
+import { MICRO_OPTIONS } from '@fm/shared/token';
 import { isEmpty, merge } from 'lodash';
 import { forkJoin, Observable, of } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';

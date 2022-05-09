@@ -1,4 +1,4 @@
-import { Inject, LocatorStorage } from '@di';
+import { Inject, LocatorStorage } from '@fm/di';
 import { cloneDeep } from 'lodash';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';

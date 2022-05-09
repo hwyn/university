@@ -1,4 +1,4 @@
-import { Injectable, InjectorToken, LocatorStorage, registryProvider, Type } from '@di';
+import { Injectable, InjectorToken, LocatorStorage, registryProvider, Type } from '@fm/di';
 import { Observable } from 'rxjs';
 
 // eslint-disable-next-line max-len

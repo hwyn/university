@@ -1,4 +1,4 @@
-import { LocatorStorage } from '@di';
+import { LocatorStorage } from '@fm/di';
 import { flatMap, isEmpty, uniq } from 'lodash';
 
 import { init } from './builder-utils';

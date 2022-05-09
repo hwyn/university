@@ -1,5 +1,5 @@
 /* eslint-disable no-use-before-define */
-import { LocatorStorage, Type } from '@di';
+import { LocatorStorage, Type } from '@fm/di';
 import { Observable, Subject } from 'rxjs';
 
 import { Grid } from '../builder-extension';

@@ -1,7 +1,7 @@
-import { getProvider, Injector, Provider, StaticInjector } from '@di';
-import { APP_CONTEXT, AppContextService } from '@shared/providers/app-context';
-import { JsonConfigService } from '@shared/providers/json-config';
-import { HISTORY } from '@shared/token';
+import { getProvider, Injector, Provider, StaticInjector } from '@fm/di';
+import { APP_CONTEXT, AppContextService } from '@fm/shared/providers/app-context';
+import { JsonConfigService } from '@fm/shared/providers/json-config';
+import { HISTORY } from '@fm/shared/token';
 import { Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 

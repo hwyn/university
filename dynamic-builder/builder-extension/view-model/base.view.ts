@@ -1,4 +1,4 @@
-import { LocatorStorage } from '@di';
+import { LocatorStorage } from '@fm/di';
 import { get, set } from 'lodash';
 
 export class BaseView<T = any> {

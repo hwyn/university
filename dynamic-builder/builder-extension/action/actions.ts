@@ -1,5 +1,5 @@
 /* eslint-disable max-lines-per-function */
-import { Inject, LocatorStorage } from '@di';
+import { Inject, LocatorStorage } from '@fm/di';
 import { flatMap, isEmpty } from 'lodash';
 import { forkJoin, Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';

@@ -1,4 +1,4 @@
-import { Provider } from '@di';
+import { Provider } from '@fm/di';
 
 import { ExpressServerPlatform } from './platform';
 

@@ -1,4 +1,4 @@
-import { LocatorStorage } from '@di';
+import { LocatorStorage } from '@fm/di';
 import { cloneDeepWith, isBoolean, isFunction } from 'lodash';
 import { forkJoin, from, isObservable, Observable, of } from 'rxjs';
 import { mergeMap, tap } from 'rxjs/operators';

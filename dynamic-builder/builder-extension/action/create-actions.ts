@@ -1,4 +1,4 @@
-import { LocatorStorage } from '@di';
+import { LocatorStorage } from '@fm/di';
 import { groupBy } from 'lodash';
 
 import { ACTION_INTERCEPT } from '../../token';

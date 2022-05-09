@@ -1,5 +1,5 @@
-import { Injectable, LocatorStorage } from '@di';
-import { MicroManageInterface } from '@shared/micro';
+import { Injectable, LocatorStorage } from '@fm/di';
+import { MicroManageInterface } from '@fm/shared/micro';
 import { Observable, Subject } from 'rxjs';
 import { map, shareReplay, tap } from 'rxjs/operators';
 

@@ -1,4 +1,4 @@
-import { getProvider, Injector, Provider, StaticInjector } from '@di';
+import { getProvider, Injector, Provider, StaticInjector } from '@fm/di';
 import express, { Express } from 'express';
 import { createServer } from 'http';
 

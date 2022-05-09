@@ -1,5 +1,5 @@
-import { Injector, Provider } from '@di';
-import { MICRO_OPTIONS } from '@shared/token';
+import { Injector, Provider } from '@fm/di';
+import { MICRO_OPTIONS } from '@fm/shared/token';
 
 import { microOptions } from './micro-options';
 

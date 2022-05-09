@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { LocatorStorage } from '@di';
+import { LocatorStorage } from '@fm/di';
 import { cloneDeep, isFunction, isString, merge } from 'lodash';
 import { Observable } from 'rxjs';
 

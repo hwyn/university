@@ -1,6 +1,6 @@
-import { Injectable } from '@di';
-import { HttpClient } from '@shared/common/http';
-import { JsonConfigService as SharedJsonConfigService } from '@shared/providers/json-config';
+import { Injectable } from '@fm/di';
+import { HttpClient } from '@fm/shared/common/http';
+import { JsonConfigService as SharedJsonConfigService } from '@fm/shared/providers/json-config';
 import { Observable } from 'rxjs';
 
 import { AppContextService } from '../app-context';

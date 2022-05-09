@@ -1,4 +1,4 @@
-import { Injectable } from '@di';
+import { Injectable } from '@fm/di';
 import { ModelAttributes, ModelOptions, Sequelize } from 'sequelize';
 
 export const createInjectableModel = (sequelize: Sequelize) => (attributes: ModelAttributes, options: ModelOptions) => <T>(clazz: T): T => {

@@ -1,4 +1,4 @@
-import { InjectorToken } from '@di';
+import { InjectorToken } from '@fm/di';
 
 export const UI_ELEMENT = InjectorToken.get('UI_ELEMENT');
 export const ACTIONS_CONFIG = InjectorToken.get('ACTION_CONFIG');

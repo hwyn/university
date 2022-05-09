@@ -1,4 +1,4 @@
-import { Inject, Injectable, LocatorStorage } from '@di';
+import { Inject, Injectable, LocatorStorage } from '@fm/di';
 import { BrowserHistory, Location, parsePath } from 'history';
 import { parse } from 'querystring';
 import { Subject } from 'rxjs';

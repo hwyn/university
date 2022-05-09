@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@di';
+import { Inject, Injectable } from '@fm/di';
 import { flatMap } from 'lodash';
 
 import { UI_ELEMENT } from '../token';

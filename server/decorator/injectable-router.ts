@@ -1,4 +1,4 @@
-import { getProvider, Injector, Type } from '@di';
+import { getProvider, Injector, Type } from '@fm/di';
 import { Router } from 'express';
 
 interface RouteItem {

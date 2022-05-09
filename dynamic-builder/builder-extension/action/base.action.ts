@@ -1,4 +1,4 @@
-import { LocatorStorage } from '@di';
+import { LocatorStorage } from '@fm/di';
 
 import { ACTION_INTERCEPT } from '../../token';
 import { BuilderFieldExtensions, BuilderModelExtensions, InstanceExtensions } from '../type-api';

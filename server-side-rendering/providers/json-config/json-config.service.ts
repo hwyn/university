@@ -1,5 +1,5 @@
-import { Injectable } from '@di';
-import { JsonConfigService as ShareJsonConfigService } from '@shared/providers/json-config';
+import { Injectable } from '@fm/di';
+import { JsonConfigService as ShareJsonConfigService } from '@fm/shared/providers/json-config';
 
 import { AppContextService } from '../app-context';
 

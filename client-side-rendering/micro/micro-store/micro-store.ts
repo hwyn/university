@@ -1,4 +1,4 @@
-import { MicroManageInterface, MicroStoreInterface } from '@shared/micro';
+import { MicroManageInterface, MicroStoreInterface } from '@fm/shared/micro';
 
 import { StaticAssets } from '../load-assets/load-assets';
 

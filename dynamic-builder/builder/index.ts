@@ -1,4 +1,4 @@
-import { LocatorStorage, registryProvider } from '@di';
+import { LocatorStorage, registryProvider } from '@fm/di';
 
 import { FACTORY_BUILDER, UI_ELEMENT } from '../token';
 import { BuilderModel } from './builder-model';
