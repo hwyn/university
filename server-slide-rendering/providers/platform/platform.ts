@@ -30,7 +30,7 @@ export class Platform {
     const { fetch, request, location, readAssets, readStaticFile, proxyHost, microSSRPath, ..._global } = global;
     const microConfig = { fetch, isMicro, request, proxyHost, microSSRPath, readStaticFile, renderSSR: true, resource: this.resource };
     const injector = this.beforeBootstrapRender(microConfig, [
-      { provide: HISTORY, useValue: { location: this.getLocation(request, isMicro), listen: () => () => void (0) } }
+      { provide: HISTORY, useValue: { location: this.getLocation(request, isMicro), listen: () => (): any => void (0) } }
     ]);
     const { js = [], links = [] } = readAssets();
     const { html, styles } = await render(injector, { request, ..._global });

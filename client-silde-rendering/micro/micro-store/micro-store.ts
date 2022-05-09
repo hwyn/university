@@ -42,7 +42,7 @@ export class MicroStore implements MicroStoreInterface {
 
   private execJavascript(execFunctions: any[]): () => Promise<any> {
     const { fetchCacheData } = this.staticAssets;
-    const microStore: any = { render: () => void (0) };
+    const microStore: any = { render: (): any => void (0) };
     execFunctions.forEach((fun: any) => fun(microStore, fetchCacheData));
     return microStore.render;
   }
