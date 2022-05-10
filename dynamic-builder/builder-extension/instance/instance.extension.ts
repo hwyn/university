@@ -1,5 +1,5 @@
 import { isEmpty } from 'lodash';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject } from '@fm/import-rxjs';
 
 import { Instance } from '../../builder';
 import { BuilderModel } from '../../builder/builder-model';

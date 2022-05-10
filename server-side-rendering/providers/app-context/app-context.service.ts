@@ -1,5 +1,5 @@
 import { AppContextService as SharedAppContextService } from '@fm/shared/providers/app-context';
-import { Observable, of } from 'rxjs';
+import { Observable, of } from '@fm/import-rxjs';
 
 type MicroMiddleware = () => Observable<any>;
 

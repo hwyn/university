@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable no-use-before-define */
 import { isEmpty } from 'lodash';
-import { Observable, Subject } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { Observable, Subject } from '@fm/import-rxjs';
+import { tap } from '@fm/import-rxjs';
 
 import { BUILDER_EXTENSION, LOAD_BUILDER_CONFIG } from '../token';
 import { observableMap, toForkJoin, transformObservable, withValue } from '../utility';

@@ -1,7 +1,7 @@
 import { Inject, InjectorToken, LocatorStorage } from '@fm/di';
 import { cloneDeep } from 'lodash';
-import { Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of } from '@fm/import-rxjs';
+import { map } from '@fm/import-rxjs';
 
 import { MicroManageInterface } from '../../micro/types';
 import { ENVIRONMENT } from '../../token';

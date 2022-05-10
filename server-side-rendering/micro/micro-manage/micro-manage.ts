@@ -4,8 +4,8 @@ import { createMicroElementTemplate, MicroManageInterface, templateZip } from '@
 import { AppContextService } from '@fm/shared/providers/app-context';
 import { HISTORY } from '@fm/shared/token';
 import { cloneDeep, isEmpty } from 'lodash';
-import { forkJoin, Observable, of, Subject } from 'rxjs';
-import { catchError, map, shareReplay, switchMap } from 'rxjs/operators';
+import { forkJoin, Observable, of, Subject } from '@fm/import-rxjs';
+import { catchError, map, shareReplay, switchMap } from '@fm/import-rxjs';
 
 import { AppContextService as ServerAppContextService } from '../../providers/app-context';
 

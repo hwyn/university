@@ -3,8 +3,8 @@ import { HttpClient } from '@fm/shared/common/http';
 import { createMicroElementTemplate } from '@fm/shared/micro';
 import { MICRO_OPTIONS } from '@fm/shared/token';
 import { isEmpty, merge } from 'lodash';
-import { forkJoin, Observable, of } from 'rxjs';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { forkJoin, Observable, of } from '@fm/import-rxjs';
+import { map, switchMap, tap } from '@fm/import-rxjs';
 
 declare const microFetchData: any[];
 export interface StaticAssets { script: string[]; javascript: string[]; links: string[]; fetchCacheData: { [url: string]: any }; }

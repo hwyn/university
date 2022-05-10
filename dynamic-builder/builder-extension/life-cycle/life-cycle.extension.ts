@@ -1,6 +1,6 @@
 import { cloneDeep, flatMap, isEmpty } from 'lodash';
-import { Observable, of } from 'rxjs';
-import { filter, tap } from 'rxjs/operators';
+import { Observable, of } from '@fm/import-rxjs';
+import { filter, tap } from '@fm/import-rxjs';
 
 import { BuilderProps } from '../../builder';
 import { observableMap, transformObservable } from '../../utility';

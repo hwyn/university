@@ -1,5 +1,5 @@
-import { Observable, Subscriber } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, Subscriber } from '@fm/import-rxjs';
+import { map } from '@fm/import-rxjs';
 
 export function observableMap(fn: (result: any) => Observable<any>) {
   return (souce: Observable<any>) => souce.lift(function (this: Subscriber<any>, liftedSource: Observable<any>) {

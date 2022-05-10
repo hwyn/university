@@ -1,5 +1,5 @@
 import { Injectable, InjectorToken, LocatorStorage, registryProvider, Type } from '@fm/di';
-import { Observable } from 'rxjs';
+import { Observable } from '@fm/import-rxjs';
 
 // eslint-disable-next-line max-len
 import { ACTION_INTERCEPT, BIND_BUILDER_ELEMENT, BIND_FORM_CONTROL, BUILDER_EXTENSION, GET_JSON_CONFIG, LOAD_BUILDER_CONFIG, VALIDATOR_SERVICE } from '../token';

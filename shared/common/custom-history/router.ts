@@ -1,7 +1,7 @@
 import { LocatorStorage } from '@fm/di';
 import { cloneDeepWith, isBoolean, isFunction } from 'lodash';
-import { forkJoin, from, isObservable, Observable, of } from 'rxjs';
-import { mergeMap, tap } from 'rxjs/operators';
+import { forkJoin, from, isObservable, Observable, of } from '@fm/import-rxjs';
+import { mergeMap, tap } from '@fm/import-rxjs';
 
 import { serializeRouter } from './serialize-router';
 import { CanActivate, Resolve, RouteInfo, RouteItem } from './type-api';

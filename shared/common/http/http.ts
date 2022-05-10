@@ -1,5 +1,5 @@
 import { Injectable } from '@fm/di';
-import { from, Observable } from 'rxjs';
+import { from, Observable } from '@fm/import-rxjs';
 
 import { AppContextService, Fetch } from '../../providers/app-context';
 
