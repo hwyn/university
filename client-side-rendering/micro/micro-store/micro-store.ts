@@ -26,7 +26,7 @@ export class MicroStore implements MicroStoreInterface {
     const [exMicroInfo] = this.mountedList.filter(({ container: _container }: any) => container === _container);
     if (exMicroInfo) {
       this.mountedList.splice(this.mountedList.indexOf(exMicroInfo), 1);
-      await exMicroInfo.unRender(container.shadowRoot?.querySelector('[data-app="body"]'));
+      exMicroInfo.unRender && await exMicroInfo.unRender(container.shadowRoot?.querySelector('[data-app="body"]'));
     }
   }
 
