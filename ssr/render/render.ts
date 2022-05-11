@@ -7,7 +7,7 @@ import vm from 'vm';
 
 import { SSROptions } from './type-api';
 
-export class SSRRender {
+export class Render {
   private host: string;
   private index: string;
   private microName: string;
