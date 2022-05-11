@@ -13,6 +13,8 @@ import { JsonConfigService as ServerJsonConfigService } from '../json-config';
 type Render = (...args: any[]) => Promise<{ html: string, styles: string }>;
 type MicroMiddleware = () => Observable<any>;
 
+declare const registryRender: (render: any) => void;
+
 export class Platform {
   private rootInjector: Injector;
   private resource: { [key: string]: any } = {};
@@ -22,7 +24,7 @@ export class Platform {
   }
 
   public bootstrapRender(render: Render): void {
-    exports.render = this.proxyRender.bind(this, render);
+    registryRender(this.proxyRender.bind(this, render));
   }
 
   private async proxyRender(render: Render, global: any, isMicro = false) {
