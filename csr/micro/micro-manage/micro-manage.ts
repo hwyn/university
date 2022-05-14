@@ -1,7 +1,6 @@
 import { Injectable, LocatorStorage } from '@fm/di';
+import { map, Observable, shareReplay, Subject, tap } from '@fm/import-rxjs';
 import { MicroManageInterface } from '@fm/shared/micro';
-import { Observable, Subject } from '@fm/import-rxjs';
-import { map, shareReplay, tap } from '@fm/import-rxjs';
 
 import { LoadAssets, StaticAssets } from '../load-assets/load-assets';
 import { MicroStore } from '../micro-store/micro-store';

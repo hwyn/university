@@ -1,7 +1,6 @@
 import { Inject, LocatorStorage } from '@fm/di';
+import { map, Observable, shareReplay } from '@fm/import-rxjs';
 import { cloneDeep } from 'lodash';
-import { Observable } from '@fm/import-rxjs';
-import { map, shareReplay } from '@fm/import-rxjs';
 
 import { AppContextService } from '../app-context';
 

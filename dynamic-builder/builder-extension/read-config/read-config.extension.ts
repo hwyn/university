@@ -1,6 +1,5 @@
+import { map, Observable, of, tap  } from '@fm/import-rxjs';
 import { cloneDeep, isEmpty, isFunction, isString, uniq } from 'lodash';
-import { Observable, of } from '@fm/import-rxjs';
-import { map, tap } from '@fm/import-rxjs';
 
 import { BuilderField } from '../../builder';
 import { GET_JSON_CONFIG } from '../../token';

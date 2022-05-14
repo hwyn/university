@@ -1,8 +1,7 @@
 /* eslint-disable max-lines-per-function */
 import { Inject, LocatorStorage } from '@fm/di';
+import { forkJoin, map,Observable, of } from '@fm/import-rxjs';
 import { flatMap, isEmpty } from 'lodash';
-import { forkJoin, Observable, of } from '@fm/import-rxjs';
-import { map } from '@fm/import-rxjs';
 
 import { ACTIONS_CONFIG } from '../../token';
 import { observableTap, transformObservable } from '../../utility';

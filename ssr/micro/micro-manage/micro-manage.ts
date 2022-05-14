@@ -1,11 +1,10 @@
 import { Injectable, LocatorStorage } from '@fm/di';
+import { catchError, forkJoin, map, Observable, of, shareReplay, Subject, switchMap } from '@fm/import-rxjs';
 import { HttpClient } from '@fm/shared/common/http';
 import { createMicroElementTemplate, MicroManageInterface, templateZip } from '@fm/shared/micro';
 import { AppContextService } from '@fm/shared/providers/app-context';
 import { HISTORY } from '@fm/shared/token';
 import { cloneDeep, isEmpty } from 'lodash';
-import { forkJoin, Observable, of, Subject } from '@fm/import-rxjs';
-import { catchError, map, shareReplay, switchMap } from '@fm/import-rxjs';
 
 import { AppContextService as ServerAppContextService } from '../../providers/app-context';
 

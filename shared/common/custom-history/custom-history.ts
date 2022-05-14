@@ -1,8 +1,7 @@
 import { Inject, Injectable, LocatorStorage } from '@fm/di';
+import { shareReplay,Subject } from '@fm/import-rxjs';
 import { BrowserHistory, Location, parsePath } from 'history';
 import { parse } from 'querystring';
-import { Subject } from '@fm/import-rxjs';
-import { shareReplay } from '@fm/import-rxjs';
 
 import { HISTORY, ROUTER_CONFIG, ROUTER_INTERCEPT } from '../../token';
 import { Router } from './router';

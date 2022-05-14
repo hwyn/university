@@ -1,5 +1,4 @@
-import { forkJoin, Observable, of } from '@fm/import-rxjs';
-import { map } from '@fm/import-rxjs';
+import { forkJoin, map,Observable, of } from '@fm/import-rxjs';
 
 import { isObservable } from '../utility';
 

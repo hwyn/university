@@ -1,7 +1,7 @@
 import { Injectable } from '@fm/di';
+import { Observable } from '@fm/import-rxjs';
 import { HttpClient } from '@fm/shared/common/http';
 import { JsonConfigService as SharedJsonConfigService } from '@fm/shared/providers/json-config';
-import { Observable } from '@fm/import-rxjs';
 
 import { AppContextService } from '../app-context';
 

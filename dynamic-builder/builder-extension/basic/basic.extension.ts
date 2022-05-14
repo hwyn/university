@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { LocatorStorage } from '@fm/di';
-import { cloneDeep, isFunction, isString, merge } from 'lodash';
 import { Observable } from '@fm/import-rxjs';
+import { cloneDeep, isFunction, isString, merge } from 'lodash';
 
 import { BuilderProps, CacheObj } from '../../builder';
 import { transformObj, withGetOrSet, withValue } from '../../utility';
