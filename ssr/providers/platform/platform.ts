@@ -2,7 +2,7 @@ import { getProvider, Injector, Provider, StaticInjector } from '@fm/di';
 import { APP_CONTEXT, AppContextService } from '@fm/shared/providers/app-context';
 import { JsonConfigService } from '@fm/shared/providers/json-config';
 import { HISTORY } from '@fm/shared/token';
-import { Observable, of } from 'rxjs';
+import { lastValueFrom, Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
 import { MicroManage } from '../../micro';
@@ -70,11 +70,9 @@ export class Platform {
   private async execlMicroMiddleware(injector: Injector, options: any): Promise<any> {
     const appContext = injector.get(AppContextService) as ServerAppContextService;
     const fetchData = appContext.getAllFileSource();
-    return appContext.getpageMicroMiddleware().reduce((input, middleware) => (
+    return lastValueFrom(appContext.getpageMicroMiddleware().reduce((input, middleware) => (
       input.pipe(switchMap(this.mergeMicroToSSR(middleware)))
-    ), of(options))
-      .toPromise()
-      .then((execlResult) => ({ ...execlResult, fetchData }));
+    ), of(options))).then((execlResult) => ({ ...execlResult, fetchData }));
   }
 
   private getLocation(request: any, isMicro?: boolean) {
