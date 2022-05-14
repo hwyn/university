@@ -70,11 +70,9 @@ export class Platform {
   private async execlMicroMiddleware(injector: Injector, options: any): Promise<any> {
     const appContext = injector.get(AppContextService) as ServerAppContextService;
     const fetchData = appContext.getAllFileSource();
-    return appContext.getpageMicroMiddleware().reduce((input, middleware) => (
+    return lastValueFrom(appContext.getpageMicroMiddleware().reduce((input, middleware) => (
       input.pipe(switchMap(this.mergeMicroToSSR(middleware)))
-    ), of(options))
-      .toPromise()
-      .then((execlResult) => ({ ...execlResult, fetchData }));
+    ), of(options))).then((execlResult) => ({ ...execlResult, fetchData }));
   }
 
   private getLocation(request: any, isMicro?: boolean) {

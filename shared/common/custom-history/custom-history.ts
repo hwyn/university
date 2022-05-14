@@ -41,15 +41,15 @@ export class SharedHistory {
     if (this.intercept) {
       await this.intercept.resolve(this.currentRouteInfo);
     }
-    await this.router.loadResolve(this.currentRouteInfo).toPromise();
-    this.activeRoute.next(this._routeInfo);
+    await lastValueFrom(this.router.loadResolve(this.currentRouteInfo));
+    this.activeRoute.next(this.currentRouteInfo);
   }
 
   private async resolveIntercept(location: Location): Promise<boolean> {
     const [pathname, query] = this.parse(location);
     const { params, list = [] } = await this.router.getRouterByPath(pathname);
     this._routeInfo = { path: pathname, query, params, list };
-    const status = await this.router.canActivate(this.currentRouteInfo).toPromise();
+    const status = await lastValueFrom(this.router.canActivate(this.currentRouteInfo));
     if (!status) {
       this._routeInfo.list = [];
     } else if (await this.router.loadModule(this.currentRouteInfo)) {

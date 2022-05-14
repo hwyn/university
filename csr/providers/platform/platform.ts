@@ -2,6 +2,7 @@ import { getProvider, Injector, Provider, StaticInjector } from '@fm/di';
 import { APP_CONTEXT, AppContextService } from '@fm/shared/providers/app-context';
 import { JsonConfigService } from '@fm/shared/providers/json-config';
 
+import { IMPORT_MICRO } from '../../token';
 import { AppContextService as ClientAppContextService } from '../app-context';
 import { JsonConfigService as ClientJsonConfigService } from '../json-config';
 
@@ -45,7 +46,7 @@ export class Platform {
   }
 
   private async importMicro(injector: Injector): Promise<Injector> {
-    const { registryMicro, MicroManage } = await import('../../micro/import-micro');
+    const { registryMicro, MicroManage } = await injector.get(IMPORT_MICRO);
     registryMicro(injector);
     injector.get(APP_CONTEXT).useMicroManage = () => injector.get(MicroManage);
     return injector;

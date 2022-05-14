@@ -6,17 +6,16 @@ import { isEmpty, merge } from 'lodash';
 import { forkJoin, Observable, of } from '@fm/import-rxjs';
 import { map, switchMap, tap } from '@fm/import-rxjs';
 
+import { microOptions } from '../micro-options';
+
 declare const microFetchData: any[];
 export interface StaticAssets { script: string[]; javascript: string[]; links: string[]; fetchCacheData: { [url: string]: any }; }
-
-const defaultAssetsPath = (microName: string) => `/static/${microName}/static/assets.json`;
-const defaultOptions = { assetsPath: defaultAssetsPath };
 
 @Injectable()
 export class LoadAssets {
   private cacheServerData = this.initialCacheServerData();
   constructor(private http: HttpClient, @Inject(MICRO_OPTIONS) private options: any = {}) {
-    this.options = merge(defaultOptions, this.options);
+    this.options = merge(microOptions, this.options);
   }
 
   private initialCacheServerData(): [{ microName: string, source: string }] {
