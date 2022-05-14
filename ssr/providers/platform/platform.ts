@@ -1,5 +1,5 @@
 import { getProvider, Injector, Provider, StaticInjector } from '@fm/di';
-import { map, Observable, of, switchMap } from '@fm/import-rxjs';
+import { lastValueFrom, map, Observable, of, switchMap } from '@fm/import-rxjs';
 import { APP_CONTEXT, AppContextService } from '@fm/shared/providers/app-context';
 import { JsonConfigService } from '@fm/shared/providers/json-config';
 import { HISTORY } from '@fm/shared/token';

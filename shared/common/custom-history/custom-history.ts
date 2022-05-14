@@ -1,5 +1,5 @@
 import { Inject, Injectable, LocatorStorage } from '@fm/di';
-import { shareReplay,Subject } from '@fm/import-rxjs';
+import { lastValueFrom, shareReplay,Subject } from '@fm/import-rxjs';
 import { BrowserHistory, Location, parsePath } from 'history';
 import { parse } from 'querystring';
 
