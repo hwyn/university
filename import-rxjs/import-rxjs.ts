@@ -1,3 +1,4 @@
+export { lastValueFrom } from 'rxjs/internal/lastValueFrom';
 export { Observable } from 'rxjs/internal/Observable';
 export { forkJoin } from 'rxjs/internal/observable/forkJoin';
 export { from } from 'rxjs/internal/observable/from';
