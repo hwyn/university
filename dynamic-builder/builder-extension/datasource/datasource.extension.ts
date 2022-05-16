@@ -9,12 +9,11 @@ export class DataSourceExtension extends BasicExtension {
   private builderFields!: BuilderFieldExtensions[];
 
   protected extension() {
-    this.builderFields = this.mapFields(
-      this.jsonFields.filter(({ dataSource }) => !isUndefined(dataSource)),
-      this.addFieldCalculators.bind(this)
-    );
-
-    if (!isEmpty(this.builderFields)) {
+    const jsonFields =  this.jsonFields.filter(({ dataSource }) => !isUndefined(dataSource));
+   
+    if (!isEmpty(jsonFields)) {
+      this.builderFields = this.mapFields(jsonFields, this.addFieldCalculators.bind(this));
+  
       this.pushCalculators(this.json, [{
         action: this.bindCalculatorAction(this.createOnDataSourceConfig.bind(this)),
         dependents: { type: LOAD_ACTION, fieldId: this.builder.id }
@@ -22,15 +21,10 @@ export class DataSourceExtension extends BasicExtension {
     }
   }
 
-  private addFieldCalculators([jsonField, builderField]: CallBackOptions) {
+  private addFieldCalculators([jsonField]: CallBackOptions) {
     const { action, dependents, metadata } = this.serializeDataSourceConfig(jsonField);
-    this.pushCalculators(jsonField, [
-      { action, dependents },
-      {
-        action: this.bindCalculatorAction(this.createSourceConfig.bind(this, metadata)),
-        dependents: { fieldId: builderField.id, type: action.type }
-      }
-    ]);
+    action.after = this.bindCalculatorAction(this.createSourceConfig.bind(this, metadata));
+    this.pushCalculators(jsonField, { action, dependents });
   }
 
   private createSourceConfig(metadata: any, { actionEvent, builderField, builderField: { instance } }: BaseAction): void {
@@ -53,7 +47,7 @@ export class DataSourceExtension extends BasicExtension {
     const dataSource = this.serializeCalculatorConfig(jsonDataSource, DATD_SOURCE, defaultDependents);
     const { action, source } = dataSource;
 
-    if (!isEmpty(source)) {
+    if (!isEmpty(source) && !action.handler) {
       action.handler = () => source;
     }
 

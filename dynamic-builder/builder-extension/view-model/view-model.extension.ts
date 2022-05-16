@@ -23,7 +23,7 @@ export class ViewModelExtension extends BasicExtension {
   }
 
   private createViewModel(store: any) {
-    this.cache.viewModel = store instanceof BaseView ? store : new BaseView(this.ls, store);
+    this.defineProperty(this.cache, VIEW_MODEL, store instanceof BaseView ? store : new BaseView(this.ls, store));
     this.definePropertyGet(this.builder, VIEW_MODEL, () => this.cache.viewModel.model);
   }
 
@@ -50,6 +50,7 @@ export class ViewModelExtension extends BasicExtension {
   }
 
   protected destory() {
+    this.unDefineProperty(this.cache, [VIEW_MODEL]);
     this.unDefineProperty(this.builder, [VIEW_MODEL, NOTIFY_VIEW_MODEL_CHANGE]);
     return super.destory();
   }

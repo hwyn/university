@@ -21,6 +21,8 @@ export interface Action {
   params?: any;
   stop?: boolean;
   handler?: ExecuteHandler;
+  before?: Action;
+  after?: Action;
 }
 
 export interface BuilderFieldAction extends BuilderField {

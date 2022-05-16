@@ -7,6 +7,7 @@ import { BuilderProps, CacheObj } from '../../builder';
 import { transformObj, withGetOrSet, withValue } from '../../utility';
 import { Action, ActionInterceptProps, BaseAction } from '../action';
 import { createActions, CreateOptions, getEventType } from '../action/create-actions';
+import { CALCULATOR } from '../constant/calculator.constant';
 import { BuilderFieldExtensions, BuilderModelExtensions, Calculators, CalculatorsDependent } from '../type-api';
 
 export type CallBackOptions = [any, BuilderFieldExtensions];
@@ -68,7 +69,7 @@ export abstract class BasicExtension {
   }
 
   protected bindCalculatorAction(handler: (baseAction: BaseAction) => any) {
-    return { type: 'calculator', handler };
+    return { type: CALCULATOR, handler };
   }
 
   protected pushCalculators(fieldConfig: BuilderFieldExtensions, calculator: Calculators | Calculators[]) {

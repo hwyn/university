@@ -2,7 +2,7 @@ import { isEmpty, isUndefined } from 'lodash';
 
 import { BaseAction } from '../action';
 import { BasicExtension, CallBackOptions } from '../basic/basic.extension';
-import { CHANGE, CHECK_VISIBILITY, LOAD, LOAD_ACTION } from '../constant/calculator.constant';
+import { CALCULATOR, CHANGE, CHECK_VISIBILITY, LOAD, LOAD_ACTION } from '../constant/calculator.constant';
 import { BuilderFieldExtensions, BuilderModelExtensions, Calculators, OriginCalculators } from '../type-api';
 
 export class CheckVisibilityExtension extends BasicExtension {
@@ -27,13 +27,8 @@ export class CheckVisibilityExtension extends BasicExtension {
 
   private addFieldCalculators([jsonField, builderField]: CallBackOptions): BuilderFieldExtensions {
     const { action, dependents } = this.serializeCheckVisibilityConfig(jsonField);
-    this.pushCalculators(jsonField, [
-      { action, dependents },
-      {
-        action: this.bindCalculatorAction(this.checkVisibilityAfter.bind(this)),
-        dependents: { type: this.visibilityTypeName, fieldId: jsonField.id }
-      }
-    ]);
+    action.after = this.bindCalculatorAction(this.checkVisibilityAfter.bind(this));
+    this.pushCalculators(jsonField, [{ action, dependents }]);
 
     delete builderField.field.checkVisibility;
     return builderField;
