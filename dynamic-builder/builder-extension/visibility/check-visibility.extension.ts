@@ -2,7 +2,7 @@ import { isEmpty, isUndefined } from 'lodash';
 
 import { BaseAction } from '../action';
 import { BasicExtension, CallBackOptions } from '../basic/basic.extension';
-import { CALCULATOR, CHANGE, CHECK_VISIBILITY, LOAD, LOAD_ACTION } from '../constant/calculator.constant';
+import { CHANGE, CHECK_VISIBILITY, LOAD, LOAD_ACTION } from '../constant/calculator.constant';
 import { BuilderFieldExtensions, BuilderModelExtensions, Calculators, OriginCalculators } from '../type-api';
 
 export class CheckVisibilityExtension extends BasicExtension {
