@@ -36,7 +36,7 @@ export class MicroManage implements MicroManageInterface {
         map((microResult) => ({ microResult: this.createMicroTag(microName, microResult), microName })),
         shareReplay(1)
       );
-      subject.subscribe(() => void (0), () => void (0));
+      subject.subscribe({ next: () => void (0), error: () => void (0) });
       this.appContext.registryMicroMidder(() => subject);
       this.microCache.set(microName, subject);
     }

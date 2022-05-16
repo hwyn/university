@@ -4,6 +4,7 @@ import { Observable, Subject } from 'rxjs';
 import { Instance } from '../../builder';
 import { BuilderModel } from '../../builder/builder-model';
 import { observableMap, toForkJoin, transformObservable } from '../../utility';
+import { BaseAction } from '../action';
 import { BasicExtension, CallBackOptions } from '../basic/basic.extension';
 import { CURRENT, DESTORY, INSTANCE, LOAD_ACTION, MOUNTED } from '../constant/calculator.constant';
 import { BuilderFieldExtensions } from '../type-api';
@@ -34,7 +35,7 @@ export class InstanceExtension extends BasicExtension {
     const { instance, events = {} } = builderField;
     this.definePropertys(instance, {
       [this.getEventType(MOUNTED)]: events.onMounted,
-      [this.getEventType(DESTORY)]: this.proxyDestory(instance, events.onDestory)
+      [this.getEventType(DESTORY)]: events.onDestory
     });
     Object.defineProperty(instance, CURRENT, this.getCurrentProperty(builderField));
     delete events.onMounted;
@@ -56,19 +57,16 @@ export class InstanceExtension extends BasicExtension {
   }
 
   private addInstance([jsonField, builderField]: CallBackOptions) {
-    this.pushAction(jsonField, [{ type: DESTORY, runObservable: true }, { type: MOUNTED }]);
+    const destory = { type: DESTORY, after: this.bindCalculatorAction(this.instanceDestory.bind(this)) };
+    this.pushAction(jsonField, [destory, { type: MOUNTED }]);
     this.defineProperty(builderField, INSTANCE, InstanceExtension.createInstance());
   }
 
-  private proxyDestory(instance: Instance, onDestory: (...args: any) => Observable<any>) {
-    const destoryHandler = (actionEvent: any) => {
-      const currentIsBuildModel = instance.current instanceof BuilderModel;
-      instance.current && (instance.current = null);
-      instance.detectChanges = () => undefined;
-      !currentIsBuildModel && instance.destory.next(actionEvent);
-    }
-
-    return (...args: any) => onDestory(...args).subscribe(destoryHandler);
+  private instanceDestory({ actionEvent, builderField: { instance } }: BaseAction) {
+    const currentIsBuildModel = instance.current instanceof BuilderModel;
+    instance.current && (instance.current = null);
+    instance.detectChanges = () => undefined;
+    return !currentIsBuildModel && instance.destory.next(actionEvent);
   }
 
   protected beforeDestory() {

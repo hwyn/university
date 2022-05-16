@@ -2,7 +2,7 @@ import { isEmpty } from 'lodash';
 
 import { Visibility } from '../../builder';
 import { BIND_FORM_CONTROL } from '../../token';
-import { BaseAction } from '../action';
+import { Action, BaseAction } from '../action';
 import { BasicExtension, CallBackOptions } from '../basic/basic.extension';
 import { CHANGE, CHECK_VISIBILITY, CONTROL, LOAD_ACTION, NOTIFY_VIEW_MODEL_CHANGE } from '../constant/calculator.constant';
 import { BuilderFieldExtensions } from '../type-api';
@@ -21,12 +21,10 @@ export class FormExtension extends BasicExtension {
   private createMergeControl([jsonField, builderField]: CallBackOptions) {
     const { id, updateOn, checkVisibility, validators } = jsonField;
     const changeType = this.getChangeType(jsonField);
+    this.addChangeAction(changeType, jsonField);
     this.pushCalculators(jsonField, [{
       action: this.bindCalculatorAction(this.addControl.bind(this, jsonField, builderField)),
       dependents: { type: LOAD_ACTION, fieldId: this.builder.id }
-    }, {
-      action: this.bindCalculatorAction(this.createChange.bind(this)),
-      dependents: { type: changeType, fieldId: id }
     }, {
       action: this.bindCalculatorAction(this.createNotifyChange.bind(this, jsonField)),
       dependents: { type: NOTIFY_VIEW_MODEL_CHANGE, fieldId: this.builder.id }
@@ -41,21 +39,29 @@ export class FormExtension extends BasicExtension {
     }] : []]);
   }
 
+  private addChangeAction(changeType: string, jsonField: any) {
+    const { actions = [] } = jsonField;
+    let changeAction = actions.find(({ type }: Action) => type === changeType);
+
+    jsonField.actions = actions;
+    !changeAction && actions.push(changeAction = { type: changeType });
+    changeAction.after = this.bindCalculatorAction(this.createChange.bind(this, jsonField));
+  }
+
   private addControl(jsonField: any, builderField: BuilderFieldExtensions) {
-    const { dataBinding } = jsonField;
-    const value = this.getValueToModel(dataBinding, builderField);
+    const value = this.getValueToModel(jsonField.dataBinding, builderField);
     const control = this.ls.getProvider(BIND_FORM_CONTROL, value, { builder: this.builder, builderField });
 
     this.defineProperty(builderField, CONTROL, control);
-    control.changeValues.subscribe((_value: any) => this.setValueToModel(dataBinding, _value, builderField));
 
     delete builderField.field.dataBinding;
     this.excuteChangeEvent(jsonField, value);
     this.changeVisibility(builderField, builderField.visibility);
   }
 
-  private createChange({ builderField, actionEvent }: BaseAction) {
+  private createChange({ dataBinding }: any, { builderField, actionEvent }: BaseAction) {
     const value = this.isDomEvent(actionEvent) ? actionEvent.target.value : actionEvent;
+    this.setValueToModel(dataBinding, value, builderField);
     builderField.control?.patchValue(value);
     builderField.instance?.detectChanges();
   }
