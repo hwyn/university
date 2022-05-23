@@ -2,7 +2,7 @@
 import { LocatorStorage, Type } from '@fm/di';
 import { Observable, Subject } from 'rxjs';
 
-import { Grid } from '../builder-extension';
+import { GridType } from '../builder-extension';
 import { Action } from '../builder-extension/action';
 import { Visibility } from './consts';
 
@@ -65,7 +65,7 @@ export interface BuilderProps extends BuilderElement {
   configAction?: string;
   style?: {[key: string]: string};
   config?: BuilderJsonField[] | {
-    grid?: Grid;
+    grid?: GridType;
     fields: BuilderJsonField[];
     actions?: Action[];
   };
@@ -86,7 +86,7 @@ export declare interface BuilderModelInterface {
   readonly $$cache: CacheObj;
   readonly id: string | undefined;
   readonly ready: boolean | undefined;
-  readonly grid?: Grid;
+  readonly grid?: GridType;
   readonly Element: any;
   readonly ls: LocatorStorage;
   readonly privateExtension?: privateExtension[];

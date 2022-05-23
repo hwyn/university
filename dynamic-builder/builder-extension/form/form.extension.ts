@@ -13,7 +13,7 @@ export class FormExtension extends BasicExtension {
 
   protected extension() {
     this.builderFields = this.mapFields<BuilderFieldExtensions>(
-      this.jsonFields.filter(({ dataBinding }: any) => !isEmpty(dataBinding)),
+      this.jsonFields.filter(({ binding }: any) => !isEmpty(binding)),
       this.createMergeControl.bind(this)
     );
   }
@@ -49,19 +49,19 @@ export class FormExtension extends BasicExtension {
   }
 
   private addControl(jsonField: any, builderField: BuilderFieldExtensions) {
-    const value = this.getValueToModel(jsonField.dataBinding, builderField);
+    const value = this.getValueToModel(jsonField.binding, builderField);
     const control = this.ls.getProvider(BIND_FORM_CONTROL, value, { builder: this.builder, builderField });
 
     this.defineProperty(builderField, CONTROL, control);
 
-    delete builderField.field.dataBinding;
+    delete builderField.field.binding;
     this.excuteChangeEvent(jsonField, value);
     this.changeVisibility(builderField, builderField.visibility);
   }
 
-  private createChange({ dataBinding }: any, { builderField, actionEvent }: BaseAction) {
+  private createChange({ binding }: any, { builderField, actionEvent }: BaseAction) {
     const value = this.isDomEvent(actionEvent) ? actionEvent.target.value : actionEvent;
-    this.setValueToModel(dataBinding, value, builderField);
+    this.setValueToModel(binding, value, builderField);
     builderField.control?.patchValue(value);
     builderField.instance?.detectChanges();
   }
@@ -89,22 +89,22 @@ export class FormExtension extends BasicExtension {
 
   private createNotifyChange(jsonField: any, { actionEvent, builderField }: BaseAction) {
     if (!actionEvent || actionEvent === builderField) {
-      const { dataBinding } = jsonField;
-      this.excuteChangeEvent(jsonField, this.getValueToModel(dataBinding, builderField));
+      const { binding } = jsonField;
+      this.excuteChangeEvent(jsonField, this.getValueToModel(binding, builderField));
     }
   }
 
   private getChangeType(jsonField: any) {
-    const { dataBinding: { changeType = this.defaultChangeType } } = jsonField;
+    const { binding: { changeType = this.defaultChangeType } } = jsonField;
     return changeType;
   }
 
-  private getValueToModel<T = any>(dataBinding: any, builderField: BuilderFieldExtensions): T {
-    return this.cache.viewModel.getBindValue(dataBinding, builderField);
+  private getValueToModel<T = any>(binding: any, builderField: BuilderFieldExtensions): T {
+    return this.cache.viewModel.getBindValue(binding, builderField);
   }
 
-  private setValueToModel(dataBinding: any, value: any, builderField: BuilderFieldExtensions): void {
-    this.cache.viewModel.setBindValue(dataBinding, value, builderField);
+  private setValueToModel(binding: any, value: any, builderField: BuilderFieldExtensions): void {
+    this.cache.viewModel.setBindValue(binding, value, builderField);
   }
 
   private isDomEvent(actionResult: any) {

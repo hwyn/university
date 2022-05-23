@@ -9,11 +9,11 @@ export class DataSourceExtension extends BasicExtension {
   private builderFields!: BuilderFieldExtensions[];
 
   protected extension() {
-    const jsonFields =  this.jsonFields.filter(({ dataSource }) => !isUndefined(dataSource));
-   
+    const jsonFields = this.jsonFields.filter(({ dataSource }) => !isUndefined(dataSource));
+
     if (!isEmpty(jsonFields)) {
       this.builderFields = this.mapFields(jsonFields, this.addFieldCalculators.bind(this));
-  
+
       this.pushCalculators(this.json, [{
         action: this.bindCalculatorAction(this.createOnDataSourceConfig.bind(this)),
         dependents: { type: LOAD_ACTION, fieldId: this.builder.id }
@@ -35,9 +35,11 @@ export class DataSourceExtension extends BasicExtension {
   private createOnDataSourceConfig(): void {
     this.builderFields.forEach((builderField) => {
       const { events = {}, field } = builderField;
-      this.defineProperty(builderField, this.getEventType(DATD_SOURCE), events.onDataSource);
+      if (events.onDataSource) {
+        events.onDataSource && this.defineProperty(builderField, this.getEventType(DATD_SOURCE), events.onDataSource);
+        delete events.onDataSource;
+      }
       delete field.dataSource;
-      delete events.onDataSource;
     });
   }
 

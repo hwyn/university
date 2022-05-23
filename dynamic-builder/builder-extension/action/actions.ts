@@ -12,6 +12,7 @@ import { BaseAction } from './base.action';
 import { Action as ActionProps, ActionContext, ActionIntercept, ActionInterceptProps } from './type-api';
 
 type ActionLinkProps = ActionProps & { callLink?: any[] };
+type InvokeAction = ActionProps | string;
 
 export class Action implements ActionIntercept {
   private actions: any[];
@@ -61,7 +62,7 @@ export class Action implements ActionIntercept {
     calculatorsInvokes.push(this.invokeCallCalculators(calculators || [], actionProps, props))
     return actionSub.pipe(
       observableTap((value) => forkJoin(
-        calculatorsInvokes.map((invokeCalculators: any) => invokeCalculators(value))
+        calculatorsInvokes.map((invokeCalculators) => invokeCalculators(value))
       ))
     );
   }
@@ -82,12 +83,12 @@ export class Action implements ActionIntercept {
   }
 
   public invoke(
-    actions: ActionProps | ActionProps[], props?: ActionInterceptProps, event: Event | any = null, ...otherEventParam: any[]
+    actions: InvokeAction | InvokeAction[], props?: ActionInterceptProps, event: Event | any = null, ...otherEventParam: any[]
   ): Observable<any> {
     let actionsSub;
     let action;
     if (Array.isArray(actions)) {
-      action = serializeAction(actions.filter(({ type }) => !!type)[0]);
+      action = serializeAction(actions.filter((a) => !!serializeAction(a).type)[0]);
       actionsSub = forkJoin((actions).map((a) => (
         this.invokeAction(serializeAction(a), props, event, ...otherEventParam)
       ))).pipe(map((result: any[]) => result.pop()));

@@ -4,12 +4,12 @@ import { get, set } from 'lodash';
 export class BaseView<T = any> {
   constructor(private ls: LocatorStorage, private store: any) { }
 
-  public setBindValue(dataBinding: any, value: any): void {
-    set(this.store, dataBinding.path, value);
+  public setBindValue(binding: any, value: any): void {
+    set(this.store, binding.path, value);
   }
 
-  public getBindValue(dataBinding: any) {
-    return get(this.store, dataBinding.path, dataBinding.default);
+  public getBindValue(binding: any) {
+    return get(this.store, binding.path, binding.default);
   }
 
   public refreshData(model: T) {

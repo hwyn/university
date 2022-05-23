@@ -4,12 +4,19 @@ import { BuilderFormField } from './form/type-api';
 import { BuilderViewModel } from './view-model/type-api';
 
 type Column = boolean | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 'auto' | 11 | 12 | undefined;
+type Spacing = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+type AlignItems = 'flex-start' | 'center' | 'flex-end' | 'stretch' | 'baseline';
+type Justify = 'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around' | 'space-evenly';
 
 export interface Additional {
   group: number;
-  justify?: string;
+  justify?: Justify;
+  spacing?: Spacing;
+  alignItems?: AlignItems;
   additional?: string;
   className?: string;
+  // eslint-disable-next-line no-use-before-define
+  fieldRows: BuilderFieldExtensions[][];
 }
 
 interface Layout {
@@ -45,13 +52,14 @@ export interface ControlConfig {
   changeType?: TypeEvent;
 }
 
-export interface Grid {
-  spacing: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
-  justify: 'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around' | 'space-evenly';
-  alignItems: 'flex-start' | 'center' | 'flex-end' | 'stretch' | 'baseline';
+export interface GridType {
+  spacing: Spacing;
+  justify: Justify;
+  alignItems: AlignItems;
   groups: Column[];
   element?: any;
   className?: string;
+  style?: { [key: string]: string };
   additional?: Additional[];
 }
 
@@ -80,7 +88,7 @@ export interface BuilderFieldExtensions
 
 export interface BuilderModelExtensions
   extends BuilderModelInterface, BuilderViewModel, Model<BuilderModelExtensions, BuilderFieldExtensions> {
-  readonly grid: Grid;
+  readonly grid: GridType;
   calculators: OriginCalculators[];
   nonSelfCalculators: OriginCalculators[];
   getExecuteHandler: (actionName: string) => undefined | ExecuteHandler;

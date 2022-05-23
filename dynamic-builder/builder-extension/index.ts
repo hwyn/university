@@ -9,12 +9,13 @@ import { BasicExtension, serializeAction } from './basic/basic.extension';
 import { DataSourceExtension } from './datasource/datasource.extension';
 import { FormExtension } from './form/form.extension';
 import { ControlOptions, FormOptions, ValidatorService } from './form/type-api';
+import { Grid } from './grid/grid';
 import { GridExtension } from './grid/grid.extension';
 import { InstanceExtension } from './instance/instance.extension';
 import { LifeCycleExtension } from './life-cycle/life-cycle.extension';
 import { MetadataExtension } from './metadata/metadata.extension';
 import { ReadConfigExtension } from './read-config/read-config.extension';
-import { Grid } from './type-api';
+import { BuilderModelExtensions } from './type-api';
 import { ViewModelExtension } from './view-model/view-model.extension';
 import { CheckVisibilityExtension } from './visibility/check-visibility.extension';
 
@@ -33,7 +34,7 @@ export const forwardFormControl = (factoryFormControl: (value: any, options: Con
   });
 };
 
-export const forwardBuilderLayout = (createElement: (grid: Grid, ls?: LocatorStorage) => any) => {
+export const forwardBuilderLayout = (createElement: (grid: Grid, builder: BuilderModelExtensions, ls: LocatorStorage) => any) => {
   registryFactory(BIND_BUILDER_ELEMENT, createElement);
 };
 
@@ -65,7 +66,8 @@ export * from './action/create-actions';
 export * from './basic/basic.extension';
 export * from './constant/calculator.constant';
 export * from './form/type-api';
-export { BuilderExtensionsModel as BuilderModel } from './model/builder-extension-model';
+export { Grid } from './grid/grid';
+export { BuilderModelExtensions as BuilderModel } from './model/builder-extension-model';
 export * from './type-api';
 export * from './view-model/base.view';
 
