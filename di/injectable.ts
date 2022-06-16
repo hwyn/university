@@ -1,4 +1,4 @@
-import { __PROVIDE__INJECT__,__PROVIDER_TYPE__, __USECLASS__, StaticInjector } from './injector';
+import { __PROVIDE__INJECT__, StaticInjector } from './injector';
 import { InjectorToken } from './injector-token';
 import { Provider, Type } from './type-api';
 
@@ -13,7 +13,6 @@ const InjectableFactory = (defaultToken?: InjectorToken, defaultOptions?: object
     }
     const { injector: _injector = injector, ..._options } = options || {};
     const providers = [token, defaultToken, target].filter((item) => !!item);
-    (target as any)[__PROVIDER_TYPE__] = __USECLASS__;
     providers.forEach((provide) => _injector.set(provide, { ...defaultOptions, ..._options, provide, useClass: target }));
     return target;
   };

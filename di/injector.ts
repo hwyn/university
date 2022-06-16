@@ -1,5 +1,4 @@
 /* eslint-disable no-use-before-define */
-/* eslint-disable camelcase */
 import 'reflect-metadata';
 
 import { isUndefined } from 'lodash';
@@ -12,8 +11,6 @@ interface Record { token: any; fn: (...args: any[]) => any; }
 const reflect = typeof global === "object" ? global.Reflect : typeof self === "object" ? self.Reflect : Reflect;
 const designParamtypes = `design:paramtypes`;
 export const __PROVIDE__INJECT__ = `design:__provide__inject__`;
-export const __PROVIDER_TYPE__ = '__PROVIDER_TYPE__';
-export const __USECLASS__ = '__USECLASS__';
 
 export class StaticInjector implements Injector {
   protected isSelfContext = false;
@@ -32,7 +29,7 @@ export class StaticInjector implements Injector {
 
   set(token: any, provider: Provider) {
     const { provide, useClass, useValue, useFactory } = <any>provider;
-    const record = this._recors.get(token) || <any>{};
+    const record = this._recors.get(token) || {} as Record;
     record.token = provide;
 
     if (!isUndefined(useValue)) {
@@ -81,7 +78,6 @@ function resolveMulitProvider(this: StaticInjector, { useValue, multi }: ValuePr
 
 function resolveFactoryProvider({ useFactory, deps = [] }: FactoryProvider) {
   return function (this: StaticInjector, ...params: any[]) {
-    // eslint-disable-next-line prefer-spread
     return useFactory.apply(undefined, [...deps.map((token: any) => this.get(token)), ...params]);
   };
 }
